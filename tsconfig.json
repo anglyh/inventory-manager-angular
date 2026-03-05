@@ -4,6 +4,15 @@
   "compileOnSave": false,
   "compilerOptions": {
     "strict": true,
+    "baseUrl": "/",
+    "paths": {
+      "@/*": ["./src/app"],
+      "@auth/*": ["./src/app/auth"],
+      "@products/*": ["./src/app/products"],
+      "@sales/*": ["./src/app/sales"],
+      "@purchases/*": ["./src/app/purchases"],
+      "@utils/*": ["./src/app/utils"]
+    },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,

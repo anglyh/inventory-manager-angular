@@ -1,0 +1,5 @@
+<button [class]="['btn rounded-full', class()].join(' ')">
+  <ng-content> 
+    {{ buttonText() }}
+  </ng-content>
+</button>

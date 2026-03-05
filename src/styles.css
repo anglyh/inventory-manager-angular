@@ -1,1 +1,18 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+ @plugin "daisyui" {
+   themes: light --default, dark --prefersdark, corporate;
+ }
+
+@layer base {
+  body {
+    font-family: "Poppins", sans-serif;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 2vw, 2.5rem);
+  }
+
+  p {
+    font-size: clamp(1rem, 1.5vw, 1.25rem);
+  }
+}
