@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { AuthResponse } from '../interfaces/auth-response.interface';
 import { User } from '../interfaces/user.interface';
-import { catchError, map, Observable, of } from 'rxjs';
+import { catchError, map, Observable, of, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { rxResource } from '@angular/core/rxjs-interop';
 
@@ -37,6 +37,7 @@ export class AuthService {
       password
     })
     .pipe(
+      tap(res => console.log(res)),
       map(res => this.handleAuthSuccess(res)),
       catchError((error: any) => this.handleAuthError(error))
     )
@@ -76,6 +77,7 @@ export class AuthService {
   }
 
   private handleAuthSuccess({ token, user }: AuthResponse) {
+    console.log({token, user})
     this._user.set(user);
     this._authStatus.set('authenticated')
     this._token.set(token)

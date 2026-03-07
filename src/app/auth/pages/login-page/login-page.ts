@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, ViewChild } from '@angular/core';
 import { Router, RouterLink } from "@angular/router";
 import { AuthService } from '../../services/auth.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -9,9 +9,15 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
   templateUrl: './login-page.html',
 })
 export class LoginPage {
-  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
+  hasError = signal(false);
+
+  
   private router = inject(Router);
+  private authService = inject(AuthService);
+  
+  toggleIcon = ViewChild('toggleIcon');
+  passwordInput = ViewChild('passwordInput')
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -26,9 +32,13 @@ export class LoginPage {
     const { email, password } = this.loginForm.value;
     if (!email || !password) return;
 
-    this.authService.login(email, password).subscribe(() => {
-      this.router.navigateByUrl('/')
+    this.authService.login(email, password).subscribe((isAuthenticated) => {
+      if (isAuthenticated) {
+        this.router.navigateByUrl('/')
+        return
+      }
+
+      this.hasError.set(true)
     })
   }
-  
 }

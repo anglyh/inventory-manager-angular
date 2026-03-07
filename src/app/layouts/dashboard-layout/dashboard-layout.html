@@ -1,0 +1,90 @@
+<div class="drawer lg:drawer-open">
+  <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
+  <div class="drawer-content">
+    <!-- Navbar -->
+    <nav class="navbar w-full bg-primary/10 border-b border-slate-300">
+      <label for="my-drawer-4" aria-label="open sidebar"
+        class="btn btn-square btn-ghost hover:bg-secondary/10 border-none">
+        <!-- Sidebar toggle icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"
+          stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4">
+          <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
+          <path d="M9 4v16"></path>
+          <path d="M14 10l2 2l-2 2"></path>
+        </svg>
+      </label>
+      <div class="px-4">{{ currentRouteTitle() }}</div>
+    </nav>
+    <!-- Page content here -->
+    <div class="p-4">
+      <router-outlet />
+    </div>
+  </div>
+
+  <div class="drawer-side is-drawer-close:overflow-visible border-r border-slate-300">
+    <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
+    <div class="flex min-h-full flex-col items-start bg-primary/10 is-drawer-close:w-14 is-drawer-open:w-64">
+      <!-- Sidebar content here -->
+
+      <span class="p-2 w-full">LOGO</span>
+
+      <ul class="menu w-full grow gap-1">
+        <!-- List item -->
+        <li>
+          <a 
+            [routerLink]="'/products'"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-secondary/10"
+            [attr.data-tip]="'Productos'" 
+            routerLinkActive="bg-secondary/20"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <!-- Productos icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"
+              stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4">
+              <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"></path>
+              <path d="M12 12l8-4.5"></path>
+              <path d="M12 12v9"></path>
+              <path d="M12 12L4 7.5"></path>
+            </svg>
+            <span class="is-drawer-close:hidden">Productos</span>
+          </a>
+        </li>
+        <li>
+          <a 
+            [routerLink]="'/purchases'"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-secondary/10"
+            [attr.data-tip]="'Compras'" 
+            routerLinkActive="bg-secondary/20"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <!-- Compras icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"
+              stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+              <path d="M3 6h18"></path>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            <span class="is-drawer-close:hidden">Compras</span>
+          </a>
+        </li>
+        <li>
+          <a 
+            [routerLink]="'/sales'"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-secondary/10"
+            [attr.data-tip]="'Ventas'" 
+            routerLinkActive="bg-secondary/20"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <!-- Ventas icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"
+              stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+              <polyline points="16 7 22 7 22 13"></polyline>
+            </svg>
+            <span class="is-drawer-close:hidden">Ventas</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
