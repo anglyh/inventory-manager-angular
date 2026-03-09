@@ -1,0 +1,19 @@
+<div class="join">
+  @for (item of getPagesList(); track $index) {
+
+  @if (item === '...') {
+    <button class="join-item btn btn-square btn-disabled">...</button>
+  }
+  <!--  -->
+  @else {
+    <input
+      class="join-item btn btn-square"
+      type="radio"
+      [routerLink]="[]"
+      [queryParams]="{ page: item }"
+      name="options"
+      [aria-label]="item"
+      [checked]="item === activePage()" />
+    }
+  }
+</div>
