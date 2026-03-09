@@ -1,0 +1,32 @@
+<div class="overflow-x-auto">
+  <table class="table">
+    <!-- head -->
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Costo</th>
+        <th>Stock</th>
+        <th>Stock mín.</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      @for (product of products(); track product.id) {
+        <tr class="hover:bg-primary/10">
+          <td>{{ product.name }}</td>
+          <td>{{ product.salePrice }}</td>  
+          <td>{{ product.unitCostAvg }}</td>
+          <td>{{ product.stock }}</td>
+          <td>{{ product.minStock }}</td>
+
+          <td>
+            <!-- Edit Button -->
+             <button class="btn btn-accent">Editar</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

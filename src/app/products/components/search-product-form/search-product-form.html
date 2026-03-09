@@ -1,0 +1,9 @@
+<label class="input input-bordered">
+  <input 
+    type="text"
+    placeholder="Ingresa el nombre de un producto"
+    class="grow"
+    (keydown.enter)="search(searchInput.value)"
+    #searchInput
+  />
+</label>
