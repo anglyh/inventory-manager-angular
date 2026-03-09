@@ -2,6 +2,7 @@ import { Component, inject, signal, ViewChild } from '@angular/core';
 import { Router, RouterLink } from "@angular/router";
 import { AuthService } from '../../services/auth.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormUtils } from '@/utils/form-utils';
 
 @Component({
   selector: 'app-login-page',
@@ -20,7 +21,7 @@ export class LoginPage {
   passwordInput = ViewChild('passwordInput')
 
   loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, Validators.pattern(FormUtils.emailPattern)]],
     password: ['', [Validators.required, Validators.minLength(6)]]
   })
 
