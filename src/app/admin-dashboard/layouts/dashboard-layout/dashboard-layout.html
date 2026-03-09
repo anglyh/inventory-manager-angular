@@ -2,18 +2,31 @@
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content">
     <!-- Navbar -->
-    <nav class="navbar w-full bg-primary/10 border-b border-slate-300">
-      <label for="my-drawer-4" aria-label="open sidebar"
-        class="btn btn-square btn-ghost hover:bg-secondary/10 border-none">
-        <!-- Sidebar toggle icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"
-          stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4">
-          <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
-          <path d="M9 4v16"></path>
-          <path d="M14 10l2 2l-2 2"></path>
-        </svg>
-      </label>
-      <div class="px-4">{{ currentRouteTitle() }}</div>
+    <nav class="navbar w-full bg-base-100 border-b border-slate-300 justify-between px-4">
+      <div class="flex items-center">
+        <label for="my-drawer-4" aria-label="open sidebar"
+          class="btn btn-square btn-ghost hover:bg-secondary/10 border-none">
+          <!-- Sidebar toggle icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"
+            stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4">
+            <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"></path>
+            <path d="M9 4v16"></path>
+            <path d="M14 10l2 2l-2 2"></path>
+          </svg>
+        </label>
+  
+        <!-- Título de la página -->
+        <h1 class="px-4 text-xl">
+          {{ currentRouteTitle() }}
+        </h1>
+      </div>
+
+      <button
+        (click)="logout()"
+        class="btn btn-secondary"
+      >
+        Cerrar Sesión
+      </button>
     </nav>
     <!-- Page content here -->
     <div class="p-4">
@@ -23,7 +36,7 @@
 
   <div class="drawer-side is-drawer-close:overflow-visible border-r border-slate-300">
     <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-    <div class="flex min-h-full flex-col items-start bg-primary/10 is-drawer-close:w-14 is-drawer-open:w-64">
+    <div class="flex min-h-full flex-col items-start bg-base-100 is-drawer-close:w-14 is-drawer-open:w-64">
       <!-- Sidebar content here -->
 
       <span class="p-2 w-full">LOGO</span>
@@ -33,10 +46,10 @@
         <li>
           <a 
             [routerLink]="'/products'"
-            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-secondary/10"
-            [attr.data-tip]="'Productos'" 
-            routerLinkActive="bg-secondary/20"
-            [routerLinkActiveOptions]="{ exact: true }"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-primary/90 hover:text-primary-content"
+            data-tip="Productos"
+            routerLinkActive="bg-primary text-primary-content"
+            [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }"
           >
             <!-- Productos icon -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"
@@ -52,10 +65,10 @@
         <li>
           <a 
             [routerLink]="'/purchases'"
-            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-secondary/10"
-            [attr.data-tip]="'Compras'" 
-            routerLinkActive="bg-secondary/20"
-            [routerLinkActiveOptions]="{ exact: true }"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-secondary/90 hover:text-primary-content"
+            data-tip="Compras" 
+            routerLinkActive="bg-primary text-primary-content"
+            [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }"
           >
             <!-- Compras icon -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"
@@ -73,7 +86,7 @@
             class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-secondary/10"
             [attr.data-tip]="'Ventas'" 
             routerLinkActive="bg-secondary/20"
-            [routerLinkActiveOptions]="{ exact: true }"
+            [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }"
           >
             <!-- Ventas icon -->
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"

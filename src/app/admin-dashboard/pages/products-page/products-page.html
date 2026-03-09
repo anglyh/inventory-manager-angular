@@ -1,0 +1,22 @@
+<div class="flex justify-between w-full mb-4">
+  <search-product-form />
+  <button class="btn btn-primary" (click)="productModal.open()">
+    Nuevo Producto
+  </button>
+</div>
+<product-table [products]="productResource.value()?.data ?? []" />
+
+<div class="mb-4"></div>
+
+<app-pagination 
+  [pages]="productResource.value()?.totalPages ?? 0"
+  [currentPage]="paginationService.currentPage()"
+/>
+
+<!-- product-form-modal -->
+<app-modal #productModal>
+  <product-form 
+    (onSuccess)="productModal.close(); productResource.reload()"
+    (onCancel)="productModal.close()" 
+  />
+</app-modal>

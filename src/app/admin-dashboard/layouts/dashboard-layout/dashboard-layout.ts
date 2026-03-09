@@ -1,7 +1,8 @@
-import { Component, effect, inject, signal } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { Router, RouterLink, RouterOutlet, RouterLinkActive, ActivatedRoute, RouteConfigLoadEnd, NavigationEnd } from '@angular/router';
-import { filter, map, startWith, tap, withLatestFrom } from 'rxjs';
+import { AuthService } from '@/auth/services/auth.service';
+import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Router, RouterLink, RouterOutlet, RouterLinkActive, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { filter, map, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -11,6 +12,7 @@ import { filter, map, startWith, tap, withLatestFrom } from 'rxjs';
 export class DashboardLayout {
   private router = inject(Router)
   private activatedRoute = inject(ActivatedRoute)
+  private authService = inject(AuthService)
 
   currentRouteTitle = toSignal(
     this.router.events.pipe(
@@ -29,8 +31,9 @@ export class DashboardLayout {
       startWith('Dashboard')
     )
   )
-  constructor() {
-    this.currentRouteTitle()
-  }
 
+  logout() {
+    this.authService.logout()
+    this.router.navigateByUrl('/')
+  }
 }
