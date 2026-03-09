@@ -1,7 +1,49 @@
 @import "tailwindcss";
- @plugin "daisyui" {
-   themes: light --default, dark --prefersdark, corporate;
- }
+@plugin "daisyui";
+@plugin "daisyui/theme" {
+  name: "hostal";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  /* Tonos Base (Fondo, tarjetas, bordes, texto) observados en tu imagen (limpios y neutros) */
+  --color-base-100: #ffffff; /* Cajas, tablas, sidebar */
+  --color-base-200: #f8fafc; /* Fondo general de la app */
+  --color-base-300: #e2e8f0; /* Bordes y hovers sutiles */
+  --color-base-content: #334155; /* Texto base oscuro (slate) */
+
+  /* El color Primario original y sus Variantes */
+  --color-primary: #5364f7;
+  --color-primary-content: #ffffff;
+  
+  --color-secondary: #7a8af9; /* Variante ligeramente más suave del primario */
+  --color-secondary-content: #ffffff;
+  
+  --color-accent: #3644d9; /* Variante más oscura y saturada del primario */
+  --color-accent-content: #ffffff;
+
+  /* Tonos Neutros y de Estado (Para iconos grises, botones de alerta) */
+  --color-neutral: #64748b; /* Gris azulado acorde a tu diseño */
+  --color-neutral-content: #ffffff;
+  
+  --color-info: #3b82f6; 
+  --color-info-content: #ffffff;
+  --color-success: #10b981;
+  --color-success-content: #ffffff;
+  --color-warning: #f59e0b;
+  --color-warning-content: #ffffff;
+  --color-error: #ef4444;
+  --color-error-content: #ffffff;
+
+  /* Estructura visual: Bordes moderadamente redondeados como en tus botones */
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --border: 1px;
+  
+  /* Quitar las sombras por completo */
+  --depth: 0;
+}
 
 @layer base {
   body {
