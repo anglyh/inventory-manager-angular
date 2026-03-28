@@ -1,0 +1,105 @@
+<div class="relative flex w-full flex-col gap-1">
+  <label
+    [attr.for]="controlId()"
+    class="mb-1 block text-sm font-medium text-base-content"
+    [class.text-xs]="hideLabelOnDesktop()"
+    [class.opacity-60]="hideLabelOnDesktop()"
+    [class.md:hidden]="hideLabelOnDesktop()"
+  >
+    Producto
+  </label>
+
+  <div class="relative">
+    <svg
+      class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral opacity-70"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+      />
+    </svg>
+    <input
+      #searchInput
+      [id]="controlId()"
+      type="text"
+      class="input input-bordered w-full bg-base-100 py-2 focus:border-primary focus:ring-2 focus:ring-primary/20"
+      placeholder="Busca un producto..."
+      [value]="inputValue()"
+      (input)="searchQuery.set(searchInput.value)"
+      (focus)="isDropdownOpen.set(true)"
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="dropdown-grid-wrapper" [class.active]="isDropdownOpen()">
+    <ul class="inner-list rounded-box border border-base-300 bg-base-100 shadow-xl">
+      @if (filteredProducts().length > 0) {
+        @for (product of filteredProducts(); track product.id) {
+          <li
+            class="product-item rounded-md p-2 hover:bg-base-200 focus:bg-base-300 focus:outline-none"
+            tabindex="0"
+            (mousedown)="onSelectProduct(product)"
+            (keydown.enter)="onSelectProduct(product)"
+          >
+            {{ product.name }}
+          </li>
+        }
+      } @else {
+        <li class="p-2 text-sm opacity-70">No existe ningún producto con ese nombre</li>
+      }
+    </ul>
+  </div>
+</div>
+
+<style>
+  label {
+    position: relative;
+  }
+
+  .dropdown-grid-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    position: absolute;
+    top: calc(100% + 4px);
+    width: 100%;
+    z-index: 50;
+
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      grid-template-rows 200ms ease-in-out,
+      opacity 200ms ease-in-out,
+      visibility 200ms ease-in-out;
+  }
+
+  .dropdown-grid-wrapper.active {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .inner-list {
+    min-height: 0;
+    overflow-y: auto;
+    max-height: 18rem;
+    margin: 0;
+    padding: 0;
+    transition: padding 200ms ease-in-out;
+  }
+
+  .dropdown-grid-wrapper.active .inner-list {
+    padding: 0.5rem;
+  }
+
+  .product-item {
+    cursor: pointer;
+    user-select: none;
+  }
+</style>

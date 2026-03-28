@@ -11,7 +11,7 @@ export interface Product {
   createdAt: Date;
 }
 
-export interface ProductWithStock extends Product{
+export interface ProductWithStock extends Product {
   stock: number;
   categoryName: string | null;
 }

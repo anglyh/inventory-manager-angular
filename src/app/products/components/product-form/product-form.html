@@ -29,7 +29,9 @@
       <div class="label">
         <span class="label-text font-medium text-base-content mb-1">Stock mínimo</span>
       </div>
-      <input type="number" placeholder="Ej. 10" class="input input-bordered w-full" formControlName="minStock" />
+      <label class="input input-bordered flex items-center gap-2">
+        <input type="number" placeholder="Ej. 10" class="grow" formControlName="minStock" />
+      </label>
     </label>
   </div>
 
@@ -46,11 +48,9 @@
     <div class="label">
       <span class="label-text font-medium text-base-content mb-1">Categoría</span>
     </div>
-    <select class="select select-bordered w-full text-base-content">
-      <!-- <option disabled selected>Seleccione una categoría</option> -->
-      <!-- Opción con tu ID de prueba -->
-      <option>Ninguna</option>
-      <option value="550e8400-e29b-41d4-a716-446655440000">Bebidas (Ejemplo)</option>
+    <select class="select select-bordered w-full text-base-content" formControlName="categoryId">
+      <option class="bg-base-200" disabled selected>Ninguna</option>
+      <option class="bg-base-200" value="550e8400-e29b-41d4-a716-446655440000">Bebidas (Ejemplo)</option>
     </select>
   </label>
 

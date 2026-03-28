@@ -1,11 +1,14 @@
-<div class="flex justify-between w-full mb-4">
-  <button class="btn btn-primary" (click)="purchaseModal.open()">
-    Registrar Compra
-  </button>
-</div>
-<!-- <product-table [products]="productResource.value()?.data ?? []" /> -->
+<div class="flex flex-col h-full">
+  <div class="flex justify-between w-full mb-4">
+    <button class="btn btn-primary" routerLink="/purchases/new">
+      Registrar Compra
+    </button>
+  </div>
 
-<div class="mb-4"></div>
+  <product-selector />
+</div>
+
+<!-- <product-table [products]="purchaseResource.value()?.data ?? []" /> -->
 
 <!-- <app-pagination 
   [pages]="productResource.value()?.totalPages ?? 0"
@@ -13,9 +16,3 @@
 /> -->
 
 <!-- product-form-modal -->
-<app-modal #purchaseModal>
-  <purchase-form
-    (onSuccess)="purchaseModal.close(); purchaseResource.reload()"
-    (onCancel)="purchaseModal.close()" 
-  />
-</app-modal>
