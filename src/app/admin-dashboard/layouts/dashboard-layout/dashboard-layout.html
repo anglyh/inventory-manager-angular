@@ -1,6 +1,6 @@
 <div class="drawer lg:drawer-open">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content grid grid-rows-[auto_1fr]">
+  <div class="drawer-content grid grid-rows-[auto_1fr] min-w-0">
     <!-- Navbar -->
     <nav class="navbar w-full bg-base-100 border-b border-slate-300 justify-between px-4 sticky top-0 z-10">
       <div class="flex items-center">
@@ -29,7 +29,7 @@
       </button>
     </nav>
     <!-- Page content here -->
-    <div class="p-4">
+    <div class="p-4 bg-base-200 w-full min-w-0">
       <router-outlet />
     </div>
   </div>
@@ -65,7 +65,7 @@
         <li>
           <a 
             [routerLink]="'/purchases'"
-            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-secondary/90 hover:text-primary-content"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-primary/90 hover:text-primary-content"
             data-tip="Compras" 
             routerLinkActive="bg-primary text-primary-content"
             [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }"
@@ -83,9 +83,9 @@
         <li>
           <a 
             [routerLink]="'/sales'"
-            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-secondary/10"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-primary/90 hover:text-primary-content"
             [attr.data-tip]="'Ventas'" 
-            routerLinkActive="bg-secondary/20"
+            routerLinkActive="bg-primary text-primary-content"
             [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }"
           >
             <!-- Ventas icon -->

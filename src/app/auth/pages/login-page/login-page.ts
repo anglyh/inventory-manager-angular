@@ -3,31 +3,33 @@ import { Router, RouterLink } from "@angular/router";
 import { AuthService } from '../../services/auth.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormUtils } from '@/utils/form-utils';
+import { FormErrorLabel } from 'src/app/shared/components/form-error-label/form-error-label';
 
 @Component({
   selector: 'app-login-page',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, FormErrorLabel],
   templateUrl: './login-page.html',
 })
 export class LoginPage {
   private fb = inject(FormBuilder);
   hasError = signal(false);
-
   
   private router = inject(Router);
   private authService = inject(AuthService);
+  formUtils = FormUtils
   
   toggleIcon = ViewChild('toggleIcon');
   passwordInput = ViewChild('passwordInput')
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.pattern(FormUtils.emailPattern)]],
-    password: ['', [Validators.required, Validators.minLength(6)]]
+    password: ['', [Validators.required, Validators.minLength(8)]]
   })
 
   onSubmit(): void {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
+      return;
     }
 
     const { email, password } = this.loginForm.value;

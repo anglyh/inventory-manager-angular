@@ -1,4 +1,4 @@
-import { FormArray, FormControl, FormGroup, ValidationErrors } from '@angular/forms';
+import { AbstractControl, FormArray, FormGroup, ValidationErrors } from '@angular/forms';
 
 export class FormUtils {
   static namePattern = '([a-zA-Z]+) ([a-zA-Z]+)';
@@ -23,6 +23,12 @@ export class FormUtils {
 
         case 'emailTaken':
           return `El correo electrónico ya está siendo usado por otro usuario`;
+
+        case 'pattern':
+          return `El formato ingresado no es válido`;
+
+        case 'notEqual':
+          return `Las contraseñas no coinciden`;
 
         default:
           console.log(`Error de validacion no controlado ${key}`)
@@ -63,11 +69,13 @@ export class FormUtils {
   }
 
   static isFieldOneEqualFieldTwo(field1: string, field2: string) {
-    return (formGroup: FormGroup) => {
-      const field1Value = formGroup.get(field1)?.value;
-      const field2Value = formGroup.get(field2)?.value;
+    return (control: AbstractControl) => {
+      const field1Value = control.get(field1)?.value;
+      const field2Value = control.get(field2)?.value;
 
-      return field1Value === field2Value ? null : { passwordsNotEqual: true }
+      return field1Value === field2Value ? null : { notEqual: true };
     }
   }
+
+  // static isValidProduct(product: Product)
 }

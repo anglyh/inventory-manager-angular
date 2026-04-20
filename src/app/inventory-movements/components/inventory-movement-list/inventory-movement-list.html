@@ -1,0 +1,103 @@
+
+@for (group of groupedMovements(); track group.date) {
+  <span 
+    class="block my-4 font-bold text-xl"
+    [class.mt-0]="$index === 0"
+  >
+    {{ group.date | date: 'fullDate'}}
+  </span>
+
+  <div class="overflow-hidden rounded-3xl flex flex-col border border-slate-100">
+    @for (movement of group.items; track movement.id; let i = $index) {
+      <details 
+        class="collapse bg-base-100 group rounded-none border border-slate-100"
+      >
+        <summary class="p-4 cursor-pointer select-none font-medium flex group-open:border-b-2 group-open:border-b-slate-100 hover:bg-slate-50">
+          <div class="flex items-center gap-4 grow min-w-0">
+            <div class="flex items-center justify-center p-2 bg-slate-100 rounded-full group-open:bg-black shrink-0">
+              <ng-icon 
+                name="tablerPackage" 
+                strokeWidth="1.5" 
+                size="22" 
+                color="grey" 
+                class="group-open:text-white! shrink-0"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1 min-w-0">
+              <div class="truncate">
+                {{ getProductNames(movement.items)}}
+              </div>
+              <div class="flex gap-2 items-center">
+                <ng-icon name="tablerClock" color="grey"/>
+                <span class="font-light text-sm">{{ movement.createdAt | date: 'shortTime' }}</span>
+              </div>
+            </div>
+          </div>
+      
+          <div class="flex items-center gap-2 shrink-0">
+            <span>S/. {{ movement.totalAmount }}</span>
+            <ng-icon name="tablerChevronDown" size="22" class="transition-transform duration-200 group-open:rotate-180" />
+          </div>
+        </summary>
+  
+        <div class="collapse-content text-sm pl-4 py-6 group-open:bg-[#fbfbfd] flex flex-col">
+          <div 
+            class="flex flex-wrap gap-8 items-start"
+            [class.mb-6]="movement.entityName || movement.notes"
+          >
+            @if (movement.entityName) {
+              <div class="flex gap-2 items-start">
+                <ng-icon name="tablerBuilding" color="grey" size="16" class="shrink-0 mt-1" />
+                <div class="flex flex-col">
+                  <span class="text-gray-500">Nombre</span>
+                  <span class="font-light">{{ movement.entityName }}</span>
+                </div>
+              </div>
+            }
+            @if (movement.notes) {
+              <div class="flex gap-2 items-start">
+                <ng-icon name="tablerNotes" color="grey" size="16" class="shrink-0 mt-1" />
+                <div class="flex flex-col min-w-0">
+                  <span class="text-gray-500">Notas</span>
+                  <span class="font-light">{{ movement.notes }}</span>
+                </div>
+              </div>
+            }
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <ng-icon name="tablerPackage" color="grey" size="16" class="shrink-0" />
+              <span class="text-xs font-semibold uppercase tracking-wide text-gray-500">Productos</span>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              @for (item of movement.items; track item.productId) {
+                <div class="rounded-xl border border-slate-100 bg-white p-4 flex-1">
+                  <div class="flex justify-between items-start gap-3">
+                    <span class="font-semibold text-slate-900">{{ item.productName }}</span>
+                    <span class="font-semibold text-slate-900 tabular-nums shrink-0">
+                      S/. {{ item.quantity * item.unitPrice | number:'1.2-2' }}
+                    </span>
+                  </div>
+                  <div class="mt-2">
+                    <span class="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600 tabular-nums">
+                      {{ item.quantity }} x S/. {{ item.unitPrice | number:'1.2-2' }}
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+  
+        </div>
+      </details>
+    }
+  </div>
+
+  <div class="mt-4 mb-6 flex justify-end">
+    <div class="flex items-baseline gap-3 rounded-2xl bg-black px-6 py-3 text-white shadow-md">
+      <span class="text-xs font-medium text-slate-400 uppercase tracking-widest">Total</span>
+      <span class="text-lg font-bold tabular-nums tracking-wide">S/. {{ group.totalAmount.toFixed(2) }}</span>
+    </div>
+  </div>
+}

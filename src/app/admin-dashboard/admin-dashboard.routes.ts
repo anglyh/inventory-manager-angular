@@ -3,7 +3,9 @@ import { ProductsPage } from './pages/products-page/products-page';
 import { PurchasesPage } from './pages/purchases-page/purchases-page';
 import { DashboardLayout } from './layouts/dashboard-layout/dashboard-layout';
 import { AuthenticatedGuard } from '@/auth/guards/authenticated.guard';
-import { NewPurchaseFormPage } from './pages/new-purchase-form-page/new-purchase-form-page';
+import { NewPurchasePage } from './pages/new-purchase-page/new-purchase-page';
+import { SalesPage } from './pages/sales-page/sales-page';
+import { NewSalePage } from './pages/new-sale-page/new-sale-page';
 
 const adminDashboardRoutes: Routes = [
   {
@@ -21,16 +23,26 @@ const adminDashboardRoutes: Routes = [
       {
         path: 'purchases/new',
         title: 'Nueva Compra',
-        component: NewPurchaseFormPage
+        component: NewPurchasePage
       },
       {
         path: 'purchases',
         title: 'Compras',
         component: PurchasesPage
       },
+      // {
+      //   path: 'purchases/:id',
+      //   component: PurchasesPage
+      // },
       {
-        path: 'purchases/:id',
-        component: PurchasesPage
+        path: 'sales/new',
+        title: 'Nueva Venta',
+        component: NewSalePage
+      },
+      {
+        path: 'sales',
+        title: 'Ventas',
+        component: SalesPage
       },
       {
         path: '**',

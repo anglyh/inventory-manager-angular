@@ -20,6 +20,9 @@
           </svg>
           <input type="email" placeholder="Correo electrónico" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500" formControlName="email">
         </div>
+        @if (formUtils.isInvalidField(loginForm, 'email')) {
+          <app-form-error-label [control]="loginForm.get('email')!" />
+        }
       </div>
 
       <!-- Password Input -->
@@ -40,7 +43,16 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
           </svg>
         </div>
+        @if (formUtils.isInvalidField(loginForm, 'password')) {
+          <app-form-error-label [control]="loginForm.get('password')!" />
+        }
       </div>
+
+      @if (hasError()) {
+        <div class="mb-4 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-medium">
+          Correo electrónico o contraseña incorrectos.
+        </div>
+      }
 
       <!-- Sign Up Button -->
       <button class="btn btn-primary w-full font-semibold rounded-full transition">

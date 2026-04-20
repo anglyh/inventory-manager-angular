@@ -1,15 +1,27 @@
-import { Component, ElementRef, input, viewChild } from '@angular/core';
+import { Component, effect, ElementRef, input, model, output, SimpleChanges, viewChild } from '@angular/core';
 
 @Component({
   selector: 'app-modal',
   imports: [],
   templateUrl: './modal.html',
 })
-export class Modal { 
-  // Referencia nativa al <dialog>
-  dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');
+export class Modal {
+  /** Se emite cuando el dialog termina de cerrarse (backdrop, ESC o código). */
+  isOpen = input(false);
+  closed = output<void>();
+  private dialogRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');
 
-  // Exponemos métodos que el padre puede llamar
+  modalEffect = effect(() => {
+    const dialog = this.dialogRef()?.nativeElement;
+    if (!dialog) return;
+
+    if (this.isOpen()) {
+      dialog.showModal()
+    } else {
+      dialog.close()
+    }
+  })
+
   open() {
     this.dialogRef()?.nativeElement.showModal();
   }

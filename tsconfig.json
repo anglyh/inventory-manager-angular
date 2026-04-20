@@ -4,15 +4,15 @@
   "compileOnSave": false,
   "compilerOptions": {
     "strict": true,
-    "baseUrl": "./",
     "paths": {
+      "*": ["./*"],
       "@/*": ["./src/app/*"],
       "@auth/*": ["./src/app/auth/*"],
       "@products/*": ["./src/app/products/*"],
       "@sales/*": ["./src/app/sales/*"],
-      "@purchases/*": ["./src/app/purchases/*"],
+      "@inventory-movements/*": ["./src/app/inventory-movements/*"],
       "@utils/*": ["./src/app/utils/*"],
-      "@environments/*": ["./src/environments/*"]
+      "@environments/*": ["./src/environments/*"],
     },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,

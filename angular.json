@@ -61,6 +61,10 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "liveReload": true,
+            "hmr": false
+          },
           "configurations": {
             "production": {
               "buildTarget": "frontend:build:production"

@@ -1,29 +1,61 @@
-import { PurchaseService } from '@/purchases/services/purchase.service';
-import { PaginationService } from '@/shared/components/pagination/pagination.service';
-import { Component, inject, signal } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ProductSelector } from "@/purchases/components/product-selector/product-selector";
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { InventoryMovementService } from 'src/app/inventory-movements/services/inventory-movement.service';
+import { InventoryMovementList } from "src/app/inventory-movements/components/inventory-movement-list/inventory-movement-list";
+import { InventoryMovement } from 'src/app/inventory-movements/interfaces/inventory-movement.interface';
+import { finalize } from 'rxjs';
+import { InfiniteScrollDirective } from '@/shared/directives/infinite-scroll.directive';
 
 @Component({
   selector: 'app-purchases-page',
-  imports: [RouterLink, ProductSelector],
+  imports: [RouterLink, ReactiveFormsModule, InventoryMovementList, InfiniteScrollDirective],
   templateUrl: './purchases-page.html',
 })
-export class PurchasesPage {
-  private purchaseService = inject(PurchaseService)
-  paginationService = inject(PaginationService)
-  activatedRoute = inject(ActivatedRoute)
+export class PurchasesPage implements OnInit {
+  #movementService = inject(InventoryMovementService)
 
-  purchasesPerPage = signal(12);
+  movements = signal<InventoryMovement[]>([]);
+  nextCursor = signal<{ cursorId: string; cursorDate: string } | null>(null)
+  isLoading = signal(false);
+  hasNextPage = signal(true)
+  private readonly LIMIT = 12;
 
-  purchaseResource = rxResource({
-    params: () => ({
-      page: this.paginationService.currentPage(),
-      limit: this.purchasesPerPage(),
-    }),
-    stream: ({ params }) => {
-      return this.purchaseService.getPurchases()
-    }
-  })
+  ngOnInit(): void {
+    this.loadMore()
+  }
+
+  loadMore(): void {
+    if (this.isLoading() || !this.hasNextPage()) return;
+
+    this.isLoading.set(true);
+
+    this.#movementService.getEntries({ 
+      cursorId: this.nextCursor()?.cursorId,
+      cursorDate: this.nextCursor()?.cursorDate,
+      limit: this.LIMIT
+    })
+      .pipe(
+        finalize(() => this.isLoading.set(false))
+      )
+      .subscribe({
+        next: (response) => {
+          this.movements.update(prev => [...prev, ...response.data]);
+          
+          if (response.nextCursor) {
+            this.nextCursor.set({ 
+              cursorDate: response.nextCursor.cursorDate, 
+              cursorId: response.nextCursor.cursorId 
+            });
+          } else {
+            this.nextCursor.set(null);
+            this.hasNextPage.set(false);
+          }
+        },
+        error: (err) => {
+          console.error('Error cargando compras', err)
+        }
+      })
+  }
+
 }

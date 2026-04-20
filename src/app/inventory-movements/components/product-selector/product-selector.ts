@@ -24,14 +24,13 @@ export class ProductSelector {
   dropdown = viewChild('dropdown');
   isDropdownOpen = signal(false);
   inputValue = signal('')
-  searchQuery = signal('')
+  lastSelectedName = signal('')
 
   /** Id único por fila cuando hay varios selectores en el mismo formulario. */
   controlId = input('product-input');
-  /** Oculta la etiqueta en desktop cuando ya existe cabecera de columna tipo tabla. */
-  hideLabelOnDesktop = input(false);
 
-  selectedProduct = output<Product>();
+  selectedProduct = output<Product | null>();
+  selectionCleared = output();
 
   constructor() {
     fromEvent(this.document, 'click')
@@ -53,7 +52,7 @@ export class ProductSelector {
 
   filteredProducts = computed(() => {
     const allProducts = this.productsListResource.value() || [];
-    const cleanQuery = removeAccents(this.searchQuery())
+    const cleanQuery = removeAccents(this.inputValue())
 
     if (!cleanQuery) return allProducts;
 
@@ -64,9 +63,23 @@ export class ProductSelector {
   })
 
   onSelectProduct(product: Product) {
+    this.lastSelectedName.set(product.name)
     this.selectedProduct.emit(product)
     this.inputValue.set(product.name)
     this.isDropdownOpen.set(false)
+  }
+
+  onInput(value: string) {
+    this.inputValue.set(value)
+
+    if (this.inputValue().toLowerCase() !== this.lastSelectedName().toLowerCase()) {
+      this.lastSelectedName.set('')
+      this.selectedProduct.emit(null)
+    }
+  }
+
+  clearInputValue() {
+    this.inputValue.set('')
   }
 
   filterProducts(productName: string) {

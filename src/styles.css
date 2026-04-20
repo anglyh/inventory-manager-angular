@@ -6,42 +6,46 @@
   prefersdark: false;
   color-scheme: light;
 
-  /* Tonos Base (Fondo, tarjetas, bordes, texto) observados en tu imagen (limpios y neutros) */
-  --color-base-100: #ffffff; /* Cajas, tablas, sidebar */
-  --color-base-200: #f8fafc; /* Fondo general de la app */
-  --color-base-300: #e2e8f0; /* Bordes y hovers sutiles */
-  --color-base-content: #334155; /* Texto base oscuro (slate) */
+  /* Tonos Base: Fondos limpios y neutros para tarjetas y la app */
+  --color-base-100: #ffffff; /* Cajas, tablas, barra lateral */
+  --color-base-200: #f3f4f6; /* Fondo general ligeramente gris para contrastar con las tarjetas */
+  --color-base-300: #e5e7eb; /* Bordes suaves y divisores de tabla */
+  --color-base-content: #111827; /* Texto principal oscuro y legible */
 
-  /* El color Primario original y sus Variantes */
-  --color-primary: #5364f7;
+  /* Colores Principales: Basado en el botón "+ Add New Product" */
+  --color-primary: #171717; /* Negro/Carbón para acciones primarias */
   --color-primary-content: #ffffff;
   
-  --color-secondary: #7a8af9; /* Variante ligeramente más suave del primario */
-  --color-secondary-content: #ffffff;
+  --color-secondary: #ffffff; /* Botones secundarios estilo "Export" o "Filter" */
+  --color-secondary-content: #171717;
   
-  --color-accent: #3644d9; /* Variante más oscura y saturada del primario */
-  --color-accent-content: #ffffff;
+  --color-accent: #f3f4f6; /* Grises muy sutiles para hovers */
+  --color-accent-content: #111827;
 
-  /* Tonos Neutros y de Estado (Para iconos grises, botones de alerta) */
-  --color-neutral: #64748b; /* Gris azulado acorde a tu diseño */
+  /* Neutros: Para iconos, subtítulos y texto secundario */
+  --color-neutral: #6b7280; 
   --color-neutral-content: #ffffff;
   
-  --color-info: #3b82f6; 
-  --color-info-content: #ffffff;
-  --color-success: #10b981;
-  --color-success-content: #ffffff;
-  --color-warning: #f59e0b;
-  --color-warning-content: #ffffff;
-  --color-error: #ef4444;
-  --color-error-content: #ffffff;
+  /* Estados: Ajustados al estilo "Pastel" de la tabla para los badges */
+  --color-info: #eff6ff;
+  --color-info-content: #1d4ed8;
 
-  /* Estructura visual: Bordes moderadamente redondeados como en tus botones */
+  --color-success: #dcfce7; /* Fondo verde claro ("In Stock") */
+  --color-success-content: #166534; /* Texto verde oscuro */
+
+  --color-warning: #fef9c3; /* Fondo amarillo claro ("Restock") */
+  --color-warning-content: #854d0e; /* Texto amarillo oscuro */
+
+  --color-error: #fee2e2; /* Fondo rojo claro ("Out of Stock") */
+  --color-error-content: #991b1b; /* Texto rojo oscuro */
+
+  /* Estructura visual */
   --radius-selector: 0.5rem;
   --radius-field: 0.5rem;
   --radius-box: 0.75rem;
   --border: 1px;
   
-  /* Quitar las sombras por completo */
+  /* Sin sombras para mantener el diseño plano y limpio */
   --depth: 0;
 }
 

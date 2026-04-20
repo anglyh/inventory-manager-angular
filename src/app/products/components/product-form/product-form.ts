@@ -1,6 +1,7 @@
 import { ProductService } from '@/products/services/product.service';
-import { Component, inject, output } from '@angular/core';
+import { Component, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ProductUpsertBody, ProductWithStock } from '@/products/interfaces/product.interface';
 
 @Component({
   selector: 'product-form',
@@ -14,26 +15,43 @@ export class ProductForm {
   onSuccess = output();
   onCancel = output();
 
-
+  productInitialData = input<ProductWithStock | null>(null)
   productForm = this.fb.group({
     name: ['', [Validators.required]],
-    salePrice: ['', [Validators.min(0), Validators.required]],
+    salePrice: [0, [Validators.min(0), Validators.required]],
     minStock: [0, [Validators.min(0), Validators.required]],
-    // barcode: ['']
+    categoryId: [''],
+  })
+
+  formEffect = effect(() => {
+    const salePrice = this.productInitialData()?.salePrice;
+    this.productForm.patchValue({
+      name: this.productInitialData()?.name ?? '',
+      salePrice: salePrice != null ? Number(salePrice) : 0,
+      minStock: this.productInitialData()?.minStock ?? 0,
+      categoryId: this.productInitialData()?.categoryId ?? null
+    })
   })
 
   onSubmit() {
     if (this.productForm.invalid) return
 
-    const { name, salePrice, minStock } = this.productForm.value
-    if (!name || !salePrice || !minStock) return
+    const { name, salePrice, minStock, categoryId } = this.productForm.value
+    if (name == null || salePrice == null || minStock == null) return
 
-    this.productService.createProduct({
+    const payload: ProductUpsertBody = {
       name,
       salePrice,
-      minStock
-    }).subscribe(() => {
-      this.productForm.reset()
+      minStock,
+      categoryId: categoryId ?? null,
+    }
+
+    const id = this.productInitialData()?.id
+    const request$ = id
+      ? this.productService.updateProduct(id, payload)
+      : this.productService.createProduct(payload)
+
+    request$.subscribe(() => {
       this.onSuccess.emit()
     })
   }

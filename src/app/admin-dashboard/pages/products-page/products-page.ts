@@ -9,10 +9,14 @@ import { map } from 'rxjs';
 import { ProductForm } from "@/products/components/product-form/product-form";
 import { Modal } from "@/shared/components/modal/modal";
 import { SearchProduct } from "@/products/components/search-product-form/search-product-form";
+import { ProductWithStock } from '@/products/interfaces/product.interface';
+import { NgIcon, provideIcons } from "@ng-icons/core";
+import { tablerPlus } from '@ng-icons/tabler-icons';
 
 @Component({
   selector: 'app-products-page',
-  imports: [ProductTable, Pagination, ProductForm, Modal, SearchProduct],
+  imports: [ProductTable, Pagination, ProductForm, Modal, SearchProduct, NgIcon],
+  viewProviders: [provideIcons({ tablerPlus })],
   templateUrl: './products-page.html',
 })
 export class ProductsPage {
@@ -20,24 +24,26 @@ export class ProductsPage {
   paginationService = inject(PaginationService)
   activatedRoute = inject(ActivatedRoute)
 
+  isModalOpen = signal(false);
+
   searchTerm = toSignal(
     this.activatedRoute.queryParamMap.pipe(
       map(params => params.get('searchTerm') ?? '')
     ),
-    {
-      initialValue: ''
-    }
+    { initialValue: '' }
   )
 
   productsPerPage = signal(12);
+  selectedProduct = signal<ProductWithStock | null>(null);
+  // productModal = viewChild<Modal>('productModal');
 
   productResource = rxResource({
-    params: () => ({ 
+    params: () => ({
       page: this.paginationService.currentPage(),
       limit: this.productsPerPage(),
       searchTerm: this.searchTerm()
     }),
-    stream: ({ params }) => { 
+    stream: ({ params }) => {
       return this.productService.getProducts({
         page: params.page,
         limit: params.limit,
@@ -46,4 +52,13 @@ export class ProductsPage {
     }
   })
 
+  openModal(product: ProductWithStock | null = null) {
+    this.selectedProduct.set(product);
+    this.isModalOpen.set(true)
+  }
+  
+  closeModal() {
+    this.isModalOpen.set(false)
+    this.productResource.reload()
+  }
 }

@@ -1,0 +1,8 @@
+@if (state().visible) {
+  <div 
+    class="fixed bottom-10 right-10 bg-green-300 flex items-center justify-center z-50 p-4 rounded-xl text-white"
+    [class.bg-red-400]="state().type === 'error'"
+  >
+    <p class="font-medium text-base">{{ state().message }}</p>
+  </div>
+}

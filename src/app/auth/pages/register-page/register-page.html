@@ -1,7 +1,7 @@
 <div class="min-h-screen flex bg-gray-50">
   <!-- Left Column - Register Form -->
   <div class="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-8 lg:px-12">
-    <div class="max-w-md mx-auto w-full">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="max-w-md mx-auto w-full">
       <!-- Logo/Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Bienvenido</h1>
@@ -14,8 +14,11 @@
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.732 6.879 1.804M12 7a4 4 0 100 8 4 4 0 000-8z" />
           </svg>
-          <input type="text" placeholder="Nombre completo" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
+          <input formControlName="name" type="text" placeholder="Nombre completo" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
         </div>
+        @if (formUtils.isInvalidField(registerForm, 'name')) {
+          <app-form-error-label [control]="registerForm.get('name')!" />
+        }
       </div>
 
       <!-- Email Input -->
@@ -24,8 +27,11 @@
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
           </svg>
-          <input type="email" placeholder="Correo electrónico" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
+          <input formControlName="email" type="email" placeholder="Correo electrónico" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
         </div>
+        @if (formUtils.isInvalidField(registerForm, 'email')) {
+          <app-form-error-label [control]="registerForm.get('email')!" />
+        }
       </div>
 
       <!-- Password Input -->
@@ -34,8 +40,11 @@
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
-          <input type="password" placeholder="Contraseña" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
+          <input formControlName="password" type="password" placeholder="Contraseña" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
         </div>
+        @if (formUtils.isInvalidField(registerForm, 'password')) {
+          <app-form-error-label [control]="registerForm.get('password')!" />
+        }
       </div>
 
       <!-- Confirm Password Input -->
@@ -44,12 +53,18 @@
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
-          <input type="password" placeholder="Confirmar contraseña" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
+          <input formControlName="confirmPassword" type="password" placeholder="Confirmar contraseña" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
         </div>
+
+        @if (formUtils.isInvalidField(registerForm, 'confirmPassword')) {
+          <app-form-error-label [control]="registerForm.get('confirmPassword')!" />
+        } @else if (registerForm.hasError('notEqual') && registerForm.get('confirmPassword')?.touched) {
+          <span class="text-red-500 text-xs ml-3 mt-1">Las contraseñas no coinciden</span>
+        }
       </div>
 
       <!-- Register Button -->
-      <button class="btn btn-primary w-full font-semibold rounded-full transition">
+      <button type="submit" class="btn btn-primary w-full font-semibold rounded-full transition">
         Registrarse
       </button>
 
@@ -57,7 +72,7 @@
       <p class="text-center mt-6 text-gray-600 text-sm">
         ¿Ya tienes una cuenta? <a routerLink="/auth/login" class="text-primary hover:text-sky-800 font-semibold">Iniciar sesión</a>
       </p>
-    </div>
+    </form>
   </div>
 
   <!-- Right Column - Image/Content (Hidden on mobile) -->

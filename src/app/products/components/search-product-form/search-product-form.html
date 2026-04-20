@@ -1,9 +1,23 @@
-<label class="input input-bordered">
+<div class="relative w-full group">
   <input 
+    class="input input-bordered w-full pr-10 focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-all duration-200"
     type="text"
+    id="productSearchInput"
     placeholder="Ingresa el nombre de un producto"
-    class="grow"
-    (keydown.enter)="search(searchInput.value)"
-    #searchInput
+    [value]="searchTerm()"
+    (input)="searchTerm.set(searchInputRef.value)"
+    (keydown.enter)="search(searchInputRef.value)"
+    #searchInputRef 
   />
-</label>
+
+  @if (searchTerm()) {
+    <button 
+      type="button"
+      class="absolute inset-y-0 right-0 flex items-center pr-3 text-base-400 hover:text-slate-800 transition-colors cursor-pointer"
+      (click)="searchTerm.set(''); searchInputRef.value = ''; searchInputRef.focus(); search('')"
+      aria-label="Limpiar búsqueda"
+    >
+      <ng-icon name="tablerX" class="text-xl" />
+    </button>
+  }
+</div>
