@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, inject, input, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ProductSelector } from "../product-selector/product-selector";
 import { FormErrorLabel } from "@/shared/components/form-error-label/form-error-label";
@@ -8,6 +8,8 @@ import { InventoryMovementService } from '../../services/inventory-movement.serv
 import { CreateInventoryMovement } from '../../interfaces/inventory-movement.interface';
 import { Product } from '@/products/interfaces/product.interface';
 import { GlobalNotificationService } from 'src/app/shared/components/global-notification/global-notification.service';
+import { mapApiError } from 'src/app/api/error-mapper';
+import { extractApiError } from 'src/app/api/extract-api-error';
 
 @Component({
   selector: 'movement-form',
@@ -113,9 +115,13 @@ export class MovementForm {
           }
         `)
       },
-      error: (error: any) => {
-        console.error(error)
-        this.#globalNotificationService.show(error.error.message, 'error')
+      error: (error) => {
+        const apiError = extractApiError(error)
+        const mapped = mapApiError(apiError)
+
+        if (mapped.toast) {
+          this.#globalNotificationService.show(mapped.toast, 'error')
+        }
       },
     })
   }

@@ -15,7 +15,7 @@ export class GlobalNotificationService {
     message: '',
     type: 'success'
   })
-
+ 
   state$ = this.#state.asReadonly();
 
   show(message: string, type: NotificationType = 'success', duration = 4000) {
