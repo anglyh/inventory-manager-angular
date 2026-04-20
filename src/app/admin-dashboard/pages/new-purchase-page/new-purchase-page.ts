@@ -1,10 +1,10 @@
 import { Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MovementForm } from "@inventory-movements/components/movement-form/movement-form";
 
 @Component({
   selector: 'new-purchase-page',
-  imports: [MovementForm, RouterLink],
+  imports: [MovementForm],
   templateUrl: './new-purchase-page.html',
 })
 export class NewPurchasePage {
