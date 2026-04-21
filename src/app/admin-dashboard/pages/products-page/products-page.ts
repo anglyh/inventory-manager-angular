@@ -34,8 +34,28 @@ export class ProductsPage {
   )
 
   productsPerPage = signal(12);
-  selectedProduct = signal<ProductWithStock | null>(null);
+  selectedProduct = signal<Partial<ProductWithStock>>({
+    name: '',
+    salePrice: '',
+    minStock: 0,
+    categoryId: ''
+  });
   // productModal = viewChild<Modal>('productModal');
+
+  openModal(product: Partial<ProductWithStock>) {
+    this.selectedProduct.set(product);
+    this.isModalOpen.set(true)
+  }
+  
+  closeModal() {
+    this.selectedProduct.set({
+      name: '',
+      salePrice: '',
+      minStock: 0,
+      categoryId: ''
+    })
+    this.isModalOpen.set(false)
+  }
 
   productResource = rxResource({
     params: () => ({
@@ -51,14 +71,4 @@ export class ProductsPage {
       })
     }
   })
-
-  openModal(product: ProductWithStock | null = null) {
-    this.selectedProduct.set(product);
-    this.isModalOpen.set(true)
-  }
-  
-  closeModal() {
-    this.isModalOpen.set(false)
-    this.productResource.reload()
-  }
 }

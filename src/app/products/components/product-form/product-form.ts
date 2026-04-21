@@ -15,7 +15,7 @@ export class ProductForm {
   onSuccess = output();
   onCancel = output();
 
-  productInitialData = input<ProductWithStock | null>(null)
+  productInitialData = input<Partial<ProductWithStock> | null>(null)
   productForm = this.fb.group({
     name: ['', [Validators.required]],
     salePrice: [0, [Validators.min(0), Validators.required]],
