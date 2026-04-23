@@ -30,13 +30,13 @@
 
   <div class="dropdown-grid-wrapper" [class.active]="isDropdownOpen()">
     <ul class="inner-list rounded-box border border-base-300 bg-base-100 shadow-xl">
-      @if (filteredProducts().length > 0) {
-        @for (product of filteredProducts(); track product.id) {
+      @if (filteredOptions().length > 0) {
+        @for (product of filteredOptions(); track product.id) {
           <li
             class="product-item rounded-md p-2 hover:bg-base-200 focus:bg-base-300 focus:outline-none"
             tabindex="0"
-            (mousedown)="onSelectProduct(product)"
-            (keydown.enter)="onSelectProduct(product)"
+            (mousedown)="onSelectOption(product)"
+            (keydown.enter)="onSelectOption(product)"
           >
             {{ product.name }}
           </li>

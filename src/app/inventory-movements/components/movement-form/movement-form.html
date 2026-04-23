@@ -96,9 +96,10 @@
             </div>
 
             <div class="relative w-full min-w-0 flex-2">
-              <product-selector
+              <app-option-selector
+                [items]="productsListOptions()"
                 [controlId]="'purchase-product-' + $index"
-                (selectedProduct)="onSelectProduct($event, $index)"
+                (selectedOption)="onSelectProduct($event, $index)"
                 (selectionCleared)="onClearProduct($index)"
               />
             </div>

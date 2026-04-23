@@ -1,8 +1,8 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, inject, input, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { ProductSelector } from "../product-selector/product-selector";
+import { OptionSelector } from "../../../shared/components/option-selector/option-selector";
 import { FormErrorLabel } from "@/shared/components/form-error-label/form-error-label";
 import { InventoryMovementService } from '../../services/inventory-movement.service';
 import { CreateInventoryMovement } from '../../interfaces/inventory-movement.interface';
@@ -10,10 +10,12 @@ import { Product } from '@/products/interfaces/product.interface';
 import { GlobalNotificationService } from 'src/app/shared/components/global-notification/global-notification.service';
 import { mapApiError } from 'src/app/api/error-mapper';
 import { extractApiError } from 'src/app/api/extract-api-error';
+import { ProductService } from 'src/app/products/services/product.service';
+import { rxResource } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'movement-form',
-  imports: [ReactiveFormsModule, ProductSelector, DecimalPipe, RouterLink, FormErrorLabel],
+  imports: [ReactiveFormsModule, OptionSelector, DecimalPipe, RouterLink, FormErrorLabel, OptionSelector],
   templateUrl: './movement-form.html',
 })
 export class MovementForm {
@@ -21,9 +23,19 @@ export class MovementForm {
 
   private fb = inject(FormBuilder)
   private movementService = inject(InventoryMovementService)
+  private productService = inject(ProductService);
   private router = inject(Router)
   #globalNotificationService = inject(GlobalNotificationService)
 
+  productsResource = rxResource({
+    params: () => ({}),
+    stream: () => {
+      return this.productService.listProductOptions()
+    }
+  })
+
+  productsListOptions = computed(() => this.productsResource.value() ?? [])
+  
   movementForm = this.fb.group({
     entityName: [''],
     notes: [''],
@@ -77,7 +89,7 @@ export class MovementForm {
 
   onClearProduct(index: number) {
     const itemGroup = this.items.at(index) as FormGroup;
-    itemGroup.patchValue({})
+    itemGroup.patchValue({ productId: '', productName: '' })
   }
 
   onSubmit() {
@@ -147,3 +159,4 @@ export class MovementForm {
   }
 
 }
+

@@ -1,8 +1,6 @@
 <dialog #dialogRef class="modal" (close)="closed.emit()">
-  <div class="modal-box min-h-[400px] max-h-[80vh] overflow-y-auto">
-    @if (isOpen()) {
-      <ng-content />
-    }
+  <div class="modal-box max-h-[80vh] overflow-y-auto">
+    <ng-content />
   </div>
   <form method="dialog" class="modal-backdrop">
     <button></button>

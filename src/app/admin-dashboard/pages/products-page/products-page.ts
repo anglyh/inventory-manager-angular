@@ -46,14 +46,17 @@ export class ProductsPage {
     this.selectedProduct.set(product);
     this.isModalOpen.set(true)
   }
-  
-  closeModal() {
-    this.selectedProduct.set({
+
+  openNewProduct() {
+    this.openModal({
       name: '',
       salePrice: '',
       minStock: 0,
       categoryId: ''
     })
+  }
+
+  closeModal() {
     this.isModalOpen.set(false)
   }
 
