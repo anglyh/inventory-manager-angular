@@ -37,7 +37,7 @@ export class ProductsPage {
   selectedProduct = signal<Partial<ProductWithStock>>({
     name: '',
     salePrice: '',
-    minStock: 0,
+    minStock: 10,
     categoryId: ''
   });
   // productModal = viewChild<Modal>('productModal');
@@ -51,7 +51,7 @@ export class ProductsPage {
     this.openModal({
       name: '',
       salePrice: '',
-      minStock: 0,
+      minStock: 10,
       categoryId: ''
     })
   }

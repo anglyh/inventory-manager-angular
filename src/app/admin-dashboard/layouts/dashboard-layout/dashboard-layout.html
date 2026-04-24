@@ -1,6 +1,6 @@
-<div class="drawer lg:drawer-open">
+<div class="drawer lg:drawer-open h-screen overflow-hidden">
   <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
-  <div class="drawer-content grid grid-rows-[auto_1fr] min-w-0 h-screen">
+  <div class="drawer-content grid grid-rows-[auto_1fr] min-w-0 min-h-0 h-full overflow-hidden">
     <!-- Navbar -->
     <nav class="navbar w-full bg-base-100 border-b border-slate-300 justify-between px-4 sticky top-0 z-10">
       <div class="flex items-center">
@@ -29,14 +29,14 @@
       </button>
     </nav>
     <!-- Page content here -->
-    <div class="p-4 bg-base-200 w-full min-w-0">
+    <div class="p-4 bg-base-200 w-full min-w-0 min-h-0 overflow-auto">
       <router-outlet />
     </div>
   </div>
 
-  <div class="drawer-side is-drawer-close:overflow-visible border-r border-slate-300">
+  <div class="drawer-side is-drawer-close:overflow-visible border-r border-slate-300 h-full">
     <label for="my-drawer-4" aria-label="close sidebar" class="drawer-overlay"></label>
-    <div class="flex min-h-full flex-col items-start bg-base-100 is-drawer-close:w-14 is-drawer-open:w-64">
+    <div class="flex min-h-full flex-col items-start bg-base-100 is-drawer-close:w-14 is-drawer-open:w-64 overflow-hidden">
       <!-- Sidebar content here -->
 
       <span class="p-2 w-full">LOGO</span>

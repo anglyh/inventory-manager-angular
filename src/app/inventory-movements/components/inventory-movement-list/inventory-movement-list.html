@@ -1,10 +1,10 @@
 
 @for (group of groupedMovements(); track group.date) {
   <span 
-    class="block my-4 font-bold text-xl"
+    class="block my-4 font-bold text-xl first-letter:uppercase"
     [class.mt-0]="$index === 0"
   >
-    {{ group.date | date: 'fullDate'}}
+    {{ group.date | date: 'fullDate' }}
   </span>
 
   <div class="overflow-hidden rounded-3xl flex flex-col border border-slate-100">

@@ -16,20 +16,22 @@ export class InventoryMovementList {
   groupedMovements = computed(() => {
     const groups = new Map<string, InventoryMovement[]>();
     for (const movement of this.movements()) {
-      const date = new Date(movement.createdAt).toDateString()
+      const d = new Date(movement.createdAt);
+      d.setHours(0, 0, 0, 0);
+      const dateKey = d.toISOString().slice(0, 10);
       
-      if (!groups.has(date)) {
-        groups.set(date, [])
+      if (!groups.has(dateKey)) {
+        groups.set(dateKey, [])
       }
 
-      groups.get(date)!.push(movement)
+      groups.get(dateKey)!.push(movement)
     }
 
-    return Array.from(groups.entries()).map(([date, items]) => {
+    return Array.from(groups.entries()).map(([dateKey, items]) => {
       const totalAmount = items.reduce((acc, item) => acc + Number(item.totalAmount), 0);
 
       return {
-        date,
+        date: new Date(`${dateKey}T00:00:00`),
         items,
         totalAmount
       }

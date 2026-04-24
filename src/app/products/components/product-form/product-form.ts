@@ -19,7 +19,7 @@ export class ProductForm {
   productForm = this.fb.group({
     name: ['', [Validators.required]],
     salePrice: [0, [Validators.min(0), Validators.required]],
-    minStock: [0, [Validators.min(0), Validators.required]],
+    minStock: [10, [Validators.min(0), Validators.required]],
     categoryId: [null],
   })
 
