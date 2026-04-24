@@ -1,6 +1,6 @@
 @if (state().visible) {
   <div 
-    class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-300 flex items-center justify-center z-50 p-4 rounded-xl text-white max-w-[calc(100vw-2rem)] sm:bottom-10 sm:left-auto sm:translate-x-0 sm:right-10"
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-300 flex items-center justify-center z-50 p-4 rounded-xl text-white w-[calc(100vw-2rem)] sm:w-auto sm:max-w-md sm:bottom-10 sm:left-auto sm:translate-x-0 sm:right-10"
     [class.bg-red-400]="state().type === 'error'"
   >
     <p class="font-medium text-base">{{ state().message }}</p>
