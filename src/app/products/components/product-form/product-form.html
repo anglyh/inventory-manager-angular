@@ -1,5 +1,5 @@
 <h3 class="font-bold text-lg mb-4 text-base-content">
-  {{ productInitialData() ? 'Editar producto' : 'Nuevo producto' }}
+  {{ productInitialData()?.id ? 'Editar producto' : 'Nuevo producto' }}
 </h3>
 
 <form
@@ -51,7 +51,7 @@
   <div class="flex justify-end gap-3 mt-4">
     <button type="button" class="btn btn-ghost" (click)="onCancel.emit()">Cancelar</button>
     <button type="submit" class="btn btn-primary" [disabled]="productForm.invalid">
-      {{ productInitialData() ? 'Actualizar' : 'Guardar' }}
+      {{ productInitialData()?.id ? 'Actualizar' : 'Guardar' }}
     </button>
   </div>
 </form>

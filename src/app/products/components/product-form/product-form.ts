@@ -20,7 +20,7 @@ export class ProductForm {
     name: ['', [Validators.required]],
     salePrice: [0, [Validators.min(0), Validators.required]],
     minStock: [0, [Validators.min(0), Validators.required]],
-    categoryId: [''],
+    categoryId: [null],
   })
 
   formEffect = effect(() => {
@@ -29,7 +29,7 @@ export class ProductForm {
       name: this.productInitialData()?.name ?? '',
       salePrice: salePrice != null ? Number(salePrice) : 0,
       minStock: this.productInitialData()?.minStock ?? 0,
-      categoryId: this.productInitialData()?.categoryId ?? null
+      categoryId: null
     })
   })
 
