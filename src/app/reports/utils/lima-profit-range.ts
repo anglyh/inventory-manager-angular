@@ -4,6 +4,14 @@ import { ReportPeriod } from '../interfaces/report.interface';
 /** Zona horaria del negocio (sin DST en la práctica: Perú). */
 const LIMA = 'America/Lima';
 
+/**
+ * ISO UTC compatible con la mayoría de APIs (3 decimales, como `Date#toISOString`).
+ * `Temporal.Instant#toString()` puede incluir nanosegundos y romper parsers en el servidor.
+ */
+function instantToApiIso(instant: Temporal.Instant): string {
+  return new Date(Number(instant.epochMilliseconds)).toISOString();
+}
+
 function limaNow(): Temporal.ZonedDateTime {
   return Temporal.Now.zonedDateTimeISO(LIMA);
 }
@@ -46,7 +54,7 @@ function safePlainDate(s: string): Temporal.PlainDate | null {
  */
 export function getLimaProfitRange(period: ReportPeriod): { from: string; to: string } {
   const z = limaNow();
-  const to = z.toInstant().toString();
+  const to = instantToApiIso(z.toInstant());
   const today = z.toPlainDate();
 
   let fromDay: Temporal.PlainDate;
@@ -65,7 +73,7 @@ export function getLimaProfitRange(period: ReportPeriod): { from: string; to: st
       break;
   }
 
-  return { from: instantStartOfLimaDay(fromDay).toString(), to };
+  return { from: instantToApiIso(instantStartOfLimaDay(fromDay)), to };
 }
 
 /** Fecha calendario actual en Lima (`YYYY-MM-DD`). */
@@ -76,14 +84,14 @@ export function getLimaTodayPlainDate(): string {
 /** `YYYY-MM-DD` como calendario Lima → inicio de ese día (ISO UTC). */
 export function limaPlainDateToStartISO(plain: string): string {
   const d = safePlainDate(plain);
-  if (!d) return Temporal.Instant.from('1970-01-01T00:00:00Z').toString();
-  return instantStartOfLimaDay(d).toString();
+  if (!d) return instantToApiIso(Temporal.Instant.from('1970-01-01T00:00:00Z'));
+  return instantToApiIso(instantStartOfLimaDay(d));
 }
 
 /** `YYYY-MM-DD` como calendario Lima → fin de ese día (ISO UTC). */
 export function limaPlainDateToEndISO(plain: string): string {
   const d = safePlainDate(plain);
-  if (!d) return Temporal.Instant.from('1970-01-01T00:00:00Z').toString();
-  return instantEndOfLimaDay(d).toString();
+  if (!d) return instantToApiIso(Temporal.Instant.from('1970-01-01T00:00:00Z'));
+  return instantToApiIso(instantEndOfLimaDay(d));
 }
 
