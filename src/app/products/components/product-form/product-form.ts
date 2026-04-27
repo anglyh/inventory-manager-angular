@@ -3,9 +3,11 @@ import { Component, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductUpsertBody, ProductWithStock } from '@/products/interfaces/product.interface';
 
+import { Button } from 'src/app/shared/components/button/button';
+
 @Component({
   selector: 'product-form',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, Button],
   templateUrl: './product-form.html',
 })
 export class ProductForm {

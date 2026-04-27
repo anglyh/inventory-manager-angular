@@ -1,0 +1,221 @@
+<div class="mx-auto flex max-w-6xl flex-col gap-6">
+  <!-- Título + periodo + rango personalizado en la misma zona -->
+  <div class="flex flex-col gap-4">
+    <h2 class="text-2xl font-semibold">Reportes</h2>
+
+    <div class="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end lg:justify-between">
+      <div
+        class="join flex w-full lg:w-auto"
+        role="tablist"
+        aria-label="Periodo de reporte"
+      >
+        <button
+          type="button"
+          class="btn join-item flex-1 sm:flex-none"
+          [class.btn-active]="rangeMode() === 'preset' && period() === 'today'"
+          (click)="setPeriod('today')"
+        >
+          Hoy
+        </button>
+        <button
+          type="button"
+          class="btn join-item flex-1 sm:flex-none"
+          [class.btn-active]="rangeMode() === 'preset' && period() === 'week'"
+          (click)="setPeriod('week')"
+        >
+          Semana
+        </button>
+        <button
+          type="button"
+          class="btn join-item flex-1 sm:flex-none"
+          [class.btn-active]="rangeMode() === 'preset' && period() === 'month'"
+          (click)="setPeriod('month')"
+        >
+          Mes
+        </button>
+      </div>
+
+      <form
+        class="flex flex-wrap items-end gap-3 sm:gap-4"
+        [formGroup]="reportsForm"
+        (ngSubmit)="applyCustomRange()"
+      >
+        <label class="flex flex-col gap-1">
+          <span class="text-sm font-medium">Desde</span>
+          <input
+            class="input input-bordered w-full min-w-44 sm:w-auto"
+            type="date"
+            formControlName="from"
+            [max]="reportsForm.controls.to.value"
+          />
+        </label>
+        <label class="flex flex-col gap-1">
+          <span class="text-sm font-medium">Hasta</span>
+          <input
+            class="input input-bordered w-full min-w-44 sm:w-auto"
+            type="date"
+            formControlName="to"
+            [min]="reportsForm.controls.from.value"
+          />
+        </label>
+        <app-button type="submit" [customClass]="'w-full sm:w-auto'">Aplicar</app-button>
+      </form>
+    </div>
+  </div>
+
+  @if (reportResource.error()) {
+    <div class="alert alert-error shadow-sm" role="alert">
+      <span>No se pudo cargar el reporte. Inténtalo de nuevo.</span>
+      <div>
+        <button type="button" class="btn btn-sm btn-ghost" (click)="retry()">Reintentar</button>
+      </div>
+    </div>
+  }
+
+  @if (reportResource.isLoading()) {
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="skeleton h-32 rounded-2xl"></div>
+      <div class="skeleton h-32 rounded-2xl"></div>
+      <div class="skeleton h-32 rounded-2xl"></div>
+      <div class="skeleton h-32 rounded-2xl"></div>
+    </div>
+    <div class="flex flex-col gap-3">
+      <div class="skeleton h-6 w-48 rounded-lg"></div>
+      <div class="skeleton h-6 w-64 rounded-lg"></div>
+    </div>
+    <div class="skeleton h-12 w-full rounded-lg"></div>
+    <div class="skeleton h-64 w-full rounded-2xl"></div>
+  }
+
+  @if (reportResource.value(); as r) {
+    @if (r.summary.salesCount === 0) {
+      <div class="alert alert-info shadow-sm" role="status">
+        <span>Aún no hay ventas en este periodo.</span>
+      </div>
+    }
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="card border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body gap-1 py-4">
+          <p class="text-sm font-medium text-base-content/70">Ingresos</p>
+          <p class="text-2xl font-semibold tabular-nums">
+            S/. {{ +r.summary.revenue | number:'1.2-2':'es-PE' }}
+          </p>
+        </div>
+      </div>
+      <div class="card border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body gap-1 py-4">
+          <p class="text-sm font-medium text-base-content/70">Costos</p>
+          <p class="text-2xl font-semibold tabular-nums">
+            S/. {{ +r.summary.cogs | number:'1.2-2':'es-PE' }}
+          </p>
+        </div>
+      </div>
+      <div class="card border border-primary/40 bg-primary text-primary-content shadow-sm">
+        <div class="card-body gap-1 py-4">
+          <p class="text-sm font-medium text-primary-content/80">Ganancia</p>
+          <p class="text-3xl font-bold tabular-nums">
+            S/. {{ +r.summary.profit | number:'1.2-2':'es-PE' }}
+          </p>
+        </div>
+      </div>
+      <div class="card border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body gap-1 py-4">
+          <p class="text-sm font-medium text-base-content/70">Margen</p>
+          <p class="text-2xl font-semibold tabular-nums">
+            {{ +r.summary.marginPct | number:'1.2-2':'es-PE' }} %
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
+      <p class="text-sm text-base-content/70">Detalle de operaciones</p>
+      <p class="text-sm text-base-content/60">
+        Ventas: <span class="font-medium text-base-content">{{ r.summary.salesCount }}</span>
+        · Ticket promedio:
+        <span class="font-medium text-base-content tabular-nums">
+          S/. {{ +r.summary.avgTicket | number:'1.2-2':'es-PE' }}
+        </span>
+      </p>
+    </div>
+
+    <div class="card border border-base-300 bg-base-100 shadow-sm">
+      <div class="card-body gap-3 p-4 sm:gap-4 sm:p-6">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h3 class="text-lg font-semibold">Top productos por ganancia</h3>
+          <label class="form-control w-full sm:w-40">
+            <span class="label py-0 pb-1">
+              <span class="label-text text-xs">Mostrar</span>
+            </span>
+            <select
+              class="select select-bordered select-md w-full"
+              [value]="productLimit()"
+              (change)="onLimitSelect($any($event.target).value)"
+            >
+              <option [value]="5">5</option>
+              <option [value]="10">10</option>
+              <option [value]="20">20</option>
+            </select>
+          </label>
+        </div>
+
+        @if (r.byProduct.products.length === 0) {
+          <p class="py-6 text-center text-sm text-base-content/60">Sin productos en este listado.</p>
+        } @else {
+          <div class="hidden min-[480px]:block overflow-x-auto">
+            <table class="table table-zebra table-sm sm:table-md">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th class="text-end">Unidades</th>
+                  <th class="text-end">Ingresos</th>
+                  <th class="text-end">Costos</th>
+                  <th class="text-end">Ganancia</th>
+                  <th class="text-end">Margen</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of r.byProduct.products; track row.productId) {
+                  <tr>
+                    <td class="max-w-48 truncate whitespace-nowrap sm:max-w-none" [title]="row.productName">
+                      {{ row.productName }}
+                    </td>
+                    <td class="text-end tabular-nums">{{ row.quantitySold }}</td>
+                    <td class="text-end tabular-nums">S/. {{ +row.revenue | number:'1.2-2':'es-PE' }}</td>
+                    <td class="text-end tabular-nums">S/. {{ +row.cogs | number:'1.2-2':'es-PE' }}</td>
+                    <td class="text-end font-semibold text-success-content tabular-nums">
+                      S/. {{ +row.profit | number:'1.2-2':'es-PE' }}
+                    </td>
+                    <td class="text-end tabular-nums">{{ +row.marginPct | number:'1.2-2':'es-PE' }} %</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="flex min-[480px]:hidden flex-col gap-3">
+            @for (row of r.byProduct.products; track row.productId) {
+              <div class="card border border-base-200 bg-base-200/30 p-3">
+                <p class="font-medium">{{ row.productName }}</p>
+                <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+                  <span class="text-base-content/60">Unidades</span>
+                  <span class="text-end tabular-nums">{{ row.quantitySold }}</span>
+                  <span class="text-base-content/60">Ingresos</span>
+                  <span class="text-end tabular-nums">S/. {{ +row.revenue | number:'1.2-2':'es-PE' }}</span>
+                  <span class="text-base-content/60">Costos</span>
+                  <span class="text-end tabular-nums">S/. {{ +row.cogs | number:'1.2-2':'es-PE' }}</span>
+                  <span class="text-base-content/60">Ganancia</span>
+                  <span class="text-end font-semibold text-success-content tabular-nums">
+                    S/. {{ +row.profit | number:'1.2-2':'es-PE' }}
+                  </span>
+                  <span class="text-base-content/60">Margen</span>
+                  <span class="text-end tabular-nums">{{ +row.marginPct | number:'1.2-2':'es-PE' }} %</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

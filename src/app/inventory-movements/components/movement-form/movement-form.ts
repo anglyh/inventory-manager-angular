@@ -12,10 +12,11 @@ import { mapApiError } from 'src/app/api/error-mapper';
 import { extractApiError } from 'src/app/api/extract-api-error';
 import { ProductService } from 'src/app/products/services/product.service';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { Button } from 'src/app/shared/components/button/button';
 
 @Component({
   selector: 'movement-form',
-  imports: [ReactiveFormsModule, OptionSelector, DecimalPipe, RouterLink, FormErrorLabel, OptionSelector],
+  imports: [ReactiveFormsModule, OptionSelector, DecimalPipe, RouterLink, FormErrorLabel, OptionSelector, Button],
   templateUrl: './movement-form.html',
 })
 export class MovementForm {

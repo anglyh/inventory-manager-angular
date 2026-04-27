@@ -2,7 +2,7 @@
   @for (item of getPagesList(); track $index) {
 
   @if (item === '...') {
-    <button class="join-item btn btn-square btn-disabled">...</button>
+    <app-button [disabled]="true" customClass="join-item btn-square">...</app-button>
   }
   <!--  -->
   @else {

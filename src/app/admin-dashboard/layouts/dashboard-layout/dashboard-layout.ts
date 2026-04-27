@@ -3,10 +3,11 @@ import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterOutlet, RouterLinkActive, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
+import { Button } from 'src/app/shared/components/button/button';
 
 @Component({
   selector: 'app-dashboard-layout',
-  imports: [RouterLink, RouterOutlet, RouterLinkActive],
+  imports: [RouterLink, RouterOutlet, RouterLinkActive, Button],
   templateUrl: './dashboard-layout.html',
 })
 export class DashboardLayout {

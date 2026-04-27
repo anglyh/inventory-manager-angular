@@ -1,7 +1,23 @@
-export function todayAsYmdLocal(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
+import { Temporal } from '@js-temporal/polyfill';
+
+export function toStartOfDayISO(dateStr: string): string {
+  const date = Temporal.PlainDate.from(dateStr);
+
+  const instant = date.toZonedDateTime({
+    timeZone: Temporal.Now.timeZoneId(),
+    plainTime: Temporal.PlainTime.from('00:00')
+  }).toInstant();
+
+  return instant.toString();
+}
+
+export function toEndOfDayISO(dateStr: string): string {
+  const date = Temporal.PlainDate.from(dateStr);
+
+  const instant = date.toZonedDateTime({
+    timeZone: Temporal.Now.timeZoneId(),
+    plainTime: Temporal.PlainTime.from('23:59:59.999'),
+  }).toInstant();
+
+  return instant.toString();
 }

@@ -1,0 +1,11 @@
+<button
+  [type]="type()"
+  [disabled]="disabled() || loading()"
+  [class]="buttonClasses()"
+>
+  @if (loading()) {
+    <span class="loading loading-spinner loading-sm"></span>
+  }
+
+  <ng-content></ng-content>
+</button>

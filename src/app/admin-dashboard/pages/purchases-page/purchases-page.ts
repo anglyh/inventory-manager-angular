@@ -6,10 +6,11 @@ import { InventoryMovementList } from "src/app/inventory-movements/components/in
 import { InventoryMovement } from 'src/app/inventory-movements/interfaces/inventory-movement.interface';
 import { finalize } from 'rxjs';
 import { InfiniteScrollDirective } from '@/shared/directives/infinite-scroll.directive';
+import { Button } from 'src/app/shared/components/button/button';
 
 @Component({
   selector: 'app-purchases-page',
-  imports: [RouterLink, ReactiveFormsModule, InventoryMovementList, InfiniteScrollDirective],
+  imports: [RouterLink, ReactiveFormsModule, InventoryMovementList, InfiniteScrollDirective, Button],
   templateUrl: './purchases-page.html',
 })
 export class PurchasesPage implements OnInit {

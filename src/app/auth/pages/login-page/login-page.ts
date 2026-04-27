@@ -4,10 +4,11 @@ import { AuthService } from '../../services/auth.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormUtils } from '@/utils/form-utils';
 import { FormErrorLabel } from 'src/app/shared/components/form-error-label/form-error-label';
+import { Button } from 'src/app/shared/components/button/button';
 
 @Component({
   selector: 'app-login-page',
-  imports: [RouterLink, ReactiveFormsModule, FormErrorLabel],
+  imports: [RouterLink, ReactiveFormsModule, FormErrorLabel, Button],
   templateUrl: './login-page.html',
 })
 export class LoginPage {

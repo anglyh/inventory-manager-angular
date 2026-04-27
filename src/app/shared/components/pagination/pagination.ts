@@ -1,9 +1,10 @@
 import { Component, computed, input, linkedSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Button } from 'src/app/shared/components/button/button';
 
 @Component({
   selector: 'app-pagination',
-  imports: [RouterLink],
+  imports: [RouterLink, Button],
   templateUrl: './pagination.html',
 })
 export class Pagination {

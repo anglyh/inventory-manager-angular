@@ -6,6 +6,7 @@ import { AuthenticatedGuard } from '@/auth/guards/authenticated.guard';
 import { NewPurchasePage } from './pages/new-purchase-page/new-purchase-page';
 import { SalesPage } from './pages/sales-page/sales-page';
 import { NewSalePage } from './pages/new-sale-page/new-sale-page';
+import { ReportsPage } from '../reports/pages/reports-page/reports-page';
 
 const adminDashboardRoutes: Routes = [
   {
@@ -45,8 +46,13 @@ const adminDashboardRoutes: Routes = [
         component: SalesPage
       },
       {
+        path: 'reports',
+        title: 'Reportes',
+        component: ReportsPage
+      },
+      {
         path: '**',
-        redirectTo: 'products'
+        redirectTo: 'reports'
       }
     ]
   },

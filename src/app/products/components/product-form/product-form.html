@@ -49,9 +49,9 @@
 
   <!-- Botones de Acción -->
   <div class="flex justify-end gap-3 mt-4">
-    <button type="button" class="btn btn-ghost" (click)="onCancel.emit()">Cancelar</button>
-    <button type="submit" class="btn btn-primary" [disabled]="productForm.invalid">
+    <app-button type="button" variant="ghost" (click)="onCancel.emit()">Cancelar</app-button>
+    <app-button type="submit" [disabled]="productForm.invalid">
       {{ productInitialData()?.id ? 'Actualizar' : 'Guardar' }}
-    </button>
+    </app-button>
   </div>
 </form>

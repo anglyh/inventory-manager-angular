@@ -12,10 +12,11 @@ import { SearchProduct } from "@/products/components/search-product-form/search-
 import { ProductWithStock } from '@/products/interfaces/product.interface';
 import { NgIcon, provideIcons } from "@ng-icons/core";
 import { tablerPlus } from '@ng-icons/tabler-icons';
+import { Button } from 'src/app/shared/components/button/button';
 
 @Component({
   selector: 'app-products-page',
-  imports: [ProductTable, Pagination, ProductForm, Modal, SearchProduct, NgIcon],
+  imports: [ProductTable, Pagination, ProductForm, Modal, SearchProduct, NgIcon, Button],
   viewProviders: [provideIcons({ tablerPlus })],
   templateUrl: './products-page.html',
 })

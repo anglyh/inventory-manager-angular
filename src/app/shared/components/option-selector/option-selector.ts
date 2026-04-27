@@ -1,6 +1,7 @@
 import { Component, computed, DOCUMENT, ElementRef, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
+import { Button } from 'src/app/shared/components/button/button';
 
 interface Option {
   id: string;
@@ -16,7 +17,7 @@ const removeAccents = (text: string) => {
 
 @Component({
   selector: 'app-option-selector',
-  imports: [],
+  imports: [Button],
   templateUrl: './option-selector.html',
 })
 export class OptionSelector<T extends Option> {

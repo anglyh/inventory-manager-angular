@@ -4,10 +4,11 @@ import { InventoryMovement } from 'src/app/inventory-movements/interfaces/invent
 import { InventoryMovementService } from 'src/app/inventory-movements/services/inventory-movement.service';
 import { InventoryMovementList } from '../../../inventory-movements/components/inventory-movement-list/inventory-movement-list';
 import { RouterLink } from '@angular/router';
+import { Button } from 'src/app/shared/components/button/button';
 
 @Component({
   selector: 'app-sales-page',
-  imports: [InventoryMovementList, RouterLink],
+  imports: [InventoryMovementList, RouterLink, Button],
   templateUrl: './sales-page.html',
 })
 export class SalesPage implements OnInit {
