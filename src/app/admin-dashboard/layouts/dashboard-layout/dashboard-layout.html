@@ -1,9 +1,9 @@
 <div class="drawer lg:drawer-open h-screen overflow-hidden">
-  <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
+  <input #drawerToggle id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content grid grid-rows-[auto_1fr] min-w-0 min-h-0 h-full overflow-hidden">
     <!-- Navbar -->
-    <nav class="navbar w-full bg-base-100 border-b border-slate-300 justify-between px-4 sticky top-0 z-10">
-      <div class="flex items-center">
+    <nav class="navbar w-full bg-base-100 border-b border-slate-200 justify-between px-4 sticky top-0 z-10 h-16">
+      <div class="flex items-center gap-2 min-w-0">
         <label for="my-drawer-4" aria-label="open sidebar"
           class="btn btn-square btn-ghost hover:bg-secondary/10 border-none">
           <!-- Sidebar toggle icon -->
@@ -16,17 +16,22 @@
         </label>
   
         <!-- Título de la página -->
-        <h1 class="px-4 text-xl">
+        <div class="divider divider-horizontal mx-0"></div>
+        <h1 class="text-lg font-semibold truncate">
           {{ currentRouteTitle() }}
         </h1>
       </div>
 
-      <app-button
-        (click)="logout()"
-        variant="secondary"
-      >
-        Cerrar Sesión
-      </app-button>
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-2 text-sm text-slate-600">
+          <div class="avatar placeholder">
+            <div class="bg-primary/10 text-primary w-8 rounded-full">
+              <span class="text-xs font-semibold"></span>
+            </div>
+          </div>
+          <span class="font-medium">Hostal Admin</span>
+        </div>
+      </div>
     </nav>
     <!-- Page content here -->
     <div class="p-4 bg-base-200 w-full min-w-0 min-h-0 overflow-auto">
@@ -39,13 +44,22 @@
     <div class="flex min-h-full flex-col items-start bg-base-100 is-drawer-close:w-14 is-drawer-open:w-64 overflow-hidden">
       <!-- Sidebar content here -->
 
-      <span class="p-2 w-full">LOGO</span>
+      <div class="w-full px-3 py-3 border-b border-slate-200 flex items-center gap-3">
+        <div class="size-9 rounded-xl bg-primary text-primary-content grid place-content-center font-bold">
+          H
+        </div>
+        <div class="min-w-0 is-drawer-close:hidden">
+          <div class="font-semibold leading-tight truncate">Hostal</div>
+          <div class="text-xs text-slate-500 leading-tight truncate">Panel de administración</div>
+        </div>
+      </div>
 
       <ul class="menu w-full grow gap-1">
         <!-- List item -->
         <li>
           <a
             [routerLink]="'/reports'"
+            (click)="closeDrawerIfMobile()"
             class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-primary/90 hover:text-primary-content"
             [attr.data-tip]="'Reportes'"
             routerLinkActive="bg-primary text-primary-content"
@@ -63,6 +77,7 @@
         <li>
           <a 
             [routerLink]="'/products'"
+            (click)="closeDrawerIfMobile()"
             class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-primary/90 hover:text-primary-content"
             data-tip="Productos"
             routerLinkActive="bg-primary text-primary-content"
@@ -82,6 +97,7 @@
         <li>
           <a 
             [routerLink]="'/purchases'"
+            (click)="closeDrawerIfMobile()"
             class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-primary/90 hover:text-primary-content"
             data-tip="Compras" 
             routerLinkActive="bg-primary text-primary-content"
@@ -100,6 +116,7 @@
         <li>
           <a 
             [routerLink]="'/sales'"
+            (click)="closeDrawerIfMobile()"
             class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-primary/90 hover:text-primary-content"
             [attr.data-tip]="'Ventas'" 
             routerLinkActive="bg-primary text-primary-content"
@@ -115,6 +132,29 @@
           </a>
         </li>
       </ul>
+
+      <div class="w-full border-t border-slate-200 pt-2 pb-3">
+        <ul class="menu w-full gap-1">
+          <li>
+            <button
+              type="button"
+              (click)="logout(); closeDrawerIfMobile()"
+              class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-error/10 hover:text-error"
+              data-tip="Cerrar sesión"
+            >
+              <!-- Logout icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round"
+                stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"
+                class="my-1.5 inline-block size-4">
+                <path d="M10 8V7a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-1"></path>
+                <path d="M15 12H3"></path>
+                <path d="M6 9l-3 3l3 3"></path>
+              </svg>
+              <span class="is-drawer-close:hidden text-nowrap">Cerrar sesión</span>
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </div>

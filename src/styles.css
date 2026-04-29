@@ -50,8 +50,15 @@
 }
 
 @layer base {
+  html {
+    /* Evita el "layout shift" cuando aparece/desaparece el scrollbar vertical */
+    scrollbar-gutter: stable;
+  }
+
   body {
     font-family: "Poppins", sans-serif;
+    /* Fallback para navegadores sin `scrollbar-gutter` (mantiene el gutter) */
+    overflow-y: scroll;
   }
 
   h1 {

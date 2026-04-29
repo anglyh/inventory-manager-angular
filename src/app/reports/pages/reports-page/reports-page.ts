@@ -12,6 +12,7 @@ import {
 import { ReportsService } from '../../services/reports.service';
 import {
   getLimaProfitRange,
+  getLimaProfitPlainDateRange,
   getLimaTodayPlainDate,
   limaPlainDateToEndISO,
   limaPlainDateToStartISO,
@@ -113,6 +114,11 @@ export class ReportsPage {
 
   setPeriod(p: ReportPeriod): void {
     this.rangeMode.set('preset');
+    const { fromPlain, toPlain } = getLimaProfitPlainDateRange(p)
+    this.reportsForm.patchValue({
+      from: fromPlain,
+      to: toPlain,
+    })
     this.period.set(p);
   }
 

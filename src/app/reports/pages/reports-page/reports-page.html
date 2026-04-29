@@ -36,23 +36,23 @@
       </div>
 
       <form
-        class="flex flex-wrap items-end gap-3 sm:gap-4"
+        class="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-end sm:gap-4"
         [formGroup]="reportsForm"
         (ngSubmit)="applyCustomRange()"
       >
-        <label class="flex flex-col gap-1">
+        <label class="flex flex-col gap-1 w-full sm:w-auto">
           <span class="text-sm font-medium">Desde</span>
           <input
-            class="input input-bordered w-full min-w-44 sm:w-auto"
+            class="input input-bordered w-full sm:w-auto"
             type="date"
             formControlName="from"
             [max]="reportsForm.controls.to.value"
           />
         </label>
-        <label class="flex flex-col gap-1">
+        <label class="flex flex-col gap-1 w-full sm:w-auto">
           <span class="text-sm font-medium">Hasta</span>
           <input
-            class="input input-bordered w-full min-w-44 sm:w-auto"
+            class="input input-bordered w-full sm:w-auto"
             type="date"
             formControlName="to"
             [min]="reportsForm.controls.from.value"
@@ -99,7 +99,7 @@
         <div class="card-body gap-1 py-4">
           <p class="text-sm font-medium text-base-content/70">Ingresos</p>
           <p class="text-2xl font-semibold tabular-nums">
-            S/. {{ +r.summary.revenue | number:'1.2-2':'es-PE' }}
+            S/. {{ +r.summary.revenue | number:'1.2-2' }}
           </p>
         </div>
       </div>
@@ -107,7 +107,7 @@
         <div class="card-body gap-1 py-4">
           <p class="text-sm font-medium text-base-content/70">Costos</p>
           <p class="text-2xl font-semibold tabular-nums">
-            S/. {{ +r.summary.cogs | number:'1.2-2':'es-PE' }}
+            S/. {{ +r.summary.cogs | number:'1.2-2' }}
           </p>
         </div>
       </div>
@@ -115,7 +115,7 @@
         <div class="card-body gap-1 py-4">
           <p class="text-sm font-medium text-primary-content/80">Ganancia</p>
           <p class="text-3xl font-bold tabular-nums">
-            S/. {{ +r.summary.profit | number:'1.2-2':'es-PE' }}
+            S/. {{ +r.summary.profit | number:'1.2-2' }}
           </p>
         </div>
       </div>
@@ -123,7 +123,7 @@
         <div class="card-body gap-1 py-4">
           <p class="text-sm font-medium text-base-content/70">Margen</p>
           <p class="text-2xl font-semibold tabular-nums">
-            {{ +r.summary.marginPct | number:'1.2-2':'es-PE' }} %
+            {{ +r.summary.marginPct | number:'1.2-2' }} %
           </p>
         </div>
       </div>
@@ -135,7 +135,7 @@
         Ventas: <span class="font-medium text-base-content">{{ r.summary.salesCount }}</span>
         · Ticket promedio:
         <span class="font-medium text-base-content tabular-nums">
-          S/. {{ +r.summary.avgTicket | number:'1.2-2':'es-PE' }}
+          S/. {{ +r.summary.avgTicket | number:'1.2-2' }}
         </span>
       </p>
     </div>
@@ -182,12 +182,12 @@
                       {{ row.productName }}
                     </td>
                     <td class="text-end tabular-nums">{{ row.quantitySold }}</td>
-                    <td class="text-end tabular-nums">S/. {{ +row.revenue | number:'1.2-2':'es-PE' }}</td>
-                    <td class="text-end tabular-nums">S/. {{ +row.cogs | number:'1.2-2':'es-PE' }}</td>
+                    <td class="text-end tabular-nums">S/. {{ +row.revenue | number:'1.2-2' }}</td>
+                    <td class="text-end tabular-nums">S/. {{ +row.cogs | number:'1.2-2' }}</td>
                     <td class="text-end font-semibold text-success-content tabular-nums">
-                      S/. {{ +row.profit | number:'1.2-2':'es-PE' }}
+                      S/. {{ +row.profit | number:'1.2-2' }}
                     </td>
-                    <td class="text-end tabular-nums">{{ +row.marginPct | number:'1.2-2':'es-PE' }} %</td>
+                    <td class="text-end tabular-nums">{{ +row.marginPct | number:'1.2-2' }} %</td>
                   </tr>
                 }
               </tbody>
@@ -201,15 +201,15 @@
                   <span class="text-base-content/60">Unidades</span>
                   <span class="text-end tabular-nums">{{ row.quantitySold }}</span>
                   <span class="text-base-content/60">Ingresos</span>
-                  <span class="text-end tabular-nums">S/. {{ +row.revenue | number:'1.2-2':'es-PE' }}</span>
+                  <span class="text-end tabular-nums">S/. {{ +row.revenue | number:'1.2-2' }}</span>
                   <span class="text-base-content/60">Costos</span>
-                  <span class="text-end tabular-nums">S/. {{ +row.cogs | number:'1.2-2':'es-PE' }}</span>
+                  <span class="text-end tabular-nums">S/. {{ +row.cogs | number:'1.2-2' }}</span>
                   <span class="text-base-content/60">Ganancia</span>
                   <span class="text-end font-semibold text-success-content tabular-nums">
-                    S/. {{ +row.profit | number:'1.2-2':'es-PE' }}
+                    S/. {{ +row.profit | number:'1.2-2' }}
                   </span>
                   <span class="text-base-content/60">Margen</span>
-                  <span class="text-end tabular-nums">{{ +row.marginPct | number:'1.2-2':'es-PE' }} %</span>
+                  <span class="text-end tabular-nums">{{ +row.marginPct | number:'1.2-2' }} %</span>
                 </div>
               </div>
             }

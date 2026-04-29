@@ -54,7 +54,9 @@
         class="mb-3 hidden gap-4 px-2 text-xs font-semibold tracking-wider uppercase opacity-60 md:flex"
       >
         <div class="min-w-0 flex-2">Producto</div>
-        <div class="w-32 shrink-0">Costo Unit.</div>
+        <div class="w-32 shrink-0">
+          {{ type() === 'entry' ? 'Costo Unit.' : 'Precio Venta'}}
+        </div>
         <div class="w-24 shrink-0">Cantidad</div>
         <div class="w-28 shrink-0 text-right">Subtotal</div>
         <div class="w-10 shrink-0"></div>

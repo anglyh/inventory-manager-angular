@@ -1,19 +1,21 @@
 import { AuthService } from '@/auth/services/auth.service';
-import { Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { AfterViewInit, Component, DestroyRef, ElementRef, inject, viewChild } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterOutlet, RouterLinkActive, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
-import { Button } from 'src/app/shared/components/button/button';
 
 @Component({
   selector: 'app-dashboard-layout',
-  imports: [RouterLink, RouterOutlet, RouterLinkActive, Button],
+  imports: [RouterLink, RouterOutlet, RouterLinkActive],
   templateUrl: './dashboard-layout.html',
 })
-export class DashboardLayout {
+export class DashboardLayout implements AfterViewInit {
+  private drawerToggle = viewChild<ElementRef<HTMLInputElement>>('drawerToggle')
+
   private router = inject(Router)
   private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)
+  private destroyRef = inject(DestroyRef)
 
   currentRouteTitle = toSignal(
     this.router.events.pipe(
@@ -32,6 +34,42 @@ export class DashboardLayout {
       startWith('Dashboard')
     )
   )
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.closeDrawerIfMobile()
+      })
+  }
+
+  ngAfterViewInit(): void {
+    this.setDrawerDefaultState()
+  }
+
+  private setDrawerDefaultState() {
+    if (typeof window === 'undefined') return
+
+    const input = this.drawerToggle()?.nativeElement
+    if (!input || input.type !== 'checkbox') return
+
+    // Tailwind `lg` breakpoint = 1024px (min-width)
+    input.checked = window.matchMedia('(min-width: 1024px)').matches
+  }
+
+  closeDrawerIfMobile() {
+    if (typeof window === 'undefined') return
+
+    // Tailwind `lg` breakpoint = 1024px (min-width)
+    if (window.matchMedia('(min-width: 1024px)').matches) return
+
+    const input = this.drawerToggle()?.nativeElement
+    if (!input) return
+    if (input.type === 'checkbox') input.checked = false
+  }
 
   logout() {
     this.authService.logout()

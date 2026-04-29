@@ -49,8 +49,10 @@
 
   <!-- Botones de Acción -->
   <div class="flex justify-end gap-3 mt-4">
-    <app-button type="button" variant="ghost" (click)="onCancel.emit()">Cancelar</app-button>
-    <app-button type="submit" [disabled]="productForm.invalid">
+    <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="onCancel.emit()">
+      Cancelar
+    </app-button>
+    <app-button type="submit" [loading]="isSubmitting()" [disabled]="productForm.invalid || isSubmitting()">
       {{ productInitialData()?.id ? 'Actualizar' : 'Guardar' }}
     </app-button>
   </div>

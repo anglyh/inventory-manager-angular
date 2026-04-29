@@ -1,9 +1,11 @@
 import { ProductService } from '@/products/services/product.service';
-import { Component, effect, inject, input, output } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductUpsertBody, ProductWithStock } from '@/products/interfaces/product.interface';
+import { finalize } from 'rxjs';
 
 import { Button } from 'src/app/shared/components/button/button';
+import { GlobalNotificationService } from 'src/app/shared/components/global-notification/global-notification.service';
 
 @Component({
   selector: 'product-form',
@@ -13,6 +15,9 @@ import { Button } from 'src/app/shared/components/button/button';
 export class ProductForm {
   private fb = inject(FormBuilder)
   private productService = inject(ProductService)
+  private globalNotification = inject(GlobalNotificationService)
+
+  isSubmitting = signal(false)
 
   onSuccess = output();
   onCancel = output();
@@ -49,12 +54,29 @@ export class ProductForm {
     }
 
     const id = this.productInitialData()?.id
+    const isEdit = Boolean(id)
     const request$ = id
       ? this.productService.updateProduct(id, payload)
       : this.productService.createProduct(payload)
 
-    request$.subscribe(() => {
-      this.onSuccess.emit()
-    })
+    this.isSubmitting.set(true)
+
+    request$
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: () => {
+          this.globalNotification.show(
+            isEdit ? 'Producto actualizado correctamente' : 'Producto creado correctamente',
+            'success',
+          )
+          this.onSuccess.emit()
+        },
+        error: () => {
+          this.globalNotification.show(
+            isEdit ? 'No se pudo actualizar el producto' : 'No se pudo crear el producto',
+            'error',
+          )
+        },
+      })
   }
 }

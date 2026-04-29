@@ -68,6 +68,33 @@ export function getLimaProfitRange(period: ReportPeriod): { from: string; to: st
   return { from: instantStartOfLimaDay(fromDay).toString(), to };
 }
 
+/**
+ * Rangos predefinidos (Lima) en formato `<input type="date">` (`YYYY-MM-DD`).
+ * Útil para sincronizar la UI cuando se elige un preset.
+ */
+export function getLimaProfitPlainDateRange(
+  period: ReportPeriod,
+): { fromPlain: string; toPlain: string } {
+  const today = limaNow().toPlainDate();
+
+  let fromDay: Temporal.PlainDate;
+  switch (period) {
+    case 'today':
+      fromDay = today;
+      break;
+    case 'week': {
+      const dow = today.dayOfWeek;
+      fromDay = today.subtract({ days: dow - 1 });
+      break;
+    }
+    case 'month':
+      fromDay = new Temporal.PlainDate(today.year, today.month, 1);
+      break;
+  }
+
+  return { fromPlain: fromDay.toString(), toPlain: today.toString() };
+}
+
 /** Fecha calendario actual en Lima (`YYYY-MM-DD`). */
 export function getLimaTodayPlainDate(): string {
   return limaNow().toPlainDate().toString();

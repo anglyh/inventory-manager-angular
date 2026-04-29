@@ -32,19 +32,19 @@
 
       <!-- Password Input -->
       <div class="mb-8">
-        <div class="flex items-center border border-gray-300 rounded-full px-4 py-3 bg-white">
+        <div class="flex items-center border border-gray-300 rounded-full px-4 py-3 bg-white overflow-hidden">
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
           <input 
             [type]="showPassword() ? 'text' : 'password'" 
             placeholder="Contraseña" 
-            class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500" 
+            class="flex-1 min-w-0 ml-3 outline-none text-gray-700 placeholder-gray-500" 
             formControlName="password" 
           >
           <button
             type="button"
-            class="ml-2 flex cursor-pointer text-gray-400 hover:text-gray-600 active:text-gray-700 select-none"
+            class="ml-2 shrink-0 flex cursor-pointer text-gray-400 hover:text-gray-600 active:text-gray-700 select-none p-1"
             (click)="showPassword.set(!showPassword())"
             aria-label="Mostrar u ocultar contraseña"
           >

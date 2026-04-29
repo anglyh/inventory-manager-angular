@@ -3,7 +3,7 @@
     class="input input-bordered w-full pr-10 focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-all duration-200"
     type="text"
     id="productSearchInput"
-    placeholder="Ingresa el nombre de un producto"
+    placeholder="Busca un producto..."
     [value]="searchTerm()"
     (input)="searchTerm.set(searchInputRef.value)"
     (keydown.enter)="search(searchInputRef.value)"

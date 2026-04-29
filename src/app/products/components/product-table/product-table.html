@@ -1,13 +1,13 @@
 <div class="overflow-x-auto">
-  <table class="table">
+  <table class="table table-zebra">
     <!-- head -->
     <thead>
       <tr>
         <th>Nombre</th>
-        <th>Precio</th>
-        <th>Costo</th>
-        <th>Stock</th>
-        <th>Stock mín.</th>
+        <th class="text-end">Precio</th>
+        <th class="text-end">Costo</th>
+        <th class="text-end">Stock</th>
+        <th class="text-end">Stock mín.</th>
         <th>Acciones</th>
       </tr>
     </thead>
@@ -16,10 +16,10 @@
       @for (product of products(); track product.id) {
         <tr class="hover:bg-primary/10">
           <td>{{ product.name }}</td>
-          <td>{{ product.salePrice }}</td>  
-          <td>{{ product.unitCostAvg }}</td>
-          <td>{{ product.stock }}</td>
-          <td>{{ product.minStock }}</td>
+          <td class="text-end tabular-nums whitespace-nowrap">S/. {{ product.salePrice | number:'1.2-2' }}</td>
+          <td class="text-end tabular-nums whitespace-nowrap">S/. {{ product.unitCostAvg | number:'1.2-2' }}</td>
+          <td class="text-end tabular-nums">{{ product.stock }}</td>
+          <td class="text-end tabular-nums">{{ product.minStock }}</td>
 
           <td>
             <!-- Edit Button -->
