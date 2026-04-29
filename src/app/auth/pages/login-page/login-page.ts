@@ -1,14 +1,19 @@
-import { Component, inject, signal, ViewChild } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from "@angular/router";
 import { AuthService } from '../../services/auth.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormUtils } from '@/utils/form-utils';
 import { FormErrorLabel } from 'src/app/shared/components/form-error-label/form-error-label';
 import { Button } from 'src/app/shared/components/button/button';
+import { extractApiError } from 'src/app/api/extract-api-error';
+import { mapApiError } from 'src/app/api/error-mapper';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { tablerEye, tablerEyeOff } from '@ng-icons/tabler-icons';
 
 @Component({
   selector: 'app-login-page',
-  imports: [RouterLink, ReactiveFormsModule, FormErrorLabel, Button],
+  imports: [RouterLink, ReactiveFormsModule, FormErrorLabel, Button, NgIcon],
+  viewProviders: [provideIcons({ tablerEye, tablerEyeOff })],
   templateUrl: './login-page.html',
 })
 export class LoginPage {
@@ -18,9 +23,10 @@ export class LoginPage {
   private router = inject(Router);
   private authService = inject(AuthService);
   formUtils = FormUtils
-  
-  toggleIcon = ViewChild('toggleIcon');
-  passwordInput = ViewChild('passwordInput')
+
+  isLoading = signal(false)
+  errorMessage = signal('')
+  showPassword = signal(false);
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.pattern(FormUtils.emailPattern)]],
@@ -28,6 +34,7 @@ export class LoginPage {
   })
 
   onSubmit(): void {
+
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -36,13 +43,35 @@ export class LoginPage {
     const { email, password } = this.loginForm.value;
     if (!email || !password) return;
 
-    this.authService.login(email, password).subscribe((isAuthenticated) => {
-      if (isAuthenticated) {
-        this.router.navigateByUrl('/')
-        return
-      }
+    this.isLoading.set(true)
+    this.hasError.set(false)
+    this.errorMessage.set('')
 
-      this.hasError.set(true)
+    this.authService.login(email, password).subscribe({
+      next: (isAuthenticated) => {
+        if (isAuthenticated) {
+          this.router.navigateByUrl('/')
+          return;
+        } else {
+          this.isLoading.set(false);
+          this.hasError.set(true);
+          this.errorMessage.set('Credenciales inválidas');
+        }
+      },
+      error: (err) => {
+        const apiError = extractApiError(err)
+        const mapped = mapApiError(apiError)
+
+        if (mapped.redirect) {
+          this.router.navigateByUrl(mapped.redirect);
+          return;
+        }
+
+        if (mapped.toast) this.errorMessage.set(mapped.toast)
+        
+        this.isLoading.set(false);
+        this.hasError.set(true);
+      }
     })
   }
 }

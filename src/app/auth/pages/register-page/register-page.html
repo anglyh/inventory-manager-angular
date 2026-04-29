@@ -40,7 +40,24 @@
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
-          <input formControlName="password" type="password" placeholder="Contraseña" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
+          <input
+            formControlName="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            placeholder="Contraseña"
+            class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500"
+          >
+          <button
+            type="button"
+            class="ml-2 flex cursor-pointer text-gray-400 hover:text-gray-600 active:text-gray-700 select-none"
+            (click)="showPassword.set(!showPassword())"
+            aria-label="Mostrar u ocultar contraseña"
+          >
+            <ng-icon
+              class="block"
+              [name]="showPassword() ? 'tablerEyeOff' : 'tablerEye'"
+              size="20"
+            ></ng-icon>
+          </button>
         </div>
         @if (formUtils.isInvalidField(registerForm, 'password')) {
           <app-form-error-label [control]="registerForm.get('password')!" />
@@ -53,7 +70,24 @@
           <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
-          <input formControlName="confirmPassword" type="password" placeholder="Confirmar contraseña" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
+          <input
+            formControlName="confirmPassword"
+            [type]="showConfirmPassword() ? 'text' : 'password'"
+            placeholder="Confirmar contraseña"
+            class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500"
+          >
+          <button
+            type="button"
+            class="ml-2 flex cursor-pointer text-gray-400 hover:text-gray-600 active:text-gray-700 select-none"
+            (click)="showConfirmPassword.set(!showConfirmPassword())"
+            aria-label="Mostrar u ocultar confirmación de contraseña"
+          >
+            <ng-icon
+              class="block"
+              [name]="showConfirmPassword() ? 'tablerEyeOff' : 'tablerEye'"
+              size="20"
+            ></ng-icon>
+          </button>
         </div>
 
         @if (formUtils.isInvalidField(registerForm, 'confirmPassword')) {
@@ -63,9 +97,25 @@
         }
       </div>
 
+      @if (hasError()) {
+        <div class="mb-4 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-medium">
+          {{ errorMessage() }}
+        </div>
+      }
+
       <!-- Register Button -->
-      <app-button type="submit" customClass="w-full font-semibold rounded-full transition">
+      <app-button
+        type="submit"
+        customClass="w-full font-semibold rounded-full transition 
+                    disabled:cursor-not-allowed 
+                    disabled:opacity-100 
+                    disabled:brightness-90"
+        [disabled]="isLoading()"
+      >
         Registrarse
+        @if (isLoading()) {
+          <span class="loading loading-spinner loading-xs"></span>
+        }
       </app-button>
 
       <!-- Login Link -->

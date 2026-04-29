@@ -9,6 +9,9 @@ export class FormUtils {
   static getTextError(errors: ValidationErrors) {
     for (const key of Object.keys(errors)) {
       switch(key) {
+        case 'server':
+          return String(errors['server']);
+
         case 'required':
           return 'Este campo es requerido';
 

@@ -37,6 +37,8 @@ export class MovementForm {
 
   productsListOptions = computed(() => this.productsResource.value() ?? [])
   
+  isLoading = signal(false);
+
   movementForm = this.fb.group({
     entityName: [''],
     notes: [''],
@@ -98,6 +100,7 @@ export class MovementForm {
       this.movementForm.markAllAsTouched()
       return
     }
+    if (this.isLoading()) return;
     console.log(this.movementForm.value);
 
     const { entityName, notes, items } = this.movementForm.value
@@ -117,8 +120,10 @@ export class MovementForm {
       ? this.movementService.registerEntry(payload)
       : this.movementService.registerExit(payload);
 
+    this.isLoading.set(true);
     request$.subscribe({
       next: () => {
+        this.isLoading.set(false);
         this.movementForm.reset()
         this.router.navigate([this.type() === 'entry' ? '/purchases' : '/sales'])
         this.#globalNotificationService.show(`
@@ -129,6 +134,7 @@ export class MovementForm {
         `)
       },
       error: (error) => {
+        this.isLoading.set(false);
         const apiError = extractApiError(error)
         const mapped = mapApiError(apiError)
 
