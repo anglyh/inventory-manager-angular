@@ -25,6 +25,7 @@ export class ProductForm {
   productInitialData = input<Partial<ProductWithStock> | null>(null)
   productForm = this.fb.group({
     name: ['', [Validators.required]],
+    barcode: [''],
     salePrice: [0, [Validators.min(0), Validators.required]],
     minStock: [10, [Validators.min(0), Validators.required]],
     categoryId: [null],
@@ -34,6 +35,7 @@ export class ProductForm {
     const salePrice = this.productInitialData()?.salePrice;
     this.productForm.patchValue({
       name: this.productInitialData()?.name ?? '',
+      barcode: this.productInitialData()?.barcode ?? '',
       salePrice: salePrice != null ? Number(salePrice) : 0,
       minStock: this.productInitialData()?.minStock ?? 0,
       categoryId: null
@@ -43,11 +45,12 @@ export class ProductForm {
   onSubmit() {
     if (this.productForm.invalid) return
 
-    const { name, salePrice, minStock, categoryId } = this.productForm.value
+    const { name, barcode, salePrice, minStock, categoryId } = this.productForm.value
     if (name == null || salePrice == null || minStock == null) return
 
     const payload: ProductUpsertBody = {
       name,
+      barcode: (barcode ?? '').trim() || null,
       salePrice,
       minStock,
       categoryId: categoryId ?? null,

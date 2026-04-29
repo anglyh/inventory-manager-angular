@@ -1,4 +1,4 @@
-import { Component, computed, DOCUMENT, ElementRef, inject, input, output, signal } from '@angular/core';
+import { Component, computed, DOCUMENT, effect, ElementRef, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 import { Button } from 'src/app/shared/components/button/button';
@@ -31,10 +31,31 @@ export class OptionSelector<T extends Option> {
   /** Id único por fila cuando hay varios selectores en el mismo formulario. */
   controlId = input('product-input');
 
+  /** Texto seleccionado desde el padre (p. ej. cuando se setea por escaneo). */
+  selectedName = input('');
+
   selectedOption = output<T | null>();
   selectionCleared = output();
 
   items = input<T[]>([])
+
+  syncEffect = effect(() => {
+    const selected = (this.selectedName() ?? '').trim();
+    const current = (this.inputValue() ?? '').trim();
+
+    // Si el padre setea el nombre (escaneo, edición, reset), reflejarlo en el input visual.
+    if (selected && selected !== current) {
+      this.lastSelectedName.set(selected);
+      this.inputValue.set(selected);
+      return;
+    }
+
+    // Si el padre lo limpió, limpia también el input visual.
+    if (!selected && current && this.lastSelectedName()) {
+      this.lastSelectedName.set('');
+      this.inputValue.set('');
+    }
+  });
 
   constructor() {
     fromEvent(this.document, 'click')

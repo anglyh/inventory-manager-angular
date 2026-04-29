@@ -4,6 +4,11 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterOutlet, RouterLinkActive, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 
+interface DashboardHeaderAction {
+  label: string;
+  link: string;
+}
+
 @Component({
   selector: 'app-dashboard-layout',
   imports: [RouterLink, RouterOutlet, RouterLinkActive],
@@ -33,6 +38,15 @@ export class DashboardLayout implements AfterViewInit {
       }),
       startWith('Dashboard')
     )
+  )
+
+  /** Botón contextual en el header (p. ej. nueva venta / nueva compra en listados). */
+  headerPrimaryAction = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.#headerActionFromUrl()),
+    ),
+    { initialValue: this.#headerActionFromUrl() },
   )
 
   constructor() {
@@ -74,5 +88,16 @@ export class DashboardLayout implements AfterViewInit {
   logout() {
     this.authService.logout()
     this.router.navigateByUrl('/')
+  }
+
+  #headerActionFromUrl(): DashboardHeaderAction | null {
+    const path = this.router.url.split('?')[0].split('#')[0];
+    if (path === '/sales') {
+      return { label: 'Nueva venta', link: '/sales/new' };
+    }
+    if (path === '/purchases') {
+      return { label: 'Nueva compra', link: '/purchases/new' };
+    }
+    return null;
   }
 }

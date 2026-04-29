@@ -1,124 +1,147 @@
 <form
-  class="space-y-6 text-base-content"
+  class="space-y-5 text-base-content"
   (ngSubmit)="onSubmit()"
   [formGroup]="movementForm"
 >
-  <!-- TARJETA 1: DATOS DE LA COMPRA -->
-
-  <details>
-    <summary class="cursor-pointer py-2 select-none">Detalles de registro (opcional)</summary>
-    <div class="flex w-full flex-col gap-4 sm:flex-row sm:items-start mb-2">
-      <div class="w-full grow">
-        <label class="label cursor-default justify-start gap-1 px-0 pt-0 pb-1" for="purchase-supplier">
-          <span class="label-text font-medium">{{ type() === 'entry' ? 'Nombre del proveedor' : 'Nombre del cliente' }}</span>
-          <span class="text-error">*</span>
-        </label>
-        <input id="purchase-supplier" type="text" formControlName="entityName" placeholder="Ej. Distribuidora XYZ"
-          class="input input-bordered w-full bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20" />
-
-        <app-form-error-label [control]="movementForm.get('entityName')!" />
+  <!-- Código de producto -->
+  <section class="bg-base-100">
+    <div class="space-y-2">
+      <div>
+        <h2 class="text-sm font-semibold tracking-wide">Código de producto</h2>
+        <p class="text-xs opacity-70">Escanea con el lector (Enter al final)</p>
       </div>
+      <input
+        #scanInput
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        spellcheck="false"
+        class="input input-bordered w-full bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20"
+        placeholder="Escanea un código…"
+        (keydown.enter)="$event.preventDefault(); $event.stopPropagation(); onBarcodeScanned(scanInput.value); scanInput.value=''; scanInput.focus()"
+      />
     </div>
-  
-    <div class="w-full">
-      <label class="label cursor-default justify-start px-0 pt-0 pb-1" for="purchase-notes">
-        <span class="label-text font-medium">Notas</span>
-        <span class="label-text-alt font-normal opacity-60"></span>
-      </label>
-      <textarea id="purchase-notes" rows="2" formControlName="notes"
-        placeholder="Ej. Pedido urgente, entregar por la puerta lateral..."
-        class="textarea textarea-bordered w-full resize-none bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20"></textarea>
+  </section>
+
+  <!-- Información (opcional) -->
+  <details class="collapse bg-base-100 group">
+    <summary class="collapse-title px-0 py-2">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <div class="text-sm font-semibold tracking-wide">Información (opcional)</div>
+          <div class="text-xs opacity-70">Haz clic para ver/ocultar</div>
+        </div>
+        <svg
+          class="h-4 w-4 opacity-70 transition-transform group-open:rotate-180"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </summary>
+    <div class="collapse-content px-0 pb-0">
+      <div class="space-y-3">
+        <p class="text-xs opacity-70">Datos opcionales del registro</p>
+
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div class="w-full grow">
+            <label class="block text-xs font-medium opacity-70 mb-1" for="purchase-supplier">
+              {{ type() === 'entry' ? 'Nombre del proveedor' : 'Nombre del cliente' }}
+            </label>
+            <input
+              id="purchase-supplier"
+              type="text"
+              formControlName="entityName"
+              placeholder="Ej. Distribuidora XYZ"
+              class="input input-bordered w-full bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
+            <app-form-error-label [control]="movementForm.get('entityName')!" />
+          </div>
+
+          <div class="w-full md:col-span-2">
+            <label class="block text-xs font-medium opacity-70 mb-1" for="purchase-notes">Notas</label>
+            <textarea
+              id="purchase-notes"
+              rows="2"
+              formControlName="notes"
+              placeholder="Ej. Pedido urgente, entregar por la puerta lateral..."
+              class="textarea textarea-bordered w-full resize-none bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20"
+            ></textarea>
+          </div>
+        </div>
+      </div>
     </div>
   </details>
 
-  <!-- TARJETA 2: PRODUCTOS -->
-  <div
-    class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center ">
-    <div class="flex items-center gap-2">
-      <div>
-        <h2 class="text-sm font-semibold tracking-wider uppercase opacity-90">Productos</h2>
-      </div>
-    </div>
-    <app-button type="button" (click)="addItem()" customClass="btn-outline shrink-0" size="sm">
-      <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-        stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-      </svg>
-      Agregar fila
-    </app-button>
-  </div>
-
-  <div>
-    <div formArrayName="items">
-      <div
-        class="mb-3 hidden gap-4 px-2 text-xs font-semibold tracking-wider uppercase opacity-60 md:flex"
-      >
-        <div class="min-w-0 flex-2">Producto</div>
-        <div class="w-32 shrink-0">
-          {{ type() === 'entry' ? 'Costo Unit.' : 'Precio Venta'}}
+  <!-- Gestión -->
+  <section class="bg-base-100">
+    <div class="space-y-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="text-sm font-semibold tracking-wide">Gestión</h2>
+          <p class="text-xs opacity-70">Agrega productos y cantidades</p>
         </div>
-        <div class="w-24 shrink-0">Cantidad</div>
-        <div class="w-28 shrink-0 text-right">Subtotal</div>
-        <div class="w-10 shrink-0"></div>
+        <app-button type="button" (click)="addItem()" customClass="btn-outline shrink-0" size="sm">
+          <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+            stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Agregar fila
+        </app-button>
       </div>
 
-      <div class="space-y-4 md:space-y-2">
-        @for (item of items.controls; track item) {
-          <div
-            [formGroupName]="$index"
-            class="flex flex-col gap-4 items-stretch rounded-box border border-base-300 bg-base-200 p-4 transition-colors hover:bg-base-200/80 md:flex-row md:items-center md:border-transparent md:bg-transparent md:p-2 md:hover:bg-base-200/60"
-          >
-            <!-- <app-form-error-label [control]="item" /> -->
-            <div class="flex items-center justify-between border-b border-base-300 pb-2 md:hidden">
-              <span class="text-xs font-semibold uppercase opacity-60">Producto {{ $index + 1 }}</span>
-              @if (items.length > 1) {
-                <app-button
-                  type="button"
-                  (click)="removeItem($index)"
-                  variant="ghost"
-                  size="sm"
-                  customClass="btn-square text-error-content"
-                  aria-label="Eliminar línea"
-                >
-                  <svg
-                    class="h-4 w-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    aria-hidden="true"
+      <div formArrayName="items" class="space-y-2">
+        @for (item of items.controls; track item; let first = $first) {
+          @if (!first) {
+            <div class="divider my-1" role="separator" aria-hidden="true"></div>
+          }
+          <div class="rounded-box bg-base-100 py-2">
+            <div
+              [formGroupName]="$index"
+              class="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_8rem_6rem_7rem_2.5rem] md:items-end"
+            >
+              <div class="min-w-0">
+                <div class="mb-1 flex items-center justify-between gap-2">
+                  <div class="text-xs font-medium opacity-70">Producto</div>
+                  <app-button
+                    type="button"
+                    (click)="removeItem($index)"
+                    [disabled]="items.length === 1"
+                    variant="ghost"
+                    size="sm"
+                    customClass="btn-square md:hidden text-base-content/60 hover:bg-error hover:text-error-content disabled:bg-transparent disabled:text-base-content/20"
+                    aria-label="Eliminar línea"
+                    title="Eliminar línea"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                    />
-                  </svg>
-                </app-button>
-              }
-            </div>
+                    <svg class="h-4.5 w-4.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                      stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                  </app-button>
+                </div>
+                <app-option-selector
+                  [items]="productsListOptions()"
+                  [controlId]="'purchase-product-' + $index"
+                  [selectedName]="$any(item.get('productName')).value ?? ''"
+                  (selectedOption)="onSelectProduct($event, $index)"
+                  (selectionCleared)="onClearProduct($index)"
+                />
+              </div>
 
-            <div class="relative w-full min-w-0 flex-2">
-              <app-option-selector
-                [items]="productsListOptions()"
-                [controlId]="'purchase-product-' + $index"
-                (selectedOption)="onSelectProduct($event, $index)"
-                (selectionCleared)="onClearProduct($index)"
-              />
-            </div>
-
-            <div class="flex flex-col gap-3 sm:flex-row sm:gap-4">
-              <div class="min-w-0 flex-1 md:w-32 md:flex-none">
-                <label class="mb-1 block text-xs opacity-60 md:hidden">Costo unitario</label>
+              <div class="min-w-0">
+                <div class="mb-1 text-xs font-medium opacity-70">
+                  {{ type() === 'entry' ? 'Costo unit.' : 'Precio venta' }}
+                </div>
                 <div
                   class="flex items-center overflow-hidden rounded-btn border border-base-300 bg-base-100 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20"
                 >
-                  <span
-                    class="border-r border-base-300 bg-base-200 px-3 py-2 text-sm opacity-70 shrink-0"
-                  >
-                    S/.
-                  </span>
+                  <span class="border-r border-base-300 bg-base-200 px-3 py-2 text-sm opacity-70 shrink-0">S/.</span>
                   <input
                     type="number"
                     min="0"
@@ -129,8 +152,9 @@
                   />
                 </div>
               </div>
-              <div class="w-full sm:w-24 sm:shrink-0">
-                <label class="mb-1 block text-xs opacity-60 md:hidden">Cantidad</label>
+
+              <div class="min-w-0">
+                <div class="mb-1 text-xs font-medium opacity-70">Cantidad</div>
                 <input
                   type="number"
                   min="1"
@@ -138,73 +162,65 @@
                   class="input input-bordered w-full bg-base-100 text-center text-sm tabular-nums focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
-            </div>
 
-            <div
-              class="mt-2 items-center flex w-full justify-between border-t border-base-300 pt-2 md:mt-0 md:w-28 md:justify-end md:border-t-0 md:pt-0"
-            >
-              <span class="text-xs font-semibold opacity-70 md:hidden">Subtotal:</span>
-              <span class="w-full text-sm font-medium tabular-nums md:text-right">
-                S/. {{ lineSubtotal($index) | number: '1.2-2' }}
-              </span>
-            </div>
-
-            <div class="hidden w-10 shrink-0 justify-end md:flex">
-              <app-button
-                type="button"
-                (click)="removeItem($index)"
-                [disabled]="items.length === 1"
-                variant="ghost"
-                size="sm"
-                customClass="btn-square text-base-content/50 hover:bg-error hover:text-error-content disabled:bg-transparent disabled:text-base-content/20"
-                title="Eliminar línea"
-              >
-                <svg
-                  class="h-4.5 w-4.5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  aria-hidden="true"
+              <div class="min-w-0">
+                <div class="mb-1 text-xs font-medium opacity-70">Subtotal</div>
+                <div
+                  class="input input-bordered w-full bg-base-200/50 flex items-center justify-end px-3 text-sm font-medium tabular-nums"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                  />
-                </svg>
-              </app-button>
-            </div>
-          </div>
+                  S/. {{ lineSubtotal($index) | number: '1.2-2' }}
+                </div>
+              </div>
 
-          @if (item.invalid && item.touched) {
-            <div class="text-error-content text-sm md:pl-2 mt-2 mb-4 flex items-center gap-1.5 font-medium">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 shrink-0">
-                <path fill-rule="evenodd"
-                  d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm-.75-3.25a.75.75 0 0 0 1.5 0V8a.75.75 0 0 0-1.5 0v3.75Zm0-5.5a.75.75 0 0 0 1.5 0v-1a.75.75 0 0 0-1.5 0v1Z"
-                  clip-rule="evenodd" />
-              </svg>
-              <span>Por favor, verifica que el producto exista y que los montos sean correctos.</span>
+              <div class="hidden md:flex md:justify-end">
+                <app-button
+                  type="button"
+                  (click)="removeItem($index)"
+                  [disabled]="items.length === 1"
+                  variant="ghost"
+                  size="sm"
+                  customClass="btn-square text-base-content/60 hover:bg-error hover:text-error-content disabled:bg-transparent disabled:text-base-content/20"
+                  aria-label="Eliminar línea"
+                  title="Eliminar línea"
+                >
+                  <svg class="h-4.5 w-4.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                </app-button>
+              </div>
             </div>
-          }
+
+            @if (item.invalid && item.touched) {
+              <div class="text-error-content text-sm mt-2 flex items-center gap-1.5 font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 shrink-0">
+                  <path fill-rule="evenodd"
+                    d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm-.75-3.25a.75.75 0 0 0 1.5 0V8a.75.75 0 0 0-1.5 0v3.75Zm0-5.5a.75.75 0 0 0 1.5 0v-1a.75.75 0 0 0-1.5 0v1Z"
+                    clip-rule="evenodd" />
+                </svg>
+                <span>Por favor, verifica que el producto exista y que los montos sean correctos.</span>
+              </div>
+            }
+          </div>
         }
       </div>
-    </div>
 
-    <div class="mt-6 flex flex-col items-end border-t border-base-300 pt-6">
-      <div class="mb-2 flex w-full justify-between text-sm opacity-70 sm:w-64">
-        <span>Cantidad de ítems:</span>
-        <span class="tabular-nums">{{ totalUnitsInLines }}</span>
-      </div>
-      <div class="flex w-full items-center justify-between sm:w-64">
-        <span class="text-base font-semibold">Total a Pagar:</span>
-        <span class="text-xl font-bold text-primary tabular-nums">
-          S/. {{ totalPayable | number: '1.2-2' }}
-        </span>
+      <div class="mt-3">
+        <div class="divider my-1"></div>
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <div class="flex w-full justify-between text-sm opacity-70 sm:w-64">
+            <span>Cantidad de ítems:</span>
+            <span class="tabular-nums">{{ totalUnitsInLines }}</span>
+          </div>
+          <div class="flex w-full items-center justify-between sm:w-64">
+            <span class="text-base font-semibold">Total a pagar</span>
+            <span class="text-xl font-bold text-primary tabular-nums">S/. {{ totalPayable | number: '1.2-2' }}</span>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <div class="flex flex-col-reverse items-stretch justify-end gap-3 pt-4 sm:flex-row sm:items-center">
     <a [routerLink]="type() === 'entry' ? '/purchases' : '/sales'" class="btn btn-ghost w-full sm:w-auto">

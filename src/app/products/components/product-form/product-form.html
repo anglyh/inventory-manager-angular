@@ -38,12 +38,19 @@
   </div>
 
   <!-- Código de barras -->
-  <!-- <label class="form-control w-full">
+  <label class="form-control w-full">
     <div class="label">
       <span class="label-text font-medium text-base-content mb-1">Código de barras</span>
     </div>
-    <input type="text" placeholder="Ej. 7501030300050" class="input input-bordered w-full" />
-  </label> -->
+    <input
+      type="text"
+      placeholder="Ej. 7501030300050"
+      class="input input-bordered w-full"
+      formControlName="barcode"
+      inputmode="numeric"
+      autocomplete="off"
+    />
+  </label>
 
   <!-- Categoría (pendiente de implementar) -->
 

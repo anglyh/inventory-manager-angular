@@ -23,6 +23,15 @@
       </div>
 
       <div class="flex items-center gap-3">
+        @if (headerPrimaryAction(); as action) {
+          <a
+            [routerLink]="action.link"
+            (click)="closeDrawerIfMobile()"
+            class="btn btn-primary btn-sm shrink-0"
+          >
+            {{ action.label }}
+          </a>
+        }
         <div class="hidden sm:flex items-center gap-2 text-sm text-slate-600">
           <div class="avatar placeholder">
             <div class="bg-primary/10 text-primary w-8 rounded-full">

@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { afterNextRender, Component, computed, ElementRef, inject, input, signal, viewChild } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { OptionSelector } from "../../../shared/components/option-selector/option-selector";
@@ -28,6 +28,8 @@ export class MovementForm {
   private router = inject(Router)
   #globalNotificationService = inject(GlobalNotificationService)
 
+  scanInput = viewChild<ElementRef<HTMLInputElement>>('scanInput');
+
   productsResource = rxResource({
     params: () => ({}),
     stream: () => {
@@ -48,6 +50,13 @@ export class MovementForm {
   })
 
   errorMessage = signal('');
+
+  constructor() {
+    // `autofocus` no siempre aplica en navegación SPA; forzamos foco al entrar a la vista.
+    afterNextRender(() => {
+      this.scanInput()?.nativeElement?.focus();
+    });
+  }
 
   createItemFormGroup(): FormGroup {
     return this.fb.group({
@@ -85,7 +94,8 @@ export class MovementForm {
       productName: product.name,
     })
 
-    if (this.type() === "exit") {
+    // Solo en ventas (exit) autocompletamos el precio.
+    if (this.type() === 'exit') {
       itemGroup.patchValue({ unitCost: Number(product.salePrice) })
     }
   }
@@ -93,6 +103,43 @@ export class MovementForm {
   onClearProduct(index: number) {
     const itemGroup = this.items.at(index) as FormGroup;
     itemGroup.patchValue({ productId: '', productName: '' })
+  }
+
+  onBarcodeScanned(rawCode: string) {
+    const code = (rawCode ?? '').trim();
+    if (!code) return;
+
+    const products = this.productsListOptions() ?? [];
+    const product = products.find(p => String(p.barcode ?? '').trim() === code) ?? null;
+
+    if (!product) {
+      this.#globalNotificationService.show(`No se encontró un producto con el código ${code}`, 'error');
+      return;
+    }
+
+    // Si ya existe una línea con ese producto, incrementa cantidad.
+    const existingIndex = this.items.controls.findIndex(ctrl => {
+      const v = (ctrl as FormGroup).get('productId')?.value;
+      return v === product.id;
+    });
+
+    if (existingIndex >= 0) {
+      const itemGroup = this.items.at(existingIndex) as FormGroup;
+      const currentQty = Number(itemGroup.get('quantity')?.value) || 0;
+      itemGroup.patchValue({ quantity: currentQty + 1 });
+      return;
+    }
+
+    // Si hay una fila vacía, úsala. Si no, agrega una nueva fila.
+    const emptyIndex = this.items.controls.findIndex(ctrl => {
+      const g = ctrl as FormGroup;
+      return !g.get('productId')?.value && !g.get('productName')?.value;
+    });
+
+    const targetIndex = emptyIndex >= 0 ? emptyIndex : this.items.length;
+    if (emptyIndex < 0) this.addItem();
+
+    this.onSelectProduct(product, targetIndex);
   }
 
   onSubmit() {
