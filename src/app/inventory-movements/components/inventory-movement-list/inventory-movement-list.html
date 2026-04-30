@@ -100,4 +100,8 @@
       <span class="text-lg font-bold tabular-nums tracking-wide">S/. {{ group.totalAmount.toFixed(2) }}</span>
     </div>
   </div>
+} @empty {
+  <div class="py-14 px-4 sm:py-20 sm:px-6 flex flex-col items-center justify-center text-center gap-2">
+    <p class="text-sm sm:text-base text-base-content/70 font-medium">No se han encontrado movimientos</p>
+  </div>
 }

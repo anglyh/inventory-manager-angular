@@ -1,12 +1,14 @@
-import { CommonModule } from '@angular/common';
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, computed, effect, input, output, signal, ElementRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { fromEvent } from 'rxjs';
 import { Category } from '@/categories/interfaces/category.interface';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerFilter } from '@ng-icons/tabler-icons';
 
 @Component({
-  selector: 'app-category-multiselect-filter',
-  imports: [CommonModule, NgIcon],
+  selector: 'category-multiselect-filter',
+  imports: [NgIcon],
   viewProviders: [provideIcons({ tablerFilter })],
   templateUrl: './category-multiselect-filter.html',
 })
@@ -19,6 +21,20 @@ export class CategoryMultiselectFilter {
   valueChange = output<string | null>();
 
   isOpen = signal(false);
+  private el = inject(ElementRef);
+  private document = inject(DOCUMENT);
+
+  constructor() {
+    fromEvent(this.document, 'click')
+      .pipe(takeUntilDestroyed())
+      .subscribe(event => {
+        const target = event.target as Node | null;
+        const clickInside = target ? this.el.nativeElement.contains(target) : false;
+        if (!clickInside && this.isOpen()) {
+          this.isOpen.set(false);
+        }
+      });
+  }
 
   /** Selección editable dentro del dropdown (normalizada). */
   private selectedNorm = signal<Set<string>>(new Set());
