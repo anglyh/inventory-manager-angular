@@ -17,4 +17,5 @@ export interface Options {
   page?: number,
   limit?: number,
   searchTerm?: string,
+  category?: string,
 }

@@ -7,6 +7,7 @@ import { NewPurchasePage } from './pages/new-purchase-page/new-purchase-page';
 import { SalesPage } from './pages/sales-page/sales-page';
 import { NewSalePage } from './pages/new-sale-page/new-sale-page';
 import { ReportsPage } from '../reports/pages/reports-page/reports-page';
+import { CategoriesPage } from './pages/categories-page/categories-page';
 
 const adminDashboardRoutes: Routes = [
   {
@@ -20,6 +21,11 @@ const adminDashboardRoutes: Routes = [
         path: 'products',
         title: 'Productos',
         component: ProductsPage,
+      },
+      {
+        path: 'categories',
+        title: 'Categorías',
+        component: CategoriesPage,
       },
       {
         path: 'purchases/new',

@@ -51,14 +51,24 @@
 
 @layer base {
   html {
+    height: 100%;
     /* Evita el "layout shift" cuando aparece/desaparece el scrollbar vertical */
     scrollbar-gutter: stable;
   }
 
   body {
+    height: 100%;
+    margin: 0;
     font-family: "Poppins", sans-serif;
-    /* Fallback para navegadores sin `scrollbar-gutter` (mantiene el gutter) */
-    overflow-y: scroll;
+    /* Sin scroll del documento: el scroll va al panel del layout o a app-root (login, etc.) */
+    overflow: hidden;
+  }
+
+  app-root {
+    display: block;
+    height: 100%;
+    overflow: auto;
+    min-height: 0;
   }
 
   h1 {

@@ -14,7 +14,7 @@ export class ProductService {
   private http = inject(HttpClient)
 
   getProducts(options: Options): Observable<PaginatedResponse<ProductWithStock>> {
-    const { page = 1, limit = 12, searchTerm } = options;
+    const { page = 1, limit = 12, searchTerm, category } = options;
 
     let params = new HttpParams()
       .set('page', page)
@@ -22,6 +22,10 @@ export class ProductService {
 
     if (searchTerm) {
       params = params.set('searchTerm', searchTerm)
+    }
+
+    if (category) {
+      params = params.set('category', category)
     }
 
     return this.http.get<PaginatedResponse<ProductWithStock>>(`${baseUrl}`, {

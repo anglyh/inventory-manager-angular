@@ -1,0 +1,112 @@
+<div class="grid gap-4">
+  <div class="rounded-xl border border-base-300 bg-base-100 shadow-sm overflow-hidden">
+    <div class="px-4 py-4 sm:px-6 border-b border-base-200">
+      <h2 class="text-base font-semibold">Categorías</h2>
+      <p class="text-sm text-base-content/60 mt-1">
+        Crea, edita o elimina categorías para organizar tus productos.
+      </p>
+    </div>
+
+    <div class="p-4 sm:p-6">
+      <form class="grid grid-cols-1 sm:grid-cols-12 gap-3" [formGroup]="createForm" (ngSubmit)="submitCreate()">
+        <label class="form-control sm:col-span-6">
+          <div class="label py-0 pb-1">
+            <span class="label-text text-sm font-medium">Nombre</span>
+          </div>
+          <input
+            class="input input-bordered w-full"
+            placeholder="Ej. Bebidas"
+            formControlName="name"
+          />
+          <app-form-error-label [control]="createForm.controls.name" />
+        </label>
+
+        <div class="sm:col-span-6 flex items-end">
+          <app-button
+            type="submit"
+            class="w-full"
+            [loading]="isCreating()"
+            [disabled]="createForm.invalid || isCreating()"
+          >
+            Agregar
+          </app-button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-base-300 bg-base-100 shadow-sm overflow-hidden">
+    @if (categoriesResource.isLoading()) {
+      <div class="p-6 space-y-3" aria-busy="true" aria-label="Cargando categorías">
+        <div class="skeleton h-4 w-40"></div>
+        <div class="skeleton h-10 w-full"></div>
+        <div class="skeleton h-10 w-full"></div>
+        <div class="skeleton h-10 w-full"></div>
+      </div>
+    } @else if (categories().length === 0) {
+      <div class="py-16 px-6 text-center text-base-content/60">
+        No hay categorías registradas.
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="table table-sm sm:table-md w-full text-sm sm:text-base">
+          <thead>
+            <tr class="bg-base-200/40 [&>th]:text-[10px] sm:[&>th]:text-xs [&>th]:uppercase [&>th]:tracking-wide [&>th]:text-base-content/70 [&>th]:border-0">
+              <th class="pl-4 sm:pl-6">Categoría</th>
+              <th class="text-end pr-4 sm:pr-6">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="[&>tr]:border-b [&>tr]:border-base-200 [&>tr:last-child]:border-0">
+            @for (c of categories(); track c.id) {
+              <tr class="hover:bg-base-200/30 transition-colors">
+                <td class="pl-4 sm:pl-6 font-medium">{{ c.name }}</td>
+                <td class="text-end pr-4 sm:pr-6">
+                  <div class="flex justify-end gap-2">
+                    <app-button variant="ghost" type="button" (click)="openEdit(c)">
+                      Editar
+                    </app-button>
+                    <app-button
+                      variant="ghost"
+                      type="button"
+                      [loading]="isDeletingId() === c.id"
+                      [disabled]="isDeletingId() === c.id"
+                      (click)="deleteCategory(c)"
+                    >
+                      Eliminar
+                    </app-button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<app-modal [isOpen]="isEditOpen()" (closed)="closeEdit()">
+  <h3 class="font-bold text-lg mb-4 text-base-content">
+    Editar categoría
+  </h3>
+
+  <form class="flex flex-col gap-3" [formGroup]="editForm" (ngSubmit)="submitEdit()">
+    <label class="form-control w-full">
+      <div class="label py-0 pb-1">
+        <span class="label-text font-medium text-base-content">Nombre</span>
+      </div>
+      <input class="input input-bordered w-full" formControlName="name" />
+      <app-form-error-label [control]="editForm.controls.name" />
+    </label>
+
+    <div class="flex justify-end gap-3 mt-2">
+      <app-button type="button" variant="ghost" [disabled]="isUpdating()" (click)="closeEdit()">
+        Cancelar
+      </app-button>
+      <app-button type="submit" [loading]="isUpdating()" [disabled]="editForm.invalid || isUpdating()">
+        Guardar
+      </app-button>
+    </div>
+  </form>
+</app-modal>
+

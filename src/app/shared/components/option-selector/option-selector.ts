@@ -1,3 +1,4 @@
+import { NgStyle } from '@angular/common';
 import { Component, computed, DOCUMENT, effect, ElementRef, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
@@ -17,7 +18,7 @@ const removeAccents = (text: string) => {
 
 @Component({
   selector: 'app-option-selector',
-  imports: [Button],
+  imports: [Button, NgStyle],
   templateUrl: './option-selector.html',
 })
 export class OptionSelector<T extends Option> {
@@ -25,6 +26,10 @@ export class OptionSelector<T extends Option> {
   private document = inject(DOCUMENT)
 
   isDropdownOpen = signal(false);
+  /** Si no hay espacio abajo, el dropdown se abre hacia arriba. */
+  dropUp = signal(false);
+  /** Posición fija para evitar recortes por overflow en modales. */
+  dropdownStyle = signal<Record<string, string>>({});
   inputValue = signal('')
   lastSelectedName = signal('')
 
@@ -61,11 +66,26 @@ export class OptionSelector<T extends Option> {
     fromEvent(this.document, 'click')
       .pipe(takeUntilDestroyed())
       .subscribe(event => {
-        const clickInside = this.hostElement.nativeElement.contains(event.target)
+        const target = event.target as Node | null;
+        const clickInside = target ? this.hostElement.nativeElement.contains(target) : false;
         if (!clickInside) {
           this.isDropdownOpen.set(false)
         }
       })
+
+    // Recalcular posición cuando el viewport cambia (solo si está abierto).
+    fromEvent(window, 'resize')
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        if (this.isDropdownOpen()) this.updateDropdownPosition();
+      });
+
+    // Captura scrolls en contenedores (incluye modales con overflow).
+    fromEvent(window, 'scroll', { capture: true } as any)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        if (this.isDropdownOpen()) this.updateDropdownPosition();
+      });
   }
   
   filteredOptions = computed(() => {
@@ -93,6 +113,7 @@ export class OptionSelector<T extends Option> {
 
   onInput(value: string) {
     this.inputValue.set(value)
+    if (this.isDropdownOpen()) this.updateDropdownPosition();
 
     const current = (this.inputValue() ?? '').toLowerCase()
     const lastSelected = (this.lastSelectedName() ?? '').toLowerCase()
@@ -105,6 +126,40 @@ export class OptionSelector<T extends Option> {
       if (hadSelection) {
         this.selectionCleared.emit()
       }
+    }
+  }
+
+  openDropdown() {
+    this.isDropdownOpen.set(true);
+    this.updateDropdownPosition();
+  }
+
+  private updateDropdownPosition() {
+    const el: HTMLElement | null = this.hostElement?.nativeElement ?? null;
+    if (!el) return;
+
+    const input = el.querySelector('input') as HTMLInputElement | null;
+    if (!input) return;
+
+    const rect = input.getBoundingClientRect();
+    const gap = 4; // px
+    const maxHeight = 18 * 16; // 18rem aprox (288px)
+
+    const spaceBelow = window.innerHeight - rect.bottom - gap;
+    const spaceAbove = rect.top - gap;
+
+    const shouldDropUp = spaceBelow < Math.min(maxHeight, 240) && spaceAbove > spaceBelow;
+    this.dropUp.set(shouldDropUp);
+
+    const width = `${rect.width}px`;
+    const left = `${rect.left}px`;
+
+    if (shouldDropUp) {
+      const bottom = `${window.innerHeight - rect.top + gap}px`;
+      this.dropdownStyle.set({ position: 'fixed', left, bottom, width, zIndex: '9999' });
+    } else {
+      const top = `${rect.bottom + gap}px`;
+      this.dropdownStyle.set({ position: 'fixed', left, top, width, zIndex: '9999' });
     }
   }
 }

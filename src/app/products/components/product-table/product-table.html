@@ -1,33 +1,94 @@
-<div class="overflow-x-auto">
-  <table class="table table-zebra">
-    <!-- head -->
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th class="text-end">Precio</th>
-        <th class="text-end">Costo</th>
-        <th class="text-end">Stock</th>
-        <th class="text-end">Stock mín.</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-
-      @for (product of products(); track product.id) {
-        <tr class="hover:bg-primary/10">
-          <td>{{ product.name }}</td>
-          <td class="text-end tabular-nums whitespace-nowrap">S/. {{ product.salePrice | number:'1.2-2' }}</td>
-          <td class="text-end tabular-nums whitespace-nowrap">S/. {{ product.unitCostAvg | number:'1.2-2' }}</td>
-          <td class="text-end tabular-nums">{{ product.stock }}</td>
-          <td class="text-end tabular-nums">{{ product.minStock }}</td>
-
-          <td>
-            <!-- Edit Button -->
-             <app-button variant="accent" (click)="edit.emit(product)">Editar</app-button>
-          </td>
-        </tr>
+<div
+  class="rounded-xl border border-base-300 bg-base-100 shadow-sm overflow-hidden"
+>
+  @if (loading()) {
+    <div class="p-4 sm:p-6 space-y-4" aria-busy="true" aria-label="Cargando productos">
+      <div class="flex gap-4 pb-2 border-b border-base-200">
+        <div class="skeleton h-4 w-28"></div>
+        <div class="skeleton h-4 w-24"></div>
+        <div class="skeleton h-4 w-20 ml-auto"></div>
+        <div class="skeleton h-4 w-20"></div>
+        <div class="skeleton h-4 w-16"></div>
+        <div class="skeleton h-4 w-20"></div>
+        <div class="skeleton h-4 w-24"></div>
+      </div>
+      @for (row of skeletonRows; track row) {
+        <div class="flex gap-4 items-center py-1">
+          <div class="skeleton h-5 flex-2 max-w-xs"></div>
+          <div class="skeleton h-5 w-24"></div>
+          <div class="skeleton h-5 w-20 ml-auto"></div>
+          <div class="skeleton h-5 w-20"></div>
+          <div class="skeleton h-5 w-14"></div>
+          <div class="skeleton h-5 w-14"></div>
+          <div class="skeleton h-9 w-24 rounded-lg"></div>
+        </div>
       }
-    </tbody>
-  </table>
+    </div>
+  } @else if (products().length === 0) {
+    <div
+      class="py-14 px-4 sm:py-20 sm:px-6 flex flex-col items-center justify-center text-center gap-2"
+    >
+      <p class="text-sm sm:text-base text-base-content/70 font-medium">No se han encontrado productos</p>
+    </div>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="table table-sm sm:table-lg w-full text-sm sm:text-base">
+        <thead>
+          <tr class="border-b border-base-300 bg-base-200/40 [&>th]:font-semibold [&>th]:text-[10px] sm:[&>th]:text-xs [&>th]:uppercase [&>th]:tracking-wide [&>th]:text-base-content/70 [&>th]:border-0">
+            <th class="pl-4 sm:pl-6">Producto</th>
+            <th>Categoría</th>
+            <th class="text-end">Precio</th>
+            <th class="text-end">Costo</th>
+            <th class="text-end">Stock</th>
+            <th class="text-end">Stock mín.</th>
+            <th class="pr-4 sm:pr-6">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="[&>tr]:border-b [&>tr]:border-base-200 [&>tr:last-child]:border-0">
+          @for (product of products(); track product.id) {
+            <tr class="hover:bg-base-200/30 transition-colors">
+              <td class="pl-4 sm:pl-6">
+                <span class="font-medium text-base-content">{{ product.name }}</span>
+              </td>
+              <td class="text-base-content/70">
+                {{ product.categoryName ?? 'Sin categoría' }}
+              </td>
+              <td class="text-end tabular-nums whitespace-nowrap font-medium">
+                S/. {{ product.salePrice | number:'1.2-2' }}
+              </td>
+              <td class="text-end tabular-nums whitespace-nowrap text-base-content/80">
+                S/. {{ product.unitCostAvg | number:'1.2-2' }}
+              </td>
+              <td class="text-end">
+                <div class="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:justify-end sm:gap-2">
+                  @if (product.stock <= 0) {
+                    <span class="badge badge-error badge-sm whitespace-nowrap"
+                      >Sin stock</span
+                    >
+                  } @else if (product.stock < product.minStock) {
+                    <span class="badge badge-warning badge-sm whitespace-nowrap"
+                      >Bajo</span
+                    >
+                  } @else {
+                    <span class="badge badge-success badge-sm whitespace-nowrap"
+                      >OK</span
+                    >
+                  }
+                  <span class="tabular-nums text-base-content">{{ product.stock }}</span>
+                </div>
+              </td>
+              <td class="text-end tabular-nums text-base-content/80">
+                {{ product.minStock }}
+              </td>
+              <td class="pr-4 sm:pr-6">
+                <app-button variant="accent" (click)="edit.emit(product)"
+                  >Editar</app-button
+                >
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>
-

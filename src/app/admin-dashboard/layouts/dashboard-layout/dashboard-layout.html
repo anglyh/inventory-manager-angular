@@ -1,4 +1,4 @@
-<div class="drawer lg:drawer-open h-screen overflow-hidden">
+<div class="drawer lg:drawer-open h-full min-h-0 overflow-hidden">
   <input #drawerToggle id="my-drawer-4" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content grid grid-rows-[auto_1fr] min-w-0 min-h-0 h-full overflow-hidden">
     <!-- Navbar -->
@@ -101,6 +101,27 @@
               <path d="M12 12L4 7.5"></path>
             </svg>
             <span class="is-drawer-close:hidden">Productos</span>
+          </a>
+        </li>
+        <li>
+          <a 
+            [routerLink]="'/categories'"
+            (click)="closeDrawerIfMobile()"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right hover:bg-primary/90 hover:text-primary-content"
+            data-tip="Categorías"
+            routerLinkActive="bg-primary text-primary-content"
+            [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }"
+          >
+            <!-- Categorías icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"
+              stroke-width="2" fill="none" stroke="currentColor" class="my-1.5 inline-block size-4">
+              <path d="M7 7h.01"></path>
+              <path d="M3 7a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4z"></path>
+              <path d="M8 7h13"></path>
+              <path d="M8 12h13"></path>
+              <path d="M8 17h13"></path>
+            </svg>
+            <span class="is-drawer-close:hidden">Categorías</span>
           </a>
         </li>
         <li>

@@ -12,6 +12,9 @@ import { DecimalPipe } from '@angular/common';
 })
 export class ProductTable {
   products = input.required<ProductWithStock[]>();
-  
+  loading = input(false);
+
+  readonly skeletonRows = [0, 1, 2, 3, 4, 5] as const;
+
   edit = output<ProductWithStock>();
 }

@@ -11,6 +11,7 @@
       type="radio"
       [routerLink]="[]"
       [queryParams]="{ page: item }"
+      queryParamsHandling="merge"
       name="options"
       [aria-label]="item"
       [checked]="item === activePage()" />
