@@ -1,0 +1,98 @@
+<div class="flex flex-col gap-4">
+  <form class="flex flex-col gap-1 rounded-box bg-base-100 p-4 sm:p-6" [formGroup]="createForm" (ngSubmit)="submitCreate()">
+    <label class="text-caption text-neutral" for="name-catalog-create">Agregar {{ labels().singular }}</label>
+    <div class="flex flex-col gap-2 sm:flex-row">
+      <input
+        id="name-catalog-create"
+        class="input w-full"
+        formControlName="name"
+        autocomplete="off"
+        [placeholder]="labels().placeholder"
+        [attr.maxlength]="nameMaxLength"
+        [class.input-error]="createError()"
+      />
+      <app-button
+        type="submit"
+        customClass="w-full sm:w-auto shrink-0"
+        [loading]="creating()"
+        [disabled]="createForm.invalid || creating()"
+      >
+        Agregar
+      </app-button>
+    </div>
+    @if (createError()) {
+      <small role="alert" class="text-error">{{ createError() }}</small>
+    }
+  </form>
+
+  <div class="rounded-box bg-base-100 p-2">
+    @if (loading()) {
+      <div class="grid place-items-center py-12" role="status" [attr.aria-label]="'Cargando ' + labels().plural">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    } @else if (loadError()) {
+      <div role="alert" class="flex flex-col items-center gap-3 px-4 py-12 text-center">
+        <p class="text-neutral">{{ loadError() }}</p>
+        <button type="button" class="btn btn-primary btn-sm" (click)="retry.emit()">Reintentar</button>
+      </div>
+    } @else {
+      <ul class="flex flex-col">
+        @for (item of items(); track item.id) {
+          <li class="flex items-center justify-between gap-2 rounded-field px-3 py-2 transition-colors hover:bg-base-200/60">
+            <span class="truncate font-medium">{{ item.name }}</span>
+            <div class="flex shrink-0 gap-1">
+              <button
+                type="button"
+                class="btn btn-ghost btn-square btn-sm text-neutral"
+                [attr.aria-label]="'Editar ' + item.name"
+                (click)="openEdit(item)"
+              >
+                <ng-icon name="tablerPencil" size="18" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                class="btn btn-ghost btn-square btn-sm text-neutral hover:bg-error/10 hover:text-error"
+                [attr.aria-label]="'Eliminar ' + item.name"
+                [disabled]="deletingId() === item.id"
+                (click)="confirmRemove(item)"
+              >
+                @if (deletingId() === item.id) {
+                  <span class="loading loading-spinner loading-xs"></span>
+                } @else {
+                  <ng-icon name="tablerTrash" size="18" aria-hidden="true" />
+                }
+              </button>
+            </div>
+          </li>
+        } @empty {
+          <li class="px-4 py-12 text-center text-neutral">Aún no hay {{ labels().plural }}.</li>
+        }
+      </ul>
+    }
+  </div>
+</div>
+
+<app-modal [isOpen]="editOpen()" (closed)="onEditClosed()">
+  <form class="flex flex-col gap-4" [formGroup]="editForm" (ngSubmit)="submitEdit()">
+    <h3 class="text-subtitle font-medium first-letter:uppercase">Editar {{ labels().singular }}</h3>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-caption text-neutral">Nombre</span>
+      <input
+        class="input w-full"
+        formControlName="name"
+        autocomplete="off"
+        [attr.maxlength]="nameMaxLength"
+        [class.input-error]="showSaveError() && saveError()"
+      />
+      @if (showSaveError() && saveError()) {
+        <small role="alert" class="text-error">{{ saveError() }}</small>
+      }
+    </label>
+
+    <div class="flex justify-end gap-2">
+      <app-button type="button" variant="ghost" [disabled]="saving()" (click)="editOpen.set(false)">Cancelar</app-button>
+      <app-button type="submit" [loading]="saving()" [disabled]="editForm.invalid || saving()">Guardar</app-button>
+    </div>
+  </form>
+</app-modal>

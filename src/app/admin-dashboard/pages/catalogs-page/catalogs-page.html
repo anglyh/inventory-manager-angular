@@ -1,0 +1,39 @@
+<div class="flex flex-col gap-4">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-col">
+      <h2 class="text-subtitle font-medium">Catálogos</h2>
+      <small class="text-neutral">Las listas que usas al registrar productos y compras.</small>
+    </div>
+
+    <div class="flex gap-2" role="tablist" aria-label="Catálogos">
+      @for (tab of tabs; track tab) {
+        <button
+          type="button"
+          role="tab"
+          class="btn shrink-0 rounded-full border-0 px-5"
+          [class]="tab === this.tab() ? 'btn-primary' : '[--btn-color:var(--color-base-100)]'"
+          [attr.aria-selected]="tab === this.tab()"
+          (click)="selectTab(tab)"
+        >
+          {{ config[tab].label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <app-name-catalog
+    [items]="items()"
+    [labels]="config[tab()].labels"
+    [loading]="activeResource().isLoading()"
+    [loadError]="loadError()"
+    [creating]="creating()"
+    [createError]="createError()"
+    [saving]="saving()"
+    [saveError]="saveError()"
+    [deletingId]="deletingId()"
+    (create)="create($event)"
+    (update)="update($event)"
+    (remove)="remove($event)"
+    (retry)="activeResource().reload()"
+  />
+</div>
