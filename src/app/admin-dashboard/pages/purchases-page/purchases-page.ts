@@ -1,60 +1,93 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { InventoryMovementService } from 'src/app/inventory-movements/services/inventory-movement.service';
-import { InventoryMovementList } from "src/app/inventory-movements/components/inventory-movement-list/inventory-movement-list";
-import { InventoryMovement } from 'src/app/inventory-movements/interfaces/inventory-movement.interface';
-import { finalize } from 'rxjs';
-import { InfiniteScrollDirective } from '@/shared/directives/infinite-scroll.directive';
+import { Component, inject, signal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
+import { PurchaseForm } from '@/features/inventory-movements/components/purchase-form/purchase-form';
+import { InventoryMovementService } from '@/features/inventory-movements/services/inventory-movement.service';
+import type { CreatePurchaseRequest } from '@/features/inventory-movements/interfaces/purchase.interface';
+import { ProductService } from '@/features/products/services/product.service';
+import { SupplierService } from '@/features/suppliers/services/supplier.service';
+import type { Supplier } from '@/features/suppliers/interfaces/supplier.interface';
+import { GlobalNotificationService } from '@/shared/components/global-notification/global-notification.service';
+import { extractApiError } from '@/api/extract-api-error';
+import { mapApiError } from '@/api/error-mapper';
 
 @Component({
   selector: 'app-purchases-page',
-  imports: [ReactiveFormsModule, InventoryMovementList, InfiniteScrollDirective],
+  imports: [PurchaseForm],
   templateUrl: './purchases-page.html',
 })
-export class PurchasesPage implements OnInit {
-  #movementService = inject(InventoryMovementService)
+export class PurchasesPage {
+  private readonly router = inject(Router);
+  private productService = inject(ProductService);
+  private supplierService = inject(SupplierService);
+  private inventoryMovementService = inject(InventoryMovementService);
+  private notificationService = inject(GlobalNotificationService);
 
-  movements = signal<InventoryMovement[]>([]);
-  nextCursor = signal<{ cursorId: string; cursorDate: string } | null>(null)
-  isLoading = signal(false);
-  hasNextPage = signal(true)
-  private readonly LIMIT = 12;
+  saving = signal(false);
 
-  ngOnInit(): void {
-    this.loadMore()
-  }
+  productsResource = rxResource({
+    stream: () => this.productService.listProductOptions(),
+  });
 
-  loadMore(): void {
-    if (this.isLoading() || !this.hasNextPage()) return;
+  suppliersResource = rxResource({
+    stream: () => this.supplierService.getSuppliers(),
+  });
 
-    this.isLoading.set(true);
+  creatingSupplier = signal(false);
+  supplierError = signal<string | null>(null);
+  createdSupplier = signal<Supplier | null>(null);
 
-    this.#movementService.getEntries({ 
-      cursorId: this.nextCursor()?.cursorId,
-      cursorDate: this.nextCursor()?.cursorDate,
-      limit: this.LIMIT
-    })
-      .pipe(
-        finalize(() => this.isLoading.set(false))
-      )
-      .subscribe({
-        next: (response) => {
-          this.movements.update(prev => [...prev, ...response.data]);
-          
-          if (response.nextCursor) {
-            this.nextCursor.set({ 
-              cursorDate: response.nextCursor.cursorDate, 
-              cursorId: response.nextCursor.cursorId 
-            });
-          } else {
-            this.nextCursor.set(null);
-            this.hasNextPage.set(false);
-          }
-        },
-        error: (err) => {
-          console.error('Error cargando compras', err)
+  createSupplier(name: string) {
+    this.creatingSupplier.set(true);
+    this.supplierError.set(null);
+
+    this.supplierService.createSupplier({ name }).subscribe({
+      next: supplier => {
+        // Se agrega a la lista local: recargar todos los proveedores no aporta nada.
+        this.suppliersResource.update(list =>
+          [...(list ?? []), supplier].sort((a, b) => a.name.localeCompare(b.name))
+        );
+        this.createdSupplier.set(supplier);
+        this.creatingSupplier.set(false);
+        this.notificationService.show('Proveedor creado');
+      },
+      error: error => {
+        this.creatingSupplier.set(false);
+        const apiError = extractApiError(error);
+        const mapped = mapApiError(apiError);
+        if (mapped.redirect) {
+          void this.router.navigate([mapped.redirect]);
+          return;
         }
-      })
+        const message = mapped.fields ? Object.values(mapped.fields).join(' · ') : mapped.toast;
+        this.supplierError.set(message || apiError.message || 'No se pudo crear el proveedor.');
+      },
+    });
   }
 
+  registerPurchase(purchase: CreatePurchaseRequest) {
+    this.saving.set(true);
+    this.inventoryMovementService.registerPurchase(purchase).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.notificationService.show('Compra registrada exitosamente');
+        this.onSaved();
+      },
+      error: error => {
+        this.saving.set(false);
+        const apiError = extractApiError(error);
+        const mapped = mapApiError(apiError);
+        if (mapped.redirect) {
+          void this.router.navigate([mapped.redirect]);
+          return;
+        }
+        const message = mapped.fields ? Object.values(mapped.fields).join(' · ') : mapped.toast;
+        this.notificationService.show(message || apiError.message, 'error');
+      },
+    });
+  }
+
+  onSaved() {
+    void this.router.navigate(['/movements'], { queryParams: { group: 'purchase' } });
+  }
 }

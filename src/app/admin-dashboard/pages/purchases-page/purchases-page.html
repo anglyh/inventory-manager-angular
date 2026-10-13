@@ -1,25 +1,21 @@
-<div class="flex flex-col h-full w-full overflow-x-auto">
-  <inventory-movement-list 
-    [movements]="movements()"
+@if (productsResource.isLoading() || suppliersResource.isLoading()) {
+  <div class="grid h-full place-items-center" role="status" aria-label="Cargando">
+    <span class="loading loading-spinner loading-xl text-primary"></span>
+  </div>
+} @else if (productsResource.error()) {
+  <div class="grid h-full place-items-center gap-3">
+    <p class="text-neutral">No se pudieron cargar los productos.</p>
+    <button class="btn btn-primary" type="button" (click)="productsResource.reload()">Reintentar</button>
+  </div>
+} @else {
+  <purchase-form
+    [products]="productsResource.value() ?? []"
+    [suppliers]="suppliersResource.hasValue() ? suppliersResource.value() : []"
+    [saving]="saving()"
+    [creatingSupplier]="creatingSupplier()"
+    [supplierError]="supplierError()"
+    [createdSupplier]="createdSupplier()"
+    (submitted)="registerPurchase($event)"
+    (supplierCreateRequested)="createSupplier($event)"
   />
-
-  @if (hasNextPage()) {
-    <div appInfiniteScroll (scrolled)="loadMore()" class="loading-trigger">
-      @if (isLoading()) {
-        <div class="flex flex-col gap-4">
-          <div class="skeleton h-5 w-40 rounded-md"></div>
-
-          <div class="flex flex-col gap-3">
-            <div class="skeleton h-24 w-full rounded-2xl"></div>
-            <div class="skeleton h-24 w-full rounded-2xl"></div>
-            <div class="skeleton h-24 w-full rounded-2xl"></div>
-          </div>
-
-          <div class="flex justify-end">
-            <div class="skeleton h-10 w-24 rounded-xl"></div>
-          </div>
-        </div>
-      }
-    </div>
-  }
-</div>
+}

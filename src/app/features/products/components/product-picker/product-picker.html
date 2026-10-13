@@ -1,0 +1,13 @@
+
+<div 
+  class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+>
+  @for (product of products(); track $index) {
+    <product-card
+      class="min-w-0"
+      [product]="product"
+      (click)="productSelected.emit(product)"
+      [selected]="isSelected(product.id)"
+    />
+  }
+</div>
