@@ -3,6 +3,7 @@ import { AfterViewInit, Component, DestroyRef, ElementRef, inject, viewChild } f
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterOutlet, RouterLinkActive, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
+import { Sidebar } from "../../components/Sidebar/Sidebar";
 
 interface DashboardHeaderAction {
   label: string;
@@ -11,7 +12,7 @@ interface DashboardHeaderAction {
 
 @Component({
   selector: 'app-dashboard-layout',
-  imports: [RouterLink, RouterOutlet, RouterLinkActive],
+  imports: [RouterLink, RouterOutlet, Sidebar],
   templateUrl: './dashboard-layout.html',
 })
 export class DashboardLayout implements AfterViewInit {
@@ -91,13 +92,6 @@ export class DashboardLayout implements AfterViewInit {
   }
 
   #headerActionFromUrl(): DashboardHeaderAction | null {
-    const path = this.router.url.split('?')[0].split('#')[0];
-    if (path === '/sales') {
-      return { label: 'Nueva venta', link: '/sales/new' };
-    }
-    if (path === '/purchases') {
-      return { label: 'Nueva compra', link: '/purchases/new' };
-    }
     return null;
   }
 }
