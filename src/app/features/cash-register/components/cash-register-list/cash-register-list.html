@@ -1,0 +1,92 @@
+<div class="flex flex-col overflow-hidden rounded-box bg-base-100">
+  @for (register of registers(); track register.id) {
+    @let summary = register.summary;
+    @let isOpen = register.status === 'OPEN';
+    @let sameDay = register.closedAt && (register.openedAt | date: 'yMd') === (register.closedAt | date: 'yMd');
+    <details class="collapse group rounded-none" name="cash-register-history">
+      <summary class="collapse-title flex cursor-pointer list-none items-center gap-3 px-4 py-3 hover:bg-base-200/60 [&::-webkit-details-marker]:hidden select-none">
+        <span
+          class="grid size-10 shrink-0 place-items-center rounded-full"
+          [class]="isOpen ? 'bg-success/10 text-success' : 'bg-base-200 text-neutral'"
+        >
+          <ng-icon [name]="isOpen ? 'tablerLockOpen' : 'tablerLock'" size="20" aria-hidden="true" />
+        </span>
+
+        <div class="flex min-w-0 flex-1 flex-col">
+          <span class="truncate font-medium tabular-nums">
+            {{ register.openedAt | date: 'd MMM y · h:mm a' }}
+            @if (register.closedAt) {
+              <span class="text-neutral">→ {{ register.closedAt | date: sameDay ? 'h:mm a' : 'd MMM · h:mm a' }}</span>
+            }
+          </span>
+          <small class="truncate text-neutral tabular-nums">
+            @if (register.openedByName) {
+              {{ register.openedByName }} ·
+            }
+            Fondo S/ {{ register.openingAmount | number: '1.2-2' }}
+          </small>
+        </div>
+
+        <div class="flex shrink-0 flex-col items-end">
+          @if (isOpen) {
+            <span class="badge badge-soft badge-success badge-sm">Abierta</span>
+          } @else if (summary?.difference; as difference) {
+            <span class="font-medium tabular-nums" [class]="differenceClass[differenceTone(difference)]">
+              {{ differenceSign(difference) }}S/ {{ absoluteAmount(difference) | number: '1.2-2' }}
+            </span>
+            <small class="text-neutral">Diferencia</small>
+          }
+        </div>
+
+        <ng-icon name="tablerChevronDown" size="18" class="hidden shrink-0 text-neutral transition-transform group-open:rotate-180 sm:block" aria-hidden="true" />
+      </summary>
+
+      <div class="collapse-content mt-4 px-4 sm:pl-17">
+        <div class="flex flex-col gap-4 rounded-field bg-base-200/60 p-3 sm:p-4">
+          @if (summary) {
+            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr_auto_1fr]">
+              <dt class="text-neutral">Ventas</dt>
+              <dd class="tabular-nums">S/ {{ summary.totalSales | number: '1.2-2' }} ({{ summary.salesCount }})</dd>
+              <dt class="text-neutral">Efectivo</dt>
+              <dd class="tabular-nums">S/ {{ summary.cashSales | number: '1.2-2' }}</dd>
+              <dt class="text-neutral">Yape / Plin</dt>
+              <dd class="tabular-nums">S/ {{ summary.yapeSales | number: '1.2-2' }}</dd>
+              <dt class="text-neutral">Aportes</dt>
+              <dd class="tabular-nums">+ S/ {{ summary.cashIn | number: '1.2-2' }}</dd>
+              <dt class="text-neutral">Retiros</dt>
+              <dd class="tabular-nums">− S/ {{ summary.cashOut | number: '1.2-2' }}</dd>
+              @if (!isOpen && summary.expectedCash; as expected) {
+                <dt class="text-neutral">Esperado</dt>
+                <dd class="tabular-nums">S/ {{ expected | number: '1.2-2' }}</dd>
+              }
+              @if (register.closingAmount !== null) {
+                <dt class="text-neutral">Contado</dt>
+                <dd class="tabular-nums">S/ {{ register.closingAmount | number: '1.2-2' }}</dd>
+              }
+            </dl>
+          }
+
+          <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+            @if (register.closedByName) {
+              <dt class="text-neutral">Cerró</dt>
+              <dd>{{ register.closedByName }}</dd>
+            }
+            @if (register.notes) {
+              <dt class="text-neutral">Nota de apertura</dt>
+              <dd class="wrap-break-word">{{ register.notes }}</dd>
+            }
+            @if (register.closingNotes) {
+              <dt class="text-neutral">Nota de cierre</dt>
+              <dd class="wrap-break-word">{{ register.closingNotes }}</dd>
+            }
+          </dl>
+
+          <a class="btn btn-sm btn-ghost self-start" [routerLink]="['/cash-register', register.id]">
+            Ver detalle
+            <ng-icon name="tablerChevronRight" size="16" aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+    </details>
+  }
+</div>

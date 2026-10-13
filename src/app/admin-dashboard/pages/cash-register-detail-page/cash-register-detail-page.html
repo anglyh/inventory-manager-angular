@@ -1,0 +1,76 @@
+<div class="flex w-full flex-col gap-4">
+  <a routerLink="/cash-register/history" class="btn btn-ghost btn-sm self-start text-neutral">
+    <ng-icon name="tablerArrowLeft" size="18" aria-hidden="true" />
+    Historial
+  </a>
+
+  @if (notFound()) {
+    <div class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-12 text-center">
+      <p class="font-medium">La caja no existe</p>
+      <small class="text-neutral">Puede que el enlace esté incompleto.</small>
+      <a routerLink="/cash-register/history" class="btn btn-primary btn-sm">Ver historial</a>
+    </div>
+  } @else if (errorMessage(); as message) {
+    <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">
+      <p class="text-neutral">{{ message }}</p>
+      <button type="button" class="btn btn-primary btn-sm" (click)="registerResource.reload()">Reintentar</button>
+    </div>
+  } @else if (registerResource.hasValue()) {
+    @let register = registerResource.value();
+    <header class="flex flex-col gap-3 rounded-box bg-base-100 p-4 sm:p-6">
+      <div class="flex flex-wrap items-center gap-3">
+        <h1 class="text-title font-semibold">Caja</h1>
+        @if (register.status === 'OPEN') {
+          <span class="badge badge-soft badge-success">Abierta</span>
+        } @else {
+          <span class="badge badge-soft badge-neutral">Cerrada</span>
+        }
+      </div>
+
+      <dl class="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+        <div class="flex flex-col">
+          <dt class="text-caption text-neutral">Apertura</dt>
+          <dd class="tabular-nums">
+            {{ register.openedAt | date: 'd MMM y · h:mm a' }}
+            @if (register.openedByName) {
+              <span class="text-neutral">· {{ register.openedByName }}</span>
+            }
+          </dd>
+        </div>
+        @if (register.closedAt) {
+          <div class="flex flex-col">
+            <dt class="text-caption text-neutral">Cierre</dt>
+            <dd class="tabular-nums">
+              {{ register.closedAt | date: 'd MMM y · h:mm a' }}
+              @if (register.closedByName) {
+                <span class="text-neutral">· {{ register.closedByName }}</span>
+              }
+            </dd>
+          </div>
+        }
+      </dl>
+
+      <div class="flex flex-wrap gap-2">
+        <a
+          routerLink="/movements"
+          [queryParams]="{ group: 'sales', cashRegisterId: register.id }"
+          class="btn btn-sm border-0 bg-base-200"
+        >
+          <ng-icon name="tablerReceipt" size="18" aria-hidden="true" />
+          Ver ventas
+        </a>
+        @if (register.status === 'OPEN') {
+          <a routerLink="/cash-register" class="btn btn-primary btn-sm">Ir a la caja</a>
+        }
+      </div>
+    </header>
+
+    <cash-register-summary [register]="register" />
+
+    <cash-register-movement-table class="block w-full" [registerId]="register.id" />
+  } @else {
+    <div class="grid place-items-center py-8" role="status" aria-label="Cargando caja">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+</div>

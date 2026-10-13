@@ -1,0 +1,54 @@
+<app-modal label="Arqueo y cierre" boxClass="max-w-md" [isOpen]="open()" (closed)="closed.emit()">
+  <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="flex flex-col gap-1">
+      <h3 class="text-subtitle font-medium">Arqueo y cierre</h3>
+      <small class="text-neutral">Cuenta todo el efectivo de la gaveta e ingresa el total.</small>
+    </div>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-caption text-neutral">Efectivo contado</span>
+      <span class="input w-full" [class.input-error]="!!amountError">
+        <span class="text-neutral">S/</span>
+        <input
+          class="tabular-nums"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+          formControlName="closingAmount"
+          [attr.aria-invalid]="!!amountError"
+        />
+      </span>
+      @if (amountError) {
+        <small class="text-error">{{ amountError }}</small>
+      }
+    </label>
+
+    <label class="flex flex-col gap-1">
+      <span class="flex justify-between text-caption text-neutral">
+        Observación (opcional)
+        <span class="tabular-nums">{{ form.controls.notes.value.length }}/{{ notesMaxLength }}</span>
+      </span>
+      <textarea
+        class="textarea w-full resize-none"
+        rows="3"
+        placeholder="Motivo de un descuadre u otras observaciones"
+        formControlName="notes"
+        [attr.maxlength]="notesMaxLength"
+      ></textarea>
+    </label>
+
+    @if (localError() || error(); as message) {
+      <div role="alert" class="flex items-start gap-2 rounded-field bg-error/10 px-3 py-2 text-error">
+        <ng-icon class="mt-0.5 shrink-0" name="tablerAlertCircle" size="18" aria-hidden="true" />
+        <small>{{ message }}</small>
+      </div>
+    }
+
+    <div class="flex justify-end gap-2">
+      <app-button type="button" variant="ghost" [disabled]="saving()" (click)="cancelled.emit()">Cancelar</app-button>
+      <app-button type="submit" variant="error" [loading]="saving()" [disabled]="saving()">Cerrar caja</app-button>
+    </div>
+  </form>
+</app-modal>

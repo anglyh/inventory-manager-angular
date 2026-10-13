@@ -1,0 +1,119 @@
+<section class="w-full space-y-6">
+  <!-- 1. Header (No card, simple text) -->
+  <div class="space-y-2">
+    <div class="flex flex-wrap items-center gap-3 text-sm text-neutral">
+      <span class="flex items-center gap-1.5 text-emerald-600 font-medium tracking-wide uppercase">
+        <span class="size-2 rounded-full bg-emerald-600 animate-pulse"></span>
+        Turno Activo
+      </span>
+      <span class="text-neutral-300">|</span>
+      <span class="font-mono text-xs font-medium text-neutral">ID: {{ register().id.slice(-8) }}</span>
+    </div>
+
+    <div>
+      <h2 class="text-2xl font-medium text-base-content">Sesión en Operación</h2>
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-neutral mt-1">
+        <span>Apertura: <strong class="font-medium text-base-content">{{ register().openedAt | date:'d/MM/yyyy · h:mm a' }}</strong></span>
+        <span>Responsable: <strong class="font-medium text-base-content">{{ register().openedByName || 'Turno activo' }}</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions (Open Modals) -->
+  <div class="flex flex-wrap gap-4 border-b border-base-200 pb-6">
+    <app-button
+      variant="secondary"
+      size="md"
+      (click)="movementRequested.emit()"
+      [disabled]="busy()"
+    >
+      <ng-icon name="tablerArrowsExchange" size="18" />
+      <span>Registrar Movimiento</span>
+    </app-button>
+
+    <app-button
+      variant="primary"
+      size="md"
+      (click)="closeRequested.emit()"
+      [disabled]="busy()"
+    >
+      <ng-icon name="tablerScale" size="18" />
+      <span>Realizar Arqueo y Cierre</span>
+    </app-button>
+
+    <a class="btn btn-ghost" routerLink="/cash-register/history">
+      <ng-icon name="tablerHistory" size="18" aria-hidden="true" />
+      <span>Historial</span>
+    </a>
+  </div>
+
+  <!-- Resumen del turno: dos tarjetas -->
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 w-full">
+    <article class="surface p-5 sm:p-6 border border-base-300 flex flex-col gap-4">
+      <div class="flex items-center justify-between gap-4">
+        <h3 class="text-lg font-medium text-base-content">Ventas del turno</h3>
+        <ng-icon name="tablerReceipt" size="22" class="text-neutral" aria-hidden="true" />
+      </div>
+
+      <div>
+        <p class="text-3xl sm:text-4xl font-semibold tracking-tight tabular-nums text-base-content">
+          S/ {{ register().summary?.totalSales ?? '0.00' }}
+        </p>
+        <p class="mt-1 text-sm text-neutral">
+          {{ register().summary?.salesCount ?? 0 }} comprobantes emitidos
+        </p>
+      </div>
+
+      <div class="h-px bg-base-300"></div>
+
+      <div class="grid grid-cols-2 gap-5">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-sm font-medium text-neutral">
+            <ng-icon name="tablerCash" size="18" aria-hidden="true" />
+            <span>Efectivo</span>
+          </div>
+          <p class="text-xl font-semibold tabular-nums text-base-content">S/ {{ register().summary?.cashSales ?? '0.00' }}</p>
+        </div>
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-sm font-medium text-neutral">
+            <ng-icon name="tablerDeviceMobile" size="18" aria-hidden="true" />
+            <span>Yape / Plin</span>
+          </div>
+          <p class="text-xl font-semibold tabular-nums text-base-content">S/ {{ register().summary?.yapeSales ?? '0.00' }}</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="surface p-5 sm:p-6 border border-base-300 flex flex-col">
+      <h3 class="text-lg font-medium text-base-content mb-2">Movimientos de efectivo</h3>
+
+      <div class="flex items-center justify-between gap-4 py-3 px-4 border-b border-base-200 rounded-lg">
+        <div class="flex items-center gap-3 min-w-0">
+          <ng-icon name="tablerCash" size="20" class="text-neutral shrink-0" aria-hidden="true" />
+          <span class="font-medium text-base-content">Fondo inicial</span>
+        </div>
+        <span class="font-semibold tabular-nums text-base-content">S/ {{ register().openingAmount }}</span>
+      </div>
+
+      <div class="flex items-center justify-between gap-4 rounded-lg bg-success/10 px-4 py-2.5 mt-2">
+        <div class="flex items-center gap-3 min-w-0">
+          <ng-icon name="tablerArrowUpRight" size="20" class="text-success shrink-0" aria-hidden="true" />
+          <span class="font-medium text-base-content">Aportes</span>
+        </div>
+        <span class="font-medium tabular-nums text-base-content">+ S/ {{ register().summary?.cashIn ?? '0.00' }}</span>
+      </div>
+
+      <div class="flex items-center justify-between gap-4 rounded-lg bg-error/10 px-4 py-2.5 mt-2">
+        <div class="flex items-center gap-3 min-w-0">
+          <ng-icon name="tablerArrowDownRight" size="20" class="text-error shrink-0" aria-hidden="true" />
+          <span class="font-medium text-base-content">Retiros</span>
+        </div>
+        <span class="font-medium tabular-nums text-base-content">− S/ {{ register().summary?.cashOut ?? '0.00' }}</span>
+      </div>
+
+      <p class="mt-auto pt-3 text-sm leading-relaxed text-neutral">
+        Los aportes son ingresos manuales. Los retiros registran gastos o salidas de efectivo.
+      </p>
+    </article>
+  </div>
+</section>

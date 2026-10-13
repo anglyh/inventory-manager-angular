@@ -1,0 +1,52 @@
+<main class="w-full space-y-6">
+  @if (current.error()) {
+    <div class="w-full rounded-box bg-base-100 py-20 flex flex-col items-center justify-center gap-4 text-center" role="alert">
+      <ng-icon name="tablerAlertCircle" size="32" class="text-neutral" aria-hidden="true" />
+      <h2 class="text-lg font-semibold text-base-content">No se pudo consultar la caja</h2>
+      <p class="text-sm text-neutral max-w-sm">Revisa tu conexión e inténtalo nuevamente.</p>
+      <app-button variant="outline" size="sm" customClass="mt-2" (click)="current.reload()">Reintentar</app-button>
+    </div>
+  }
+  <!-- El spinner solo se muestra mientras no hay valor: al recargar se conserva el contenido. -->
+  @else if (!current.hasValue()) {
+    <div class="w-full py-20 flex flex-col items-center justify-center gap-4 text-neutral" role="status">
+      <span class="loading loading-spinner loading-md"></span>
+      <p class="text-sm font-medium">Consultando estado...</p>
+    </div>
+  }
+  @else if (current.value(); as register) {
+    <cash-register-session
+      class="block w-full"
+      [register]="register"
+      [busy]="busy()"
+      (movementRequested)="openMovement()"
+      (closeRequested)="openClose()"
+    />
+    <cash-register-movement-table class="block w-full" [registerId]="register.id" [refreshKey]="movementsRefresh()" />
+  }
+  @else {
+    <div class="max-w-4xl mx-auto">
+      <cash-register-opening class="block w-full" [busy]="opening()" (submitted)="openRegister($event)" />
+    </div>
+  }
+</main>
+
+<cash-movement-dialog
+  [open]="movementOpen()"
+  [saving]="movementSaving()"
+  [error]="movementError()"
+  [availableCash]="expectedCash()"
+  (confirmed)="addMovement($event)"
+  (cancelled)="movementOpen.set(false)"
+  (closed)="onMovementClosed()"
+/>
+
+<close-register-dialog
+  [open]="closeOpen()"
+  [saving]="closeSaving()"
+  [error]="closeError()"
+  [expectedCash]="expectedCash()"
+  (confirmed)="closeRegister($event)"
+  (cancelled)="closeOpen.set(false)"
+  (closed)="onCloseClosed()"
+/>

@@ -1,0 +1,90 @@
+<section class="space-y-3" aria-labelledby="cash-movements-title">
+  @let result = movementsResource.value();
+
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h2 id="cash-movements-title" class="text-xl font-semibold text-base-content">Movimientos de caja</h2>
+      <p class="mt-1 text-sm text-base-content/60">Aportes y retiros registrados en el turno.</p>
+    </div>
+    @if (result?.meta?.total; as total) {
+      <span class="text-sm text-base-content/60">{{ total }} movimientos</span>
+    }
+  </div>
+
+  <div class="rounded-box bg-base-100 overflow-hidden">
+    @if (movementsResource.error()) {
+      <div class="py-12 px-4 flex flex-col items-center text-center gap-3">
+        <p class="text-sm text-base-content/70">No se pudieron cargar los movimientos.</p>
+        <button type="button" class="btn btn-sm btn-outline" (click)="movementsResource.reload()">Reintentar</button>
+      </div>
+    } @else if (!result) {
+      <div class="p-4 sm:p-6 space-y-4" aria-busy="true" aria-label="Cargando movimientos">
+        <div class="flex gap-4 pb-2 border-b border-base-200">
+          <div class="skeleton h-4 w-32"></div>
+          <div class="skeleton h-4 w-20"></div>
+          <div class="skeleton h-4 w-40"></div>
+          <div class="skeleton h-4 w-28 ml-auto"></div>
+        </div>
+        @for (row of [0, 1, 2, 3]; track row) {
+          <div class="flex items-center gap-4 py-1">
+            <div class="skeleton h-5 w-32"></div>
+            <div class="skeleton h-5 w-20"></div>
+            <div class="skeleton h-5 flex-1"></div>
+            <div class="skeleton h-5 w-28 ml-auto"></div>
+          </div>
+        }
+      </div>
+    } @else if (result.data.length === 0) {
+      <div class="py-12 px-4 flex flex-col items-center justify-center text-center gap-2">
+        <p class="text-base-content/70 font-medium">Aún no hay movimientos en este turno</p>
+        <p class="text-sm text-base-content/50">Los aportes y retiros que registres aparecerán aquí.</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="table table-sm w-full text-sm sm:text-base">
+          <thead>
+            <tr class="border-b border-base-300 bg-base-200/40 [&>th]:font-semibold [&>th]:uppercase [&>th]:tracking-wide [&>th]:text-base-content/70 [&>th]:border-0">
+              <th class="pl-4 sm:pl-6">Fecha y hora</th>
+              <th>Tipo</th>
+              <th>Motivo</th>
+              <th>Registrado por</th>
+              <th class="pr-4 sm:pr-6 text-end">Monto</th>
+            </tr>
+          </thead>
+          <tbody class="[&>tr]:border-b [&>tr]:border-base-200 [&>tr:last-child]:border-0">
+            @for (movement of result.data; track movement.id) {
+              <tr class="hover:bg-base-200/30 transition-colors">
+                <td class="pl-4 sm:pl-6 whitespace-nowrap text-base-content/70">
+                  {{ movement.createdAt | date:'d/MM/yyyy · h:mm a' }}
+                </td>
+                <td>
+                  @if (movement.type === 'CASH_IN') {
+                    <span class="badge badge-soft badge-success badge-sm whitespace-nowrap">Aporte</span>
+                  } @else {
+                    <span class="badge badge-soft badge-error badge-sm whitespace-nowrap">Retiro</span>
+                  }
+                </td>
+                <td class="max-w-xs text-base-content">{{ movement.reason }}</td>
+                <td class="whitespace-nowrap text-base-content/70">{{ movement.createdByName || '—' }}</td>
+                <td class="pr-4 sm:pr-6 text-end whitespace-nowrap tabular-nums font-medium" [class.text-success]="movement.type === 'CASH_IN'" [class.text-error]="movement.type === 'CASH_OUT'">
+                  {{ movement.type === 'CASH_IN' ? '+' : '−' }} S/ {{ movement.amount | number:'1.2-2' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @let meta = result.meta;
+      @if (meta.totalPages > 1) {
+        <div class="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-t border-base-200">
+          <span class="text-sm text-base-content/60">Página {{ meta.page }} de {{ meta.totalPages }}</span>
+          <div class="join">
+            <button type="button" class="btn btn-sm join-item" [disabled]="meta.page <= 1" (click)="page.set(meta.page - 1)">Anterior</button>
+            <button type="button" class="btn btn-sm join-item" [disabled]="meta.page >= meta.totalPages" (click)="page.set(meta.page + 1)">Siguiente</button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</section>

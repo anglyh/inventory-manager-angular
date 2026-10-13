@@ -1,0 +1,64 @@
+<div class="flex w-full flex-col gap-4">
+  <header class="flex flex-wrap items-center justify-between gap-3">
+    <h1 class="text-title font-semibold">Historial de cajas</h1>
+    <a routerLink="/cash-register" class="btn btn-ghost btn-sm text-neutral">Caja actual</a>
+  </header>
+
+  <div class="flex flex-wrap gap-2" role="tablist" aria-label="Estado de la caja">
+    @for (tab of tabs; track tab.label) {
+      <button
+        type="button"
+        role="tab"
+        class="btn shrink-0 rounded-full border-0 px-5"
+        [class]="tab.value === status() ? 'btn-primary' : '[--btn-color:var(--color-base-100)]'"
+        [attr.aria-selected]="tab.value === status()"
+        (click)="selectStatus(tab.value)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">
+      <p class="text-neutral">{{ message }}</p>
+      <button type="button" class="btn btn-primary btn-sm" (click)="registersResource.reload()">Reintentar</button>
+    </div>
+  } @else if (registersResource.hasValue()) {
+    @let result = registersResource.value();
+    @if (!result.data.length) {
+      <div class="flex flex-col items-center gap-1 rounded-box bg-base-100 px-4 py-12 text-center">
+        <p class="font-medium">No hay cajas</p>
+        <small class="text-neutral">Prueba con otra pestaña.</small>
+      </div>
+    } @else {
+      <cash-register-list [class.opacity-60]="registersResource.isLoading()" [registers]="result.data" />
+
+      @if (result.meta.totalPages > 1) {
+        <nav class="flex items-center justify-between gap-3" aria-label="Paginación">
+          <button
+            type="button"
+            class="btn btn-sm border-0 [--btn-color:var(--color-base-100)]"
+            [disabled]="result.meta.page <= 1 || registersResource.isLoading()"
+            (click)="goToPage(result.meta.page - 1)"
+          >
+            Anterior
+          </button>
+          <small class="text-neutral tabular-nums">Página {{ result.meta.page }} de {{ result.meta.totalPages }}</small>
+          <button
+            type="button"
+            class="btn btn-sm border-0 [--btn-color:var(--color-base-100)]"
+            [disabled]="result.meta.page >= result.meta.totalPages || registersResource.isLoading()"
+            (click)="goToPage(result.meta.page + 1)"
+          >
+            Siguiente
+          </button>
+        </nav>
+      }
+    }
+  } @else {
+    <div class="grid place-items-center py-8" role="status" aria-label="Cargando cajas">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+</div>
