@@ -1,4 +1,7 @@
 import { AbstractControl, FormArray, FormGroup, ValidationErrors } from '@angular/forms';
+import { mapApiError } from 'src/app/api/error-mapper';
+import { extractApiError } from 'src/app/api/extract-api-error';
+import { ApiErrorResponse } from 'src/app/api/interfaces/api.interface';
 
 export class FormUtils {
   static namePattern = '([a-zA-Z]+) ([a-zA-Z]+)';
@@ -77,6 +80,32 @@ export class FormUtils {
       const field2Value = control.get(field2)?.value;
 
       return field1Value === field2Value ? null : { notEqual: true };
+    }
+  }
+
+  static handleFormError(
+    err: unknown,
+    form: FormGroup,
+    options: {
+      onToast?: (message: string) => void;
+      onRedirect?: (url: string) => void;
+    }
+  ) {
+    const apiError = extractApiError(err);
+    const mapped = mapApiError(apiError);
+    
+    if (mapped.redirect) {
+      options.onRedirect?.(mapped.redirect);
+      return;
+    }
+    if (mapped.fields) {
+      for (const [field, message] of Object.entries(mapped.fields)) {
+        form.get(field)?.setErrors({ server: message });
+        form.get(field)?.markAsTouched();
+      }
+    }
+    if (mapped.toast) {
+      options.onToast?.(mapped.toast);
     }
   }
 

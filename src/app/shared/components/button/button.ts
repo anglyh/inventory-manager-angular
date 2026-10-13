@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 
-type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'accent' | 'outline' | 'ghost' | 'error';
 
 /**
  * Literales completos para que Tailwind/DaisyUI los detecten en build de producción.
@@ -12,6 +12,7 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
   accent: 'btn-accent',
   outline: 'btn-outline',
   ghost: 'btn-ghost',
+  error: 'btn-error',
 };
 
 const SIZE_CLASS: Record<'sm' | 'md' | 'lg', string> = {
@@ -39,7 +40,7 @@ export class Button {
 
   buttonClasses = computed(() => {
     const base =
-      'btn flex items-center justify-center gap-2 rounded-md transition-colors duration-200';
+      'btn flex items-center justify-center gap-2 rounded-md transition-colors duration-200 cursor-pointer';
     const variantClass = VARIANT_CLASS[this.variant()];
     const sizeClass = SIZE_CLASS[this.size()];
     const stateClass = this.loading() ? 'opacity-70 pointer-events-none' : '';

@@ -1,5 +1,5 @@
-<dialog #dialogRef class="modal" (close)="closed.emit()">
-  <div class="modal-box max-h-[80vh] overflow-y-auto">
+<dialog #dialogRef class="modal" [attr.aria-label]="label()" (close)="onNativeClose(dialogRef)">
+  <div class="modal-box max-h-[80vh] overflow-y-auto" [class]="boxClass()">
     <ng-content />
   </div>
   <form method="dialog" class="modal-backdrop">

@@ -1,21 +1,40 @@
 <div class="relative flex w-full flex-col gap-1">
   <div class="relative">
+    <ng-icon
+      class="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-neutral"
+      name="tablerSearch"
+      size="18"
+      aria-hidden="true"
+    />
 
     <input
       #searchInput
       [id]="controlId()"
       type="text"
-      class="input input-bordered w-full bg-base-100 py-2 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20"
-      placeholder="Busca un producto..."
+      class="input w-full bg-base-100 py-2 pl-10 pr-10 focus:border-primary focus:ring-2 focus:ring-primary/20"
+      [placeholder]="placeholder()"
       [value]="inputValue()"
+      [disabled]="busy()"
       (input)="onInput(searchInput.value)"
       (focus)="openDropdown()"
+      (keydown.enter)="onEnter($event)"
+      (keydown.arrowdown)="onArrow($event, 1)"
+      (keydown.arrowup)="onArrow($event, -1)"
+      (keydown.escape)="closeDropdown()"
+      role="combobox"
+      aria-autocomplete="list"
+      [attr.aria-expanded]="isDropdownOpen()"
+      [attr.aria-controls]="controlId() + '-options'"
+      [attr.aria-activedescendant]="activeIndex() >= 0 ? optionId(activeIndex()) : null"
+      [attr.aria-busy]="busy()"
       autocomplete="off"
     />
-    
-    @if (inputValue()) {
-      <app-button 
-        type="button" 
+
+    @if (busy()) {
+      <span class="loading loading-spinner loading-sm absolute right-3 top-1/2 -translate-y-1/2 text-neutral" aria-hidden="true"></span>
+    } @else if (inputValue()) {
+      <app-button
+        type="button"
         variant="ghost"
         customClass="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content/80 transition-colors cursor-pointer border-0 !min-h-0 !h-auto !px-0 hover:bg-transparent"
         (click)="onInput(''); searchInput.focus()"
@@ -29,69 +48,101 @@
     }
   </div>
 
+  <!-- popover: se dibuja en la top layer, por encima de modales y sin recortes de overflow. -->
   <div
-    class="dropdown-grid-wrapper"
-    [class.active]="isDropdownOpen()"
+    #dropdown
+    popover="manual"
+    class="dropdown-popover"
     [class.drop-up]="dropUp()"
     [ngStyle]="dropdownStyle()"
   >
-    <ul class="inner-list rounded-box border border-base-300 bg-base-100 shadow-xl">
-      @if (filteredOptions().length > 0) {
-        @for (product of filteredOptions(); track product.id) {
-          <li
-            class="product-item rounded-md p-2 hover:bg-base-200 focus:bg-base-300 focus:outline-none"
-            tabindex="0"
-            (mousedown)="onSelectOption(product)"
-            (keydown.enter)="onSelectOption(product)"
-          >
-            {{ product.name }}
-          </li>
+    <ul [id]="controlId() + '-options'" role="listbox" class="inner-list rounded-box bg-base-100 shadow-xl">
+      @for (option of filteredOptions(); track option.id; let i = $index) {
+        <li
+          [id]="optionId(i)"
+          class="option-item group flex items-center justify-between gap-2 rounded-field p-2 hover:bg-base-200"
+          [class.bg-base-200]="activeIndex() === i"
+          role="option"
+          [attr.aria-selected]="activeIndex() === i"
+          (mousedown)="$event.preventDefault(); onSelectOption(option)"
+          (mouseenter)="activeIndex.set(i)"
+        >
+          <span class="truncate">{{ option.name }}</span>
+          @if (mode() === 'add') {
+            <span
+              class="flex shrink-0 items-center gap-1 text-caption text-neutral opacity-0 transition-opacity group-hover:opacity-100"
+              [class.opacity-100]="activeIndex() === i"
+            >
+              <ng-icon name="tablerPlus" size="16" aria-hidden="true" />
+              Agregar
+            </span>
+          }
+        </li>
+      } @empty {
+        @if (!showCreate()) {
+          <li class="p-2 text-caption text-neutral">{{ emptyText() }}</li>
         }
-      } @else {
-        <li class="p-2 text-sm opacity-70">No existe ningún producto con ese nombre</li>
+      }
+
+      @if (showCreate()) {
+        @let createIndex = filteredOptions().length;
+        <li
+          [id]="optionId(createIndex)"
+          class="option-item flex items-center gap-2 rounded-field p-2 font-medium hover:bg-base-200"
+          [class.bg-base-200]="activeIndex() === createIndex"
+          [class.mt-1]="createIndex > 0"
+          role="option"
+          [attr.aria-selected]="activeIndex() === createIndex"
+          (mousedown)="$event.preventDefault(); onCreate()"
+          (mouseenter)="activeIndex.set(createIndex)"
+        >
+          <ng-icon class="shrink-0" name="tablerPlus" size="16" aria-hidden="true" />
+          <span class="truncate">{{ createLabel() }} "{{ createText() }}"</span>
+        </li>
       }
     </ul>
   </div>
 </div>
 
 <style>
-  label {
-    position: relative;
-  }
+  /* Anula los estilos por defecto del popover; la posición la calcula el componente. */
+  .dropdown-popover {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: visible;
+    inset: auto;
 
-  .dropdown-grid-wrapper {
-    display: grid;
-    grid-template-rows: 0fr;
-    z-index: 50;
-
-    opacity: 0;
-    visibility: hidden;
-    transition:
-      grid-template-rows 200ms ease-in-out,
-      opacity 200ms ease-in-out,
-      visibility 200ms ease-in-out;
-  }
-
-  .dropdown-grid-wrapper.active {
-    grid-template-rows: 1fr;
     opacity: 1;
-    visibility: visible;
+    translate: 0 0;
+    transition:
+      opacity 150ms ease-out,
+      translate 150ms ease-out,
+      display 150ms allow-discrete,
+      overlay 150ms allow-discrete;
+  }
+
+  .dropdown-popover:not(:popover-open) {
+    opacity: 0;
+    translate: 0 -0.25rem;
+  }
+
+  @starting-style {
+    .dropdown-popover:popover-open {
+      opacity: 0;
+      translate: 0 -0.25rem;
+    }
   }
 
   .inner-list {
-    min-height: 0;
     overflow-y: auto;
     max-height: 18rem;
     margin: 0;
-    padding: 0;
-    transition: padding 200ms ease-in-out;
-  }
-
-  .dropdown-grid-wrapper.active .inner-list {
     padding: 0.5rem;
   }
 
-  .product-item {
+  .option-item {
     cursor: pointer;
     user-select: none;
   }

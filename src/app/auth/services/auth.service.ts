@@ -22,10 +22,9 @@ export class AuthService {
   })
 
   authStatus = computed<AuthStatus>(() => {
-    if (this._authStatus() === 'checking') return 'checking'
-    if (this._user()) return 'authenticated'
+    if (this.checkStatusResource.isLoading()) return 'checking';
 
-    return 'not-authenticated'
+    return this._user() ? 'authenticated' : 'not-authenticated'
   })
 
   user = computed<User | null>(() => this._user())
@@ -39,8 +38,13 @@ export class AuthService {
     .pipe(
       tap(res => console.log(res)),
       map(res => this.handleAuthSuccess(res)),
-      catchError((error: any) => this.handleAuthError(error))
+      catchError((error: any) => this.handleWrongPassword(error))
     )
+  }
+
+  handleWrongPassword(error: any) {
+    this.handleAuthError(error);
+    return of(false)
   }
 
   register(name: string, email: string, password: string): Observable<boolean> {
@@ -49,10 +53,10 @@ export class AuthService {
       email,
       password
     })
-    .pipe(
-      map(res => this.handleAuthSuccess(res)),
-      catchError((error: any) => this.handleAuthError(error))
-    )
+      .pipe(
+        map(res => this.handleAuthSuccess(res)),
+        // sin catchError → el error llega al componente
+      );
   }
 
   checkAuthStatus(): Observable<boolean> {
@@ -86,7 +90,7 @@ export class AuthService {
   }
 
   private handleAuthError(error: any) {
-    this.logout();
+    this.logout()
     return of(false)
   }
 }

@@ -4,7 +4,7 @@
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="max-w-md mx-auto w-full">
       <!-- Logo/Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Bienvenido</h1>
+        <h1 class="text-title font-bold text-gray-900">Bienvenido</h1>
         <p class="text-gray-600 mt-2">Crea una cuenta nueva</p>
       </div>
 
@@ -93,12 +93,12 @@
         @if (formUtils.isInvalidField(registerForm, 'confirmPassword')) {
           <app-form-error-label [control]="registerForm.get('confirmPassword')!" />
         } @else if (registerForm.hasError('notEqual') && registerForm.get('confirmPassword')?.touched) {
-          <span class="text-red-500 text-xs ml-3 mt-1">Las contraseñas no coinciden</span>
+          <span class="text-red-500 text-caption ml-3 mt-1">Las contraseñas no coinciden</span>
         }
       </div>
 
       @if (hasError()) {
-        <div class="mb-4 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-medium">
+        <div class="mb-4 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-caption font-medium">
           {{ errorMessage() }}
         </div>
       }
@@ -119,7 +119,7 @@
       </app-button>
 
       <!-- Login Link -->
-      <p class="text-center mt-6 text-gray-600 text-sm">
+      <p class="text-center mt-6 text-gray-600 text-caption">
         ¿Ya tienes una cuenta? <a routerLink="/auth/login" class="text-primary hover:text-sky-800 font-semibold">Iniciar sesión</a>
       </p>
     </form>
@@ -128,8 +128,8 @@
   <!-- Right Column - Image/Content (Hidden on mobile) -->
   <div class="hidden lg:flex w-1/2 bg-primary items-center justify-center">
     <div class="text-center text-white px-8">
-      <!-- <h2 class="text-4xl font-bold mb-4">IA revolucionando la forma en que creamos, renderizamos y experimentamos contenido.</h2>
-      <p class="text-lg opacity-90">Crea briefs de diseño con comandos de voz de la IA para generar experiencias increíbles que se ajusten a tus necesidades.</p> -->
+      <!-- <h2 class="text-title font-bold mb-4">IA revolucionando la forma en que creamos, renderizamos y experimentamos contenido.</h2>
+      <p class="text-subtitle opacity-90">Crea briefs de diseño con comandos de voz de la IA para generar experiencias increíbles que se ajusten a tus necesidades.</p> -->
     </div>
   </div>
 </div>

@@ -5,14 +5,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgIcon, provideIcons } from "@ng-icons/core";
 import { tablerPlus } from '@ng-icons/tabler-icons';
 
-import { CategoryMultiselectFilter } from '@/categories/components/category-multiselect-filter/category-multiselect-filter';
-import { CategoryService } from '@/categories/services/category.service';
-import { Category } from '@/categories/interfaces/category.interface';
-import { ProductForm } from "@/products/components/product-form/product-form";
-import { ProductTable } from '@/products/components/product-table/product-table';
-import { ProductWithStock } from '@/products/interfaces/product.interface';
-import { ProductService } from '@/products/services/product.service';
-import { SearchProduct } from "@/products/components/search-product-form/search-product-form";
+import { CategoryMultiselectFilter } from '@/features/categories/components/category-multiselect-filter/category-multiselect-filter';
+import { CategoryService } from '@/features/categories/services/category.service';
+import { Category } from '@/features/categories/interfaces/category.interface';
+import { ProductForm } from "@/features/products/components/product-form/product-form";
+import { ProductTable } from '@/features/products/components/product-table/product-table';
+import { ProductWithStock } from '@/features/products/interfaces/product.interface';
+import { ProductService } from '@/features/products/services/product.service';
+import { SearchProduct } from "@/features/products/components/search-product-form/search-product-form";
 import { Modal } from "@/shared/components/modal/modal";
 import { Pagination } from "@/shared/components/pagination/pagination";
 import { PaginationService } from '@/shared/components/pagination/pagination.service';
@@ -68,12 +68,7 @@ export class ProductsPage {
   }
 
   openNewProduct() {
-    this.openModal({
-      name: '',
-      salePrice: '0.10',
-      minStock: 10,
-      categoryId: null
-    })
+    this.openModal({})
   }
 
   closeModal() {

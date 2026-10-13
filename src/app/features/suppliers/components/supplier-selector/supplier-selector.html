@@ -1,0 +1,13 @@
+<app-option-selector
+  [controlId]="controlId()"
+  placeholder="Sin proveedor"
+  emptyText="No hay proveedores con ese nombre"
+  createLabel="Crear proveedor"
+  [creatable]="true"
+  [busy]="creating()"
+  [items]="suppliers()"
+  [selectedName]="selectedName()"
+  (selectedOption)="onSelected($event)"
+  (selectionCleared)="supplierChange.emit(null)"
+  (createRequested)="createRequested.emit($event)"
+/>

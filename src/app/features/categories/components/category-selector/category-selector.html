@@ -1,0 +1,13 @@
+<app-option-selector
+  [controlId]="controlId()"
+  placeholder="Sin categoría"
+  emptyText="No hay categorías con ese nombre"
+  createLabel="Crear categoría"
+  [creatable]="true"
+  [busy]="creating()"
+  [items]="categories()"
+  [selectedName]="selectedName()"
+  (selectedOption)="onSelected($event)"
+  (selectionCleared)="categoryChange.emit(null)"
+  (createRequested)="createRequested.emit($event)"
+/>

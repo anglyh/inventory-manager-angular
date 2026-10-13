@@ -1,6 +1,3 @@
-import { User } from './user.interface';
+import { components } from 'src/app/api/generated/schema';
 
-export interface AuthResponse {
-  user: User;
-  token: string;
-}
+export type AuthResponse = components["schemas"]["AuthResponse"];

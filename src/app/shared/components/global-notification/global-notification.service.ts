@@ -10,6 +10,8 @@ type Notification = {
 
 @Injectable({providedIn: 'root'})
 export class GlobalNotificationService {
+  #hideTimeout: ReturnType<typeof setTimeout> | undefined;
+
   #state = signal<Notification>({
     visible: false,
     message: '',
@@ -18,12 +20,15 @@ export class GlobalNotificationService {
  
   state$ = this.#state.asReadonly();
 
-  show(message: string, type: NotificationType = 'success', duration = 4000) {
+  show(message: string, type: NotificationType = 'success', duration = 3000) {
+    clearTimeout(this.#hideTimeout);
     this.#state.set({ visible: true, message, type })
-    setTimeout(() => this.hide(), duration);
+    this.#hideTimeout = setTimeout(() => this.hide(), duration);
   }
 
   hide() {
+    clearTimeout(this.#hideTimeout);
+    this.#hideTimeout = undefined;
     this.#state.update(s => ({ ...s, visible: false }))
   }
 }
