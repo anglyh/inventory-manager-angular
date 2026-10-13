@@ -1,0 +1,35 @@
+<section class="flex flex-col gap-4 rounded-box bg-base-100 p-5">
+  <div class="flex items-center justify-between gap-3">
+    <h2 class="font-medium">Pérdidas</h2>
+    <span class="font-medium tabular-nums" [class.text-error]="+total() > 0">S/ {{ total() | number: '1.2-2' }}</span>
+  </div>
+
+  @if (rows().length) {
+    <dl class="flex flex-col gap-2 text-sm">
+      @for (row of rows(); track row.label) {
+        <div class="flex items-center justify-between gap-3">
+          <dt class="text-neutral">{{ row.label }}</dt>
+          <dd class="tabular-nums">{{ row.sign }}S/ {{ row.amount | number: '1.2-2' }}</dd>
+        </div>
+      }
+    </dl>
+
+    @if (topLosses().length) {
+      <div class="flex flex-col gap-2 rounded-field bg-base-200/60 p-3">
+        <span class="text-sm font-medium">Productos con más pérdida</span>
+        <ol class="flex flex-col gap-1.5 text-sm">
+          @for (product of topLosses(); track product.productId) {
+            <li class="flex items-baseline justify-between gap-3">
+              <span class="min-w-0 truncate">
+                {{ product.productName }} <span class="text-neutral tabular-nums">× {{ product.quantity }}</span>
+              </span>
+              <span class="shrink-0 tabular-nums text-error">S/ {{ product.amount | number: '1.2-2' }}</span>
+            </li>
+          }
+        </ol>
+      </div>
+    }
+  } @else {
+    <p class="py-6 text-center text-sm text-neutral">Sin pérdidas en el período</p>
+  }
+</section>

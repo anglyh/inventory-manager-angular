@@ -1,0 +1,39 @@
+@let items = bars();
+<section class="flex flex-col gap-4 rounded-box bg-base-100 p-5">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 class="font-medium">Ventas por día</h2>
+    <div class="flex items-center gap-4 text-sm text-neutral">
+      <span class="flex items-center gap-1.5"><span class="size-2 rounded-full bg-primary/25"></span>Ventas</span>
+      <span class="flex items-center gap-1.5"><span class="size-2 rounded-full bg-primary"></span>Ganancia</span>
+    </div>
+  </div>
+
+  @if (hasSales()) {
+    <div class="flex h-44 items-end gap-0.5 sm:gap-1">
+      @for (bar of items; track bar.date) {
+        <div
+          class="tooltip relative flex h-full min-w-0 flex-1 items-end justify-center"
+          [attr.data-tip]="(bar.date | date: 'EEE d MMM') + ' · S/ ' + (bar.revenue | number: '1.2-2') + ' · Gan. S/ ' + (bar.profit | number: '1.2-2')"
+        >
+          <span class="absolute inset-x-0 bottom-0 rounded-t-sm bg-primary/25" [style.height.%]="bar.revenueHeight"></span>
+          <span class="absolute inset-x-0 bottom-0 rounded-t-sm bg-primary" [style.height.%]="bar.profitHeight"></span>
+        </div>
+      }
+    </div>
+
+    @if (showLabels()) {
+      <div class="-mt-2 flex gap-0.5 sm:gap-1">
+        @for (bar of items; track bar.date) {
+          <small class="min-w-0 flex-1 text-center text-xs text-neutral tabular-nums">{{ bar.date | date: 'd' }}</small>
+        }
+      </div>
+    } @else {
+      <div class="-mt-2 flex justify-between text-xs text-neutral">
+        <small>{{ items[0].date | date: 'd MMM' }}</small>
+        <small>{{ items[items.length - 1].date | date: 'd MMM' }}</small>
+      </div>
+    }
+  } @else {
+    <p class="grid h-44 place-items-center text-sm text-neutral">Sin ventas en el período</p>
+  }
+</section>

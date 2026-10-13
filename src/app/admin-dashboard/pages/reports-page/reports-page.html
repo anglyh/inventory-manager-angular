@@ -1,0 +1,97 @@
+<div class="flex w-full flex-col gap-4">
+  <header class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex min-w-0 items-center gap-1">
+      @if (mode() !== 'custom') {
+        <button type="button" class="btn btn-circle btn-ghost btn-sm" aria-label="Período anterior" (click)="step(-1)">
+          <ng-icon name="tablerChevronLeft" size="20" aria-hidden="true" />
+        </button>
+      }
+      <h1 class="truncate px-1 text-title font-semibold tabular-nums">{{ label() }}</h1>
+      @if (mode() !== 'custom') {
+        <button
+          type="button"
+          class="btn btn-circle btn-ghost btn-sm"
+          aria-label="Período siguiente"
+          [disabled]="isCurrent()"
+          (click)="step(1)"
+        >
+          <ng-icon name="tablerChevronRight" size="20" aria-hidden="true" />
+        </button>
+      }
+    </div>
+
+    <div class="flex items-center gap-2">
+      <div class="flex rounded-full bg-base-100 p-1" role="tablist" aria-label="Escala">
+        @for (scale of scales; track scale.value) {
+          <button
+            type="button"
+            role="tab"
+            class="btn btn-sm rounded-full border-0 px-4"
+            [class]="scale.value === mode() ? 'btn-primary' : 'btn-ghost'"
+            [attr.aria-selected]="scale.value === mode()"
+            (click)="selectScale(scale.value)"
+          >
+            {{ scale.label }}
+          </button>
+        }
+      </div>
+      <button
+        type="button"
+        class="btn btn-circle"
+        aria-label="Elegir rango de fechas"
+        [class]="mode() === 'custom' || rangeOpen() ? 'btn-primary' : 'border-0 [--btn-color:var(--color-base-100)]'"
+        [attr.aria-expanded]="rangeOpen()"
+        (click)="toggleRange()"
+      >
+        <ng-icon name="tablerCalendar" size="20" aria-hidden="true" />
+      </button>
+    </div>
+  </header>
+
+  @if (rangeOpen()) {
+    <form
+      class="flex flex-wrap items-end gap-3 rounded-box bg-base-100 p-3"
+      [formGroup]="rangeForm"
+      (ngSubmit)="applyRange()"
+    >
+      <label class="flex flex-col gap-1">
+        <small class="text-neutral">Desde</small>
+        <input type="date" class="input input-sm" formControlName="from" [max]="today" />
+      </label>
+      <label class="flex flex-col gap-1">
+        <small class="text-neutral">Hasta</small>
+        <input type="date" class="input input-sm" formControlName="to" [max]="today" />
+      </label>
+      <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
+    </form>
+  }
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">
+      <p class="text-neutral">{{ message }}</p>
+      <button type="button" class="btn btn-primary btn-sm" (click)="reportResource.reload()">Reintentar</button>
+    </div>
+  } @else if (reportResource.hasValue()) {
+    @let report = reportResource.value();
+    <div class="flex flex-col gap-4 transition-opacity" [class.opacity-60]="reportResource.isLoading()">
+      <report-kpis [summary]="report.summary" />
+
+      <div class="grid items-start gap-4 lg:grid-cols-5">
+        <div class="flex flex-col gap-4 lg:col-span-3">
+          @if (report.daily.length > 1) {
+            <report-daily-chart [daily]="report.daily" />
+          }
+          <report-top-products [topSold]="report.topSold" [topProfit]="report.topProfit" />
+        </div>
+        <div class="flex flex-col gap-4 lg:col-span-2">
+          <report-payments [payments]="report.payments" [cash]="report.cash" />
+          <report-losses [losses]="report.losses" [total]="report.summary.losses" [topLosses]="report.topLosses" />
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="grid place-items-center py-20" role="status" aria-label="Cargando reporte">
+      <span class="loading loading-spinner loading-md text-primary"></span>
+    </div>
+  }
+</div>

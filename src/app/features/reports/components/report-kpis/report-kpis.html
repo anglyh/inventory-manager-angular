@@ -1,0 +1,38 @@
+@let s = summary();
+<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+  <article class="col-span-2 flex flex-col gap-1 rounded-box bg-primary p-5 text-primary-content lg:col-span-1">
+    <span class="text-sm opacity-80">{{ isLoss() ? 'Pérdida' : 'Ganancia' }}</span>
+    <p class="text-3xl font-semibold tracking-tight tabular-nums">
+      {{ isLoss() ? '−' : '' }}S/ {{ netProfit() | number: '1.2-2' }}
+    </p>
+    <small class="tabular-nums opacity-80">
+      Bruta S/ {{ s.grossProfit | number: '1.2-2' }} · Pérdidas S/ {{ s.losses | number: '1.2-2' }}
+    </small>
+  </article>
+
+  <article class="flex flex-col gap-1 rounded-box bg-base-100 p-5">
+    <span class="text-sm text-neutral">Ventas</span>
+    <p class="text-2xl font-semibold tracking-tight tabular-nums">S/ {{ s.revenue | number: '1.2-2' }}</p>
+    <small class="text-neutral tabular-nums">
+      {{ s.salesCount }} {{ s.salesCount === 1 ? 'venta' : 'ventas' }} · prom. S/ {{ s.avgTicket | number: '1.2-2' }}
+    </small>
+  </article>
+
+  <article class="flex flex-col gap-1 rounded-box bg-base-100 p-5">
+    <span class="text-sm text-neutral">Margen</span>
+    <p class="text-2xl font-semibold tracking-tight tabular-nums" [class.text-error]="isLoss()">
+      {{ s.marginPct | number: '1.0-1' }}%
+    </p>
+    @if (!isLoss()) {
+      <small class="text-neutral tabular-nums">S/ {{ s.marginPct | number: '1.0-0' }} de cada S/ 100</small>
+    }
+  </article>
+
+  <article class="col-span-2 flex flex-col gap-1 rounded-box bg-base-100 p-5 lg:col-span-1">
+    <span class="text-sm text-neutral">Pérdidas</span>
+    <p class="text-2xl font-semibold tracking-tight tabular-nums" [class.text-error]="+s.losses > 0">
+      S/ {{ s.losses | number: '1.2-2' }}
+    </p>
+    <small class="text-neutral">Mermas y conteos, a costo</small>
+  </article>
+</div>
