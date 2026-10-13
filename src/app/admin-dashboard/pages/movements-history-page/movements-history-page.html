@@ -1,0 +1,46 @@
+<div class="flex w-full flex-col gap-4">
+  <movement-filters
+    [filters]="filters()"
+    [products]="productsResource.hasValue() ? productsResource.value() : []"
+    (filtersChange)="onFiltersChange($event)"
+  />
+
+  @if (filters().cashRegisterId) {
+    <div class="flex items-center justify-between gap-2 rounded-field bg-info/10 px-3 py-2 text-info">
+      <small>Mostrando solo movimientos de una caja</small>
+      <button type="button" class="btn btn-ghost btn-xs" (click)="onFiltersChange({ ...filters(), cashRegisterId: undefined })">Quitar</button>
+    </div>
+  }
+
+  <inventory-movement-list [movements]="movements()" (voidRequested)="openVoid($event)" />
+
+  @if (loading()) {
+    <div class="grid place-items-center py-8" role="status" aria-label="Cargando movimientos">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  } @else if (error()) {
+    <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">
+      <p class="text-neutral">{{ error() }}</p>
+      <button type="button" class="btn btn-primary btn-sm" (click)="retry()">Reintentar</button>
+    </div>
+  } @else if (!movements().length) {
+    <div class="flex flex-col items-center gap-1 rounded-box bg-base-100 px-4 py-12 text-center">
+      <p class="font-medium">No hay movimientos</p>
+      <small class="text-neutral">Prueba con otros filtros o cambia de pestaña.</small>
+    </div>
+  } @else if (nextCursor()) {
+    <div appInfiniteScroll (scrolled)="loadMore()" class="h-1" aria-hidden="true"></div>
+  } @else {
+    <small class="py-4 text-center text-neutral">No hay más movimientos</small>
+  }
+</div>
+
+<void-movement-dialog
+  [open]="voidOpen()"
+  [movement]="voidTarget()"
+  [saving]="voiding()"
+  [error]="voidError()"
+  (confirmed)="confirmVoid($event)"
+  (cancelled)="closeVoid()"
+  (closed)="onVoidClosed()"
+/>

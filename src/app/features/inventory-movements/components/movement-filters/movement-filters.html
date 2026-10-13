@@ -1,0 +1,100 @@
+<div class="flex flex-col gap-3">
+  <div class="flex items-center gap-2">
+    <div class="flex min-w-0 flex-1 gap-2 overflow-x-auto" role="tablist" aria-label="Tipo de movimiento">
+      @for (option of groupOptions; track option.label) {
+        <button
+          type="button"
+          role="tab"
+          class="btn shrink-0 rounded-full border-0 px-5"
+          [class]="filters().group === option.value ? 'btn-primary' : '[--btn-color:var(--color-base-100)]'"
+          [attr.aria-selected]="filters().group === option.value"
+          (click)="update({ group: option.value })"
+        >
+          {{ option.label }}
+        </button>
+      }
+    </div>
+
+    <button
+      type="button"
+      class="btn shrink-0 rounded-full border-0 px-5 [--btn-color:var(--color-base-100)]"
+      [class.ring-2]="panelOpen()"
+      [class.ring-primary]="panelOpen()"
+      [attr.aria-expanded]="panelOpen()"
+      aria-controls="movement-filters-panel"
+      (click)="panelOpen.set(!panelOpen())"
+    >
+      <ng-icon name="tablerAdjustmentsHorizontal" size="18" aria-hidden="true" />
+      <span class="hidden sm:inline">Filtros</span>
+      @if (activeCount()) {
+        <span class="badge badge-sm badge-primary">{{ activeCount() }}</span>
+      }
+    </button>
+  </div>
+
+  @if (panelOpen()) {
+    <div id="movement-filters-panel" class="grid gap-4 rounded-box bg-base-100 p-4 sm:p-6 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.5fr_auto_auto]">
+      <label class="flex flex-col gap-1">
+        <span class="text-caption text-neutral">Dirección</span>
+        <select class="select w-full" (change)="update({ movementType: $any($event.target).value || undefined })">
+          <option value="" [selected]="!filters().movementType">Todas</option>
+          @for (option of typeOptions; track option[0]) {
+            <option [value]="option[0]" [selected]="filters().movementType === option[0]">{{ option[1] }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="flex flex-col gap-1">
+        <span class="text-caption text-neutral">Motivo</span>
+        <select class="select w-full" (change)="update({ reason: $any($event.target).value || undefined })">
+          <option value="" [selected]="!filters().reason">Todos</option>
+          @for (option of reasonOptions; track option[0]) {
+            <option [value]="option[0]" [selected]="filters().reason === option[0]">{{ option[1] }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="flex flex-col gap-1 sm:col-span-2 xl:col-span-1">
+        <label class="text-caption text-neutral" for="movement-product">Producto</label>
+        <app-option-selector
+          controlId="movement-product"
+          placeholder="Todos los productos"
+          emptyText="No hay productos con ese nombre"
+          [items]="products()"
+          [selectedName]="productName()"
+          (selectedOption)="selectProduct($event)"
+          (selectionCleared)="update({ productId: undefined })"
+        />
+      </div>
+
+      <label class="flex flex-col gap-1">
+        <span class="text-caption text-neutral">Desde</span>
+        <input
+          class="input w-full"
+          type="date"
+          [value]="filters().from ?? ''"
+          [max]="filters().to ?? ''"
+          (change)="update({ from: $any($event.target).value || undefined })"
+        />
+      </label>
+
+      <label class="flex flex-col gap-1">
+        <span class="text-caption text-neutral">Hasta</span>
+        <input
+          class="input w-full"
+          type="date"
+          [value]="filters().to ?? ''"
+          [min]="filters().from ?? ''"
+          (change)="update({ to: $any($event.target).value || undefined })"
+        />
+      </label>
+
+      @if (activeCount()) {
+        <button type="button" class="btn btn-ghost btn-sm justify-self-start sm:col-span-2 xl:col-span-5" (click)="clear()">
+          <ng-icon name="tablerX" size="16" aria-hidden="true" />
+          Limpiar filtros
+        </button>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,109 @@
+<div class="flex flex-col gap-6">
+  @for (group of groups(); track group.key) {
+    <section class="flex flex-col gap-2" [attr.aria-label]="dayLabel(group.date) ?? (group.date | date: 'fullDate')">
+      <h3 class="px-1 text-caption font-medium text-neutral first-letter:uppercase">
+        {{ dayLabel(group.date) ?? (group.date | date: (isCurrentYear(group.date) ? "EEEE d 'de' MMMM" : 'fullDate')) }}
+      </h3>
+
+      <div class="flex flex-col overflow-hidden rounded-box bg-base-100">
+        @for (movement of group.movements; track movement.id) {
+          @let tone = toneOf(movement);
+          <details class="collapse group rounded-none" name="movement-history">
+            <summary class="collapse-title flex cursor-pointer list-none items-center gap-3 px-4 py-3 hover:bg-base-200/60 [&::-webkit-details-marker]:hidden select-none">
+              <span
+                class="grid size-10 shrink-0 place-items-center rounded-full"
+                [class]="toneClass[tone]"
+              >
+                <ng-icon [name]="toneIcon(movement)" size="20" aria-hidden="true" />
+              </span>
+
+              <div class="flex min-w-0 flex-1 flex-col">
+                <span class="truncate font-medium" [class.text-neutral]="tone === 'voided'">{{ productSummary(movement) }}</span>
+                <small class="truncate text-neutral" [class.text-error]="tone === 'loss'">{{ detail(movement) }}</small>
+              </div>
+
+              <div class="flex shrink-0 flex-col items-end">
+                <span class="font-medium tabular-nums" [class.line-through]="tone === 'voided'" [class.text-neutral]="tone === 'voided'">
+                  S/. {{ movement.totalAmount }}
+                </span>
+                <small class="text-neutral tabular-nums">
+                  @if (tone === 'voided') {
+                    Anulado
+                  } @else {
+                    {{ movement.createdAt | date: 'shortTime' }}
+                  }
+                </small>
+              </div>
+
+              <ng-icon name="tablerChevronDown" size="18" class="hidden shrink-0 text-neutral transition-transform group-open:rotate-180 sm:block" aria-hidden="true" />
+            </summary>
+
+            <div class="collapse-content px-4 sm:pl-17 mt-4">
+              <div class="flex flex-col gap-4 rounded-field bg-base-200/60 p-3 sm:p-4">
+              <ul class="flex flex-col gap-2">
+                @for (item of movement.items; track item.productId) {
+                  <li class="flex items-baseline justify-between gap-3">
+                    <div class="flex min-w-0 flex-col">
+                      <span class="truncate">{{ item.productName }}</span>
+                      <small class="text-neutral tabular-nums">
+                        {{ item.quantity }} × S/. {{ unitAmount(movement, item) }}
+                        {{ movement.reason === 'SALE' ? '' : 'costo' }}
+                      </small>
+                    </div>
+                    <span class="shrink-0 tabular-nums">S/. {{ lineTotal(movement, item) | number: '1.2-2' }}</span>
+                  </li>
+                }
+              </ul>
+
+              <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                <dt class="text-neutral">Tipo</dt>
+                <dd>{{ reasonLabels[movement.reason] }}</dd>
+                <dt class="text-neutral">Fecha</dt>
+                <dd>{{ movement.createdAt | date: 'medium' }}</dd>
+                @if (movement.createdByName) {
+                  <dt class="text-neutral">Registrado por</dt>
+                  <dd>{{ movement.createdByName }}</dd>
+                }
+                @if (movement.paymentMethod) {
+                  <dt class="text-neutral">Pago</dt>
+                  <dd>{{ paymentLabels[movement.paymentMethod] }}</dd>
+                }
+                @if (movement.supplierName) {
+                  <dt class="text-neutral">Proveedor</dt>
+                  <dd>{{ movement.supplierName }}</dd>
+                }
+                @if (movement.notes) {
+                  <dt class="text-neutral">Notas</dt>
+                  <dd class="wrap-break-word">{{ movement.notes }}</dd>
+                }
+              </dl>
+
+              @if (movement.status === 'COMPLETED') {
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm self-start text-error hover:bg-error/10"
+                  (click)="voidRequested.emit(movement)"
+                >
+                  <ng-icon name="tablerBan" size="16" aria-hidden="true" />
+                  Anular
+                </button>
+              }
+
+              @if (movement.status === 'VOIDED') {
+                <div class="flex flex-col gap-1 rounded-field bg-base-100 px-3 py-2">
+                  <small class="font-medium text-error">
+                    Anulado {{ movement.voidedAt ? (movement.voidedAt | date: 'medium') : '' }}
+                  </small>
+                  @if (movement.voidReason) {
+                    <small class="text-neutral">{{ movement.voidReason }}</small>
+                  }
+                </div>
+              }
+              </div>
+            </div>
+          </details>
+        }
+      </div>
+    </section>
+  }
+</div>

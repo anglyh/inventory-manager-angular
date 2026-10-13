@@ -1,0 +1,135 @@
+<form class="flex flex-1 flex-col gap-4 lg:flex-row lg:items-start" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="@container flex min-w-0 flex-1 flex-col gap-5 rounded-box bg-base-100 p-4 sm:p-6 lg:self-stretch">
+    @if (hasEligibleProducts()) {
+      <div class="flex flex-col gap-1">
+        <label class="text-caption text-neutral" for="initial-load-product">Agregar producto</label>
+        <app-option-selector
+          controlId="initial-load-product"
+          mode="add"
+          placeholder="Busca un producto sin movimientos"
+          emptyText="No hay productos sin movimientos con ese nombre"
+          [items]="availableProducts()"
+          (selectedOption)="addProduct($event)"
+        />
+      </div>
+    }
+
+    <!-- Productos -->
+    <div class="flex flex-1 flex-col gap-2" formArrayName="items">
+      @if (items.length) {
+        <div class="hidden gap-3 px-3 text-caption text-neutral @2xl:grid @2xl:grid-cols-[1fr_10rem_8rem_8rem_2rem]">
+          <span>Producto</span>
+          <span>Costo unit.</span>
+          <span>Cantidad</span>
+          <span class="text-right">Subtotal</span>
+        </div>
+      }
+
+      @for (item of items.controls; track item.controls.productId.value; let i = $index) {
+        <div
+          class="grid grid-cols-[1fr_1fr_auto] items-center gap-3 rounded-field bg-base-200 p-3 @2xl:grid-cols-[1fr_10rem_8rem_8rem_2rem]"
+          [formGroupName]="i"
+        >
+          <span class="col-span-2 truncate font-medium @2xl:col-span-1">{{ item.controls.name.value }}</span>
+
+          <button
+            type="button"
+            class="btn btn-ghost btn-square btn-sm justify-self-end text-neutral hover:bg-error/10 hover:text-error @2xl:order-last"
+            aria-label="Quitar producto"
+            (click)="removeItem(i)"
+          >
+            <ng-icon name="tablerTrash" size="18" aria-hidden="true" />
+          </button>
+
+          @let costError = controlError(item.controls.unitCost);
+          <div class="tooltip-error tooltip-bottom" [class.tooltip]="costError" [attr.data-tip]="costError">
+            <label class="input w-full" [class.input-error]="costError">
+              <span class="text-neutral">S/.</span>
+              <input
+                class="tabular-nums"
+                type="number" min="0" step="0.01" placeholder="0.00"
+                aria-label="Costo unitario"
+                formControlName="unitCost"
+                [attr.aria-invalid]="!!costError"
+              />
+              @if (costError) {
+                <ng-icon class="text-error" name="tablerAlertCircle" size="18" aria-hidden="true" />
+              }
+            </label>
+          </div>
+
+          @let quantityError = controlError(item.controls.quantity);
+          <div class="tooltip-error tooltip-bottom" [class.tooltip]="quantityError" [attr.data-tip]="quantityError">
+            <label class="input w-full" [class.input-error]="quantityError">
+              <span class="text-neutral">×</span>
+              <input
+                class="tabular-nums"
+                type="number" min="1" step="1"
+                aria-label="Cantidad"
+                formControlName="quantity"
+                [attr.aria-invalid]="!!quantityError"
+              />
+              @if (quantityError) {
+                <ng-icon class="text-error" name="tablerAlertCircle" size="18" aria-hidden="true" />
+              }
+            </label>
+          </div>
+
+          <span class="text-right font-medium whitespace-nowrap tabular-nums">S/. {{ lineTotal(i) | number: '1.2-2' }}</span>
+        </div>
+      } @empty {
+        <div class="grid flex-1 place-items-center content-center gap-2 rounded-field bg-base-200 py-12 text-neutral">
+          <ng-icon name="tablerPackage" size="40" aria-hidden="true" />
+          <span class="text-center">
+            {{ hasEligibleProducts() ? 'Busca un producto para agregarlo' : 'Todos los productos ya tienen movimientos' }}
+          </span>
+        </div>
+      }
+    </div>
+
+    <label class="flex flex-col gap-1">
+      <span class="flex justify-between text-caption text-neutral">
+        Notas (opcional)
+        <span class="tabular-nums">{{ notesLength() }}/500</span>
+      </span>
+      <textarea class="textarea w-full resize-none" rows="2" maxlength="500" formControlName="notes"></textarea>
+    </label>
+  </div>
+
+  <!-- Resumen -->
+  <aside class="flex shrink-0 flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-6 lg:sticky lg:top-0 lg:w-80">
+    <h2 class="text-subtitle font-medium">Resumen</h2>
+
+    <dl class="flex flex-col gap-2 text-neutral">
+      <div class="flex justify-between">
+        <dt>Productos</dt>
+        <dd class="tabular-nums">{{ items.length }}</dd>
+      </div>
+      <div class="flex justify-between">
+        <dt>Unidades</dt>
+        <dd class="tabular-nums">{{ totalUnits() }}</dd>
+      </div>
+    </dl>
+
+    <div class="flex items-baseline justify-between gap-2 rounded-field bg-base-200 px-3 py-2">
+      <span class="font-medium">Costo total</span>
+      <span class="text-title font-semibold tabular-nums">S/. {{ totalCents() / 100 | number: '1.2-2' }}</span>
+    </div>
+
+    @if (invalidItemsCount) {
+      <small role="alert" class="flex items-center gap-1 text-error">
+        <ng-icon name="tablerAlertCircle" size="16" aria-hidden="true" />
+        {{ invalidItemsCount }} {{ invalidItemsCount === 1 ? 'producto con errores' : 'productos con errores' }}
+      </small>
+    } @else if (items.touched && items.hasError('itemsRequired')) {
+      <small role="alert" class="flex items-center gap-1 text-error">
+        <ng-icon name="tablerAlertCircle" size="16" aria-hidden="true" />
+        Agrega al menos un producto
+      </small>
+    }
+
+    <app-button type="submit" customClass="w-full" [loading]="saving()" [disabled]="saving()">
+      Registrar carga inicial
+    </app-button>
+  </aside>
+</form>
