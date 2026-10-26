@@ -1,0 +1,114 @@
+<app-modal label="Registrar gasto" boxClass="max-w-md" [isOpen]="open()" (closed)="closed.emit()">
+  <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <h3 class="text-subtitle font-medium">Registrar gasto</h3>
+
+    <div class="flex flex-col gap-1">
+      <span class="text-caption text-neutral" id="expense-category-label">Categoría</span>
+      <div class="dropdown w-full">
+        <div
+          tabindex="0"
+          role="button"
+          class="input w-full cursor-pointer justify-between"
+          aria-labelledby="expense-category-label"
+          [class.input-error]="categoryInvalid"
+        >
+          @if (selectedCategory(); as category) {
+            <span class="truncate">{{ category.name }}</span>
+          } @else {
+            <span class="text-neutral">Elige una categoría</span>
+          }
+          <ng-icon name="tablerChevronDown" size="16" class="shrink-0 text-neutral" aria-hidden="true" />
+        </div>
+        <ul tabindex="-1" class="dropdown-content menu z-20 mt-1 max-h-60 w-full flex-nowrap overflow-y-auto rounded-box bg-base-100 p-1 shadow-lg">
+          @for (group of groups(); track group.label) {
+            <li class="menu-title text-caption">{{ group.label }}</li>
+            @for (category of group.categories; track category.id) {
+              <li>
+                <button type="button" [class.menu-active]="category.id === selectedCategory()?.id" (click)="selectCategory(category)">
+                  {{ category.name }}
+                </button>
+              </li>
+            }
+          } @empty {
+            <li class="px-3 py-2 text-neutral"><small>No hay categorías activas.</small></li>
+          }
+        </ul>
+      </div>
+      @if (categoryInvalid) {
+        <small class="text-error">Elige una categoría.</small>
+      }
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <label class="flex min-w-0 flex-col gap-1">
+        <span class="text-caption text-neutral">Monto</span>
+        <span class="input w-full" [class.input-error]="!!amountError">
+          <span class="text-neutral">S/</span>
+          <input
+            class="tabular-nums"
+            type="number"
+            inputmode="decimal"
+            min="0.01"
+            step="0.01"
+            placeholder="0.00"
+            formControlName="amount"
+            [attr.aria-invalid]="!!amountError"
+          />
+        </span>
+      </label>
+      <label class="flex min-w-0 flex-col gap-1">
+        <span class="text-caption text-neutral">Fecha</span>
+        <input
+          class="input w-full"
+          type="date"
+          formControlName="spentOn"
+          [max]="today"
+          [class.input-error]="spentOnInvalid"
+          [attr.aria-invalid]="spentOnInvalid"
+        />
+      </label>
+      @if (amountError) {
+        <small class="col-span-2 text-error">{{ amountError }}</small>
+      }
+    </div>
+
+    <label class="flex flex-col gap-1">
+      <span class="flex justify-between text-caption text-neutral">
+        <span>Detalle <span class="opacity-60">(opcional)</span></span>
+        <span class="tabular-nums">{{ form.controls.description.value.length }}/{{ descriptionMaxLength }}</span>
+      </span>
+      <input
+        class="input w-full"
+        type="text"
+        placeholder="Ej.: recibo de octubre"
+        formControlName="description"
+        [attr.maxlength]="descriptionMaxLength"
+      />
+    </label>
+
+    <div class="flex flex-col gap-1">
+      <span class="text-caption text-neutral">¿De dónde sale el dinero?</span>
+      <app-segmented-control
+        class="w-full"
+        label="Origen del dinero"
+        [fill]="true"
+        [options]="sources"
+        [value]="source()"
+        (valueChange)="setSource($event)"
+      />
+      <small class="text-neutral">{{ sourceHint() }}</small>
+    </div>
+
+    @if (error()) {
+      <div role="alert" class="flex items-start gap-2 rounded-field bg-error-soft px-3 py-2 text-error">
+        <ng-icon class="mt-0.5 shrink-0" name="tablerAlertCircle" size="18" aria-hidden="true" />
+        <small>{{ error() }}</small>
+      </div>
+    }
+
+    <div class="flex justify-end gap-2">
+      <app-button type="button" variant="ghost" [disabled]="saving()" (click)="cancelled.emit()">Cancelar</app-button>
+      <app-button type="submit" variant="primary" [loading]="saving()" [disabled]="saving()">Registrar</app-button>
+    </div>
+  </form>
+</app-modal>
