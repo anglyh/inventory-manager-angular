@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { AuthResponse } from '../interfaces/auth-response.interface';
 import { User } from '../interfaces/user.interface';
-import { catchError, map, Observable, of, tap } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { environment } from '@environments/environment';
@@ -29,6 +29,8 @@ export class AuthService {
 
   user = computed<User | null>(() => this._user())
   token = computed<string | null>(() => this._token())
+  /** Para la UI (menú, botones, guards). La autorización real la decide el backend. */
+  isAdmin = computed(() => this._user()?.role === 'ADMIN')
 
   login(email: string, password: string): Observable<boolean> {
     return this.http.post<AuthResponse>(`${baseUrl}/login`, {
@@ -36,7 +38,6 @@ export class AuthService {
       password
     })
     .pipe(
-      tap(res => console.log(res)),
       map(res => this.handleAuthSuccess(res)),
       catchError((error: any) => this.handleWrongPassword(error))
     )
@@ -81,7 +82,6 @@ export class AuthService {
   }
 
   private handleAuthSuccess({ token, user }: AuthResponse) {
-    console.log({token, user})
     this._user.set(user);
     this._authStatus.set('authenticated')
     this._token.set(token)

@@ -1,0 +1,44 @@
+<form class="flex flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-6" [formGroup]="form" (ngSubmit)="submit()" aria-labelledby="new-user-title">
+  <h2 id="new-user-title" class="text-subtitle font-medium">Nuevo empleado</h2>
+
+  <label class="flex flex-col gap-1">
+    <span class="text-caption text-neutral">Nombre</span>
+    <input class="input w-full" type="text" formControlName="name" maxlength="50" autocomplete="off" placeholder="Ej.: Juan Pérez" />
+    @if (formUtils.isInvalidField(form, 'name')) {
+      <app-form-error-label [control]="form.controls.name" />
+    }
+  </label>
+
+  <label class="flex flex-col gap-1">
+    <span class="text-caption text-neutral">Correo</span>
+    <input class="input w-full" type="email" formControlName="email" maxlength="100" autocomplete="off" placeholder="juan@ejemplo.com" />
+    @if (formUtils.isInvalidField(form, 'email')) {
+      <app-form-error-label [control]="form.controls.email" />
+    }
+  </label>
+
+  <label class="flex flex-col gap-1">
+    <span class="text-caption text-neutral">Contraseña</span>
+    <span class="input w-full">
+      <input [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" />
+      <button type="button" class="btn btn-ghost btn-xs btn-circle" (click)="showPassword.set(!showPassword())" aria-label="Mostrar u ocultar contraseña">
+        <ng-icon [name]="showPassword() ? 'tablerEyeOff' : 'tablerEye'" size="18" />
+      </button>
+    </span>
+    <small class="text-neutral">Mínimo 12 caracteres y una mayúscula.</small>
+    @if (formUtils.isInvalidField(form, 'password')) {
+      <app-form-error-label [control]="form.controls.password" />
+    }
+  </label>
+
+  @if (error()) {
+    <p class="text-sm text-error" role="alert">{{ error() }}</p>
+  }
+
+  <button type="submit" class="btn btn-primary" [disabled]="saving()">
+    @if (saving()) {
+      <span class="loading loading-spinner loading-sm"></span>
+    }
+    Crear empleado
+  </button>
+</form>

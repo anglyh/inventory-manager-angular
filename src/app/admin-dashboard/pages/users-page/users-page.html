@@ -1,0 +1,7 @@
+<main class="grid w-full items-start gap-6 lg:grid-cols-[minmax(0,24rem)_1fr]">
+  <store-user-form [saving]="saving()" [error]="saveError()" [resetKey]="resetKey()" (submitted)="create($event)" />
+  <store-user-list [users]="users()" [loading]="usersResource.isLoading()" [error]="loadError()"
+    [pendingId]="pendingId()"
+    (activeChange)="setActive($event)"
+  />
+</main>

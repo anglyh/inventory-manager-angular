@@ -11,15 +11,17 @@ export function mapApiError(error: ApiError): MappedError {
     case 'VALIDATION_ERROR':
       return { fields: buildFieldMap(error.fields) }; // ya no necesitas ?? []
     case 'UNAUTHORIZED':
-      return { redirect: '/login' };
+      return { redirect: '/auth/login' };
     case 'NOT_FOUND':
-      return { toast: 'El recurso no existe' };
+      return { toast: 'No se encontró: puede que se haya eliminado.' };
     case 'CONFLICT':
       return { toast: error.message };
     case 'INVALID_JSON':
     case 'BAD_REQUEST':
-    case 'DB_ERROR':
       return { toast: error.message };
+    case 'DB_ERROR':
+      // El backend responde "Base de datos no disponible": para el usuario es un problema de conexión.
+      return { toast: 'No se pudo conectar. Inténtalo de nuevo en un momento.' };
     case 'INTERNAL_ERROR':
     default:
       return { toast: 'Algo salió mal, intenta de nuevo' };
