@@ -1,38 +1,78 @@
-@let s = summary();
-<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-  <article class="col-span-2 flex flex-col gap-1 rounded-box bg-primary p-5 text-primary-content lg:col-span-1">
-    <span class="text-sm opacity-80">{{ isLoss() ? 'Pérdida' : 'Ganancia' }}</span>
-    <p class="text-3xl font-semibold tracking-tight tabular-nums">
-      {{ isLoss() ? '−' : '' }}S/ {{ netProfit() | number: '1.2-2' }}
-    </p>
-    <small class="tabular-nums opacity-80">
-      Bruta S/ {{ s.grossProfit | number: '1.2-2' }} · Pérdidas S/ {{ s.losses | number: '1.2-2' }}
-    </small>
-  </article>
+<section class="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Resumen del período">
+  <div class="col-span-2 flex min-w-0 flex-col gap-1" [class]="heroClass()">
+    <report-stat-card
+      class="flex-1"
+      label="Ganancia neta"
+      size="hero"
+      tone="primary"
+      [value]="total().netProfit"
+      [delta]="netChange()"
+      [hint]="netHint()"
+    />
+    <button
+      type="button"
+      class="flex cursor-pointer items-center gap-1 self-start px-1 py-1 text-neutral hover:text-base-content"
+      aria-controls="report-breakdown"
+      [attr.aria-expanded]="breakdownOpen()"
+      (click)="toggleBreakdown()"
+    >
+      {{ breakdownOpen() ? 'Ocultar detalle' : 'Ver detalle' }}
+      <ng-icon name="tablerChevronDown" size="18" aria-hidden="true" class="transition-transform" [class.rotate-180]="breakdownOpen()" />
+    </button>
+  </div>
 
-  <article class="flex flex-col gap-1 rounded-box bg-base-100 p-5">
-    <span class="text-sm text-neutral">Ventas</span>
-    <p class="text-2xl font-semibold tracking-tight tabular-nums">S/ {{ s.revenue | number: '1.2-2' }}</p>
-    <small class="text-neutral tabular-nums">
-      {{ s.salesCount }} {{ s.salesCount === 1 ? 'venta' : 'ventas' }} · prom. S/ {{ s.avgTicket | number: '1.2-2' }}
-    </small>
-  </article>
+  @if (attention().length) {
+    <!-- En el celular los avisos van después de las métricas; en pantallas grandes, al lado de la ganancia neta. -->
+    <report-attention class="order-last col-span-2 min-w-0 lg:order-none" [items]="attention()" />
+  }
 
-  <article class="flex flex-col gap-1 rounded-box bg-base-100 p-5">
-    <span class="text-sm text-neutral">Margen</span>
-    <p class="text-2xl font-semibold tracking-tight tabular-nums" [class.text-error]="isLoss()">
-      {{ s.marginPct | number: '1.0-1' }}%
-    </p>
-    @if (!isLoss()) {
-      <small class="text-neutral tabular-nums">S/ {{ s.marginPct | number: '1.0-0' }} de cada S/ 100</small>
-    }
-  </article>
+  @if (breakdownOpen()) {
+    <report-business-split
+      id="report-breakdown"
+      class="col-span-2 min-w-0 lg:col-span-4"
+      [store]="store()"
+      [lodging]="lodging()"
+      [total]="total()"
+      [previous]="previous()"
+    />
+  }
 
-  <article class="col-span-2 flex flex-col gap-1 rounded-box bg-base-100 p-5 lg:col-span-1">
-    <span class="text-sm text-neutral">Pérdidas</span>
-    <p class="text-2xl font-semibold tracking-tight tabular-nums" [class.text-error]="+s.losses > 0">
-      S/ {{ s.losses | number: '1.2-2' }}
-    </p>
-    <small class="text-neutral">Mermas y conteos, a costo</small>
-  </article>
-</div>
+  <report-stat-card
+    class="min-w-0"
+    label="Ingresos totales"
+    size="md"
+    [value]="revenue()"
+    [delta]="revenueChange()"
+    [hint]="revenueHint()"
+    [delay]="60"
+  />
+  <report-stat-card
+    class="min-w-0"
+    label="Ganancia en ventas"
+    size="md"
+    [value]="store().grossProfit"
+    [delta]="grossChange()"
+    [hint]="grossHint()"
+    [delay]="120"
+  />
+  <report-stat-card
+    class="min-w-0"
+    label="Ocupación"
+    size="md"
+    format="percent"
+    [value]="rooms().occupancyPct"
+    [hint]="occupancyHint()"
+    [delay]="180"
+  />
+  <!-- Subir los gastos es malo: la variación se pinta al revés. -->
+  <report-stat-card
+    class="min-w-0"
+    label="Gastos del período"
+    size="md"
+    hint="Hospedaje y generales"
+    [value]="expenses()"
+    [delta]="expensesChange()"
+    [invertDelta]="true"
+    [delay]="240"
+  />
+</section>

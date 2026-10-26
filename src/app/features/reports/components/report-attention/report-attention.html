@@ -1,0 +1,25 @@
+@if (items().length) {
+  <section class="flex h-full flex-col gap-2 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="attention-title">
+    <h2 id="attention-title" class="font-medium">Requiere atención</h2>
+    <ul class="flex flex-col gap-2">
+      @for (item of items(); track item.id) {
+        <li>
+          <a
+            class="flex items-center gap-3 rounded-field bg-base-200/60 px-3 py-2 hover:bg-base-200"
+            [routerLink]="item.link"
+            [title]="item.hint"
+          >
+            <span
+              class="grid size-8 shrink-0 place-items-center rounded-field"
+              [class]="item.tone === 'error' ? 'bg-error-soft text-error' : 'bg-warning-soft text-warning'"
+            >
+              <ng-icon [name]="item.icon" size="18" aria-hidden="true" />
+            </span>
+            <span class="min-w-0 flex-1 truncate tabular-nums">{{ item.text }}</span>
+            <ng-icon name="tablerChevronRight" size="18" class="shrink-0 text-neutral" aria-hidden="true" />
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+}

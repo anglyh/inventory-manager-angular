@@ -1,13 +1,15 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerCalendar, tablerChevronLeft, tablerChevronRight } from '@ng-icons/tabler-icons';
-import type { ReportScale } from '@/features/reports/interfaces/report.interface';
+import type { ReportOverview, ReportScale } from '@/features/reports/interfaces/report.interface';
 import { ReportsService } from '@/features/reports/services/reports.service';
 import {
+  clampToToday,
   formatRangeLabel,
+  getComparisonRange,
   getLimaTodayPlainDate,
   getPeriodRange,
   isCurrentPeriod,
@@ -16,11 +18,11 @@ import {
   parsePlainDate,
   shiftAnchor,
 } from '@/features/reports/utils/lima-profit-range';
+import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
 import { ReportKpis } from '@/features/reports/components/report-kpis/report-kpis';
-import { ReportPayments } from '@/features/reports/components/report-payments/report-payments';
+import { ReportProducts } from '@/features/reports/components/report-products/report-products';
 import { ReportDailyChart } from '@/features/reports/components/report-daily-chart/report-daily-chart';
-import { ReportTopProducts } from '@/features/reports/components/report-top-products/report-top-products';
-import { ReportLosses } from '@/features/reports/components/report-losses/report-losses';
+import { Button } from '@/shared/components/button/button';
 import { resolveApiError } from '@/shared/utils/api-error';
 
 type ReportMode = ReportScale | 'custom';
@@ -29,11 +31,23 @@ const SCALES: { value: ReportScale; label: string }[] = [
   { value: 'day', label: 'Día' },
   { value: 'week', label: 'Semana' },
   { value: 'month', label: 'Mes' },
+  { value: 'year', label: 'Año' },
 ];
+
+/** Escala al entrar sin parámetros: un mes muestra tendencia; un solo día casi no dice nada. */
+const DEFAULT_SCALE: ReportScale = 'month';
 
 @Component({
   selector: 'app-reports-page',
-  imports: [ReactiveFormsModule, NgIcon, ReportKpis, ReportPayments, ReportDailyChart, ReportTopProducts, ReportLosses],
+  imports: [
+    SegmentedControl,
+    ReactiveFormsModule,
+    NgIcon,
+    Button,
+    ReportKpis,
+    ReportProducts,
+    ReportDailyChart,
+  ],
   viewProviders: [provideIcons({ tablerCalendar, tablerChevronLeft, tablerChevronRight })],
   templateUrl: './reports-page.html',
 })
@@ -48,14 +62,20 @@ export class ReportsPage {
 
   /**
    * La URL es la fuente de verdad:
-   * - `?scale=day|week|month&date=YYYY-MM-DD` → período que contiene `date` (por defecto hoy).
+   * - `?scale=day|week|month|year&date=YYYY-MM-DD` → período que contiene `date` (por defecto hoy; sin `scale`, mes).
    * - `?scale=custom&from&to` → rango libre.
    */
   private params = toSignal(this.route.queryParamMap, { requireSync: true });
 
   readonly mode = computed<ReportMode>(() => {
     const value = this.params().get('scale');
-    return value === 'week' || value === 'month' || value === 'custom' ? value : 'day';
+    return value === 'day' || value === 'week' || value === 'year' || value === 'custom' ? value : DEFAULT_SCALE;
+  });
+
+  /** Escala marcada en el selector; con rango propio no se marca ninguna. */
+  readonly scaleValue = computed(() => {
+    const mode = this.mode();
+    return mode === 'custom' ? null : mode;
   });
 
   /** Fecha de referencia del período; no se permite pasar de hoy. */
@@ -87,10 +107,32 @@ export class ReportsPage {
     to: this.range().to,
   });
 
+  /** Un período en curso se consulta hasta hoy; se compara con el mismo tramo del período anterior. */
+  private queryRanges = computed(() => {
+    const mode = this.mode();
+    if (mode === 'custom') return { range: this.range(), compare: null };
+    const range = clampToToday(this.range());
+    return { range, compare: getComparisonRange(mode, range) };
+  });
+
+  readonly compareLabel = computed(() => {
+    const compare = this.queryRanges().compare;
+    return compare ? formatRangeLabel('custom', compare) : 'el período anterior';
+  });
+
   reportResource = rxResource({
-    params: () => this.range(),
+    params: () => this.queryRanges(),
     stream: ({ params }) =>
-      this.reportsService.getOverview(limaPlainDateToStartISO(params.from), limaPlainDateToEndISO(params.to)),
+      this.reportsService.getOverview(
+        toIsoRange(params.range),
+        params.compare ? toIsoRange(params.compare) : undefined,
+      ),
+  });
+
+  /** Al cambiar de período se conserva el reporte anterior (atenuado) en vez del spinner. */
+  readonly report = linkedSignal<ReportOverview | undefined, ReportOverview | undefined>({
+    source: () => (this.reportResource.hasValue() ? this.reportResource.value() : undefined),
+    computation: (value, previous) => value ?? previous?.value,
   });
 
   private resolvedError = computed(() => {
@@ -110,7 +152,7 @@ export class ReportsPage {
   selectScale(scale: ReportScale) {
     const date = this.mode() === 'custom' ? this.range().to : this.anchor();
     this.rangeOpen.set(false);
-    this.navigate({ scale: scale === 'day' ? null : scale, date: date === this.today ? null : date });
+    this.navigate({ scale: scale === DEFAULT_SCALE ? null : scale, date: date === this.today ? null : date });
   }
 
   step(direction: -1 | 1) {
@@ -134,8 +176,13 @@ export class ReportsPage {
     this.navigate({ scale: 'custom', from, to, date: null });
   }
 
+  /** `view` venía de las pestañas que ya no existen: se limpia para no arrastrarlo. */
   private navigate(queryParams: Record<string, string | null>) {
-    const clean = { from: null, to: null, ...queryParams };
+    const clean = { from: null, to: null, view: null, ...queryParams };
     void this.router.navigate([], { relativeTo: this.route, queryParams: clean, queryParamsHandling: 'merge' });
   }
+}
+
+function toIsoRange(range: { from: string; to: string }) {
+  return { from: limaPlainDateToStartISO(range.from), to: limaPlainDateToEndISO(range.to) };
 }

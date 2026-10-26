@@ -1,0 +1,81 @@
+@let st = store();
+@let lo = lodging();
+@let to = total();
+@let prev = previous();
+<section class="flex flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="business-split-title">
+  <h2 id="business-split-title" class="font-medium">Cómo se llega a la ganancia neta</h2>
+
+  <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+    <!-- Tienda -->
+    <div class="flex min-w-0 flex-col gap-2 rounded-field bg-base-200/60 p-3">
+      <h3 class="font-medium">Tienda</h3>
+      <dl class="flex flex-col gap-1 tabular-nums">
+        <div class="flex justify-between gap-3">
+          <dt class="text-neutral">Ventas</dt>
+          <dd>S/ {{ st.revenue | number: '1.2-2' }}</dd>
+        </div>
+        <div class="flex justify-between gap-3">
+          <dt class="text-neutral">− Costo de lo vendido</dt>
+          <dd>S/ {{ st.cogs | number: '1.2-2' }}</dd>
+        </div>
+        <div class="flex justify-between gap-3" title="Vencidos, dañados y faltantes de conteo">
+          <dt class="text-neutral">− Mermas</dt>
+          <dd [class.text-error]="+st.losses > 0">S/ {{ st.losses | number: '1.2-2' }}</dd>
+        </div>
+        <div class="mt-1 flex justify-between gap-3 border-t border-base-300 pt-2 font-semibold">
+          <dt>Resultado tienda</dt>
+          <dd [class.text-error]="isNegative(st.result)">S/ {{ st.result | number: '1.2-2' }}</dd>
+        </div>
+      </dl>
+      <small class="text-neutral tabular-nums">Antes S/ {{ prev.storeResult | number: '1.2-2' }}</small>
+    </div>
+
+    <!-- Hospedaje -->
+    <div class="flex min-w-0 flex-col gap-2 rounded-field bg-base-200/60 p-3">
+      <h3 class="font-medium">Hospedaje</h3>
+      <dl class="flex flex-col gap-1 tabular-nums">
+        <div class="flex justify-between gap-3">
+          <dt class="text-neutral">Cobros</dt>
+          <dd>S/ {{ lo.revenue | number: '1.2-2' }}</dd>
+        </div>
+        <div class="flex justify-between gap-3" title="Gastos del grupo Hospedaje">
+          <dt class="text-neutral">− Costos del hospedaje</dt>
+          <dd>S/ {{ lo.costs | number: '1.2-2' }}</dd>
+        </div>
+        <div class="mt-1 flex justify-between gap-3 border-t border-base-300 pt-2 font-semibold">
+          <dt>Resultado hospedaje</dt>
+          <dd [class.text-error]="isNegative(lo.result)">S/ {{ lo.result | number: '1.2-2' }}</dd>
+        </div>
+      </dl>
+      <small class="text-neutral tabular-nums">Antes S/ {{ prev.lodgingResult | number: '1.2-2' }}</small>
+    </div>
+
+    <!-- Total -->
+    <div class="flex min-w-0 flex-col gap-2 rounded-field bg-base-200/60 p-3">
+      <h3 class="font-medium">Total</h3>
+      <dl class="flex flex-col gap-1 tabular-nums">
+        <div class="flex justify-between gap-3">
+          <dt class="text-neutral">Resultado tienda</dt>
+          <dd [class.text-error]="isNegative(to.storeResult)">S/ {{ to.storeResult | number: '1.2-2' }}</dd>
+        </div>
+        <div class="flex justify-between gap-3">
+          <dt class="text-neutral">+ Resultado hospedaje</dt>
+          <dd [class.text-error]="isNegative(to.lodgingResult)">S/ {{ to.lodgingResult | number: '1.2-2' }}</dd>
+        </div>
+        <div class="flex justify-between gap-3">
+          <dt class="text-neutral">− Faltó en caja</dt>
+          <dd [class.text-error]="+to.cashShortage > 0">S/ {{ to.cashShortage | number: '1.2-2' }}</dd>
+        </div>
+        <div class="flex justify-between gap-3" title="Gastos compartidos: luz, agua, sueldos…">
+          <dt class="text-neutral">− Gastos generales</dt>
+          <dd>S/ {{ to.generalExpenses | number: '1.2-2' }}</dd>
+        </div>
+        <div class="mt-1 flex justify-between gap-3 border-t border-base-300 pt-2 font-semibold">
+          <dt>Ganancia neta</dt>
+          <dd [class.text-error]="isNegative(to.netProfit)">S/ {{ to.netProfit | number: '1.2-2' }}</dd>
+        </div>
+      </dl>
+      <small class="text-neutral tabular-nums">Antes S/ {{ prev.netProfit | number: '1.2-2' }}</small>
+    </div>
+  </div>
+</section>

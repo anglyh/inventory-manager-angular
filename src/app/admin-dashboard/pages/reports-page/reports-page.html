@@ -2,92 +2,89 @@
   <header class="flex flex-wrap items-center justify-between gap-3">
     <div class="flex min-w-0 items-center gap-1">
       @if (mode() !== 'custom') {
-        <button type="button" class="btn btn-circle btn-ghost btn-sm" aria-label="Período anterior" (click)="step(-1)">
+        <app-button variant="ghost" customClass="btn-circle" ariaLabel="Período anterior" (click)="step(-1)">
           <ng-icon name="tablerChevronLeft" size="20" aria-hidden="true" />
-        </button>
+        </app-button>
       }
       <h1 class="truncate px-1 text-title font-semibold tabular-nums">{{ label() }}</h1>
       @if (mode() !== 'custom') {
-        <button
-          type="button"
-          class="btn btn-circle btn-ghost btn-sm"
-          aria-label="Período siguiente"
+        <app-button
+          variant="ghost"
+          customClass="btn-circle"
+          ariaLabel="Período siguiente"
           [disabled]="isCurrent()"
           (click)="step(1)"
         >
           <ng-icon name="tablerChevronRight" size="20" aria-hidden="true" />
-        </button>
+        </app-button>
       }
     </div>
 
-    <div class="flex items-center gap-2">
-      <div class="flex rounded-full bg-base-100 p-1" role="tablist" aria-label="Escala">
-        @for (scale of scales; track scale.value) {
-          <button
-            type="button"
-            role="tab"
-            class="btn btn-sm rounded-full border-0 px-4"
-            [class]="scale.value === mode() ? 'btn-primary' : 'btn-ghost'"
-            [attr.aria-selected]="scale.value === mode()"
-            (click)="selectScale(scale.value)"
-          >
-            {{ scale.label }}
-          </button>
-        }
-      </div>
-      <button
-        type="button"
-        class="btn btn-circle"
-        aria-label="Elegir rango de fechas"
-        [class]="mode() === 'custom' || rangeOpen() ? 'btn-primary' : 'border-0 [--btn-color:var(--color-base-100)]'"
-        [attr.aria-expanded]="rangeOpen()"
+    <div class="flex w-full items-center gap-2 sm:w-auto">
+      <app-segmented-control
+        class="min-w-0 flex-1 sm:flex-none"
+        label="Escala"
+        surface="page"
+        [fill]="true"
+        [options]="scales"
+        [value]="scaleValue()"
+        (valueChange)="selectScale($event)"
+      />
+      <app-button
+        ariaLabel="Elegir rango de fechas"
+        [variant]="mode() === 'custom' || rangeOpen() ? 'primary' : 'ghost'"
+        [customClass]="mode() === 'custom' || rangeOpen() ? 'btn-circle' : 'btn-circle bg-base-100'"
         (click)="toggleRange()"
       >
         <ng-icon name="tablerCalendar" size="20" aria-hidden="true" />
-      </button>
+      </app-button>
     </div>
   </header>
 
   @if (rangeOpen()) {
     <form
-      class="flex flex-wrap items-end gap-3 rounded-box bg-base-100 p-3"
+      class="flex flex-wrap items-end gap-3 rounded-box bg-base-100 p-4"
       [formGroup]="rangeForm"
       (ngSubmit)="applyRange()"
     >
-      <label class="flex flex-col gap-1">
+      <label class="flex min-w-0 flex-1 flex-col gap-1 sm:flex-none">
         <small class="text-neutral">Desde</small>
-        <input type="date" class="input input-sm" formControlName="from" [max]="today" />
+        <input type="date" class="input w-full" formControlName="from" [max]="today" />
       </label>
-      <label class="flex flex-col gap-1">
+      <label class="flex min-w-0 flex-1 flex-col gap-1 sm:flex-none">
         <small class="text-neutral">Hasta</small>
-        <input type="date" class="input input-sm" formControlName="to" [max]="today" />
+        <input type="date" class="input w-full" formControlName="to" [max]="today" />
       </label>
-      <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
+      <app-button type="submit">Aplicar</app-button>
     </form>
   }
 
   @if (errorMessage(); as message) {
     <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">
       <p class="text-neutral">{{ message }}</p>
-      <button type="button" class="btn btn-primary btn-sm" (click)="reportResource.reload()">Reintentar</button>
+      <app-button (click)="reportResource.reload()">Reintentar</app-button>
     </div>
-  } @else if (reportResource.hasValue()) {
-    @let report = reportResource.value();
-    <div class="flex flex-col gap-4 transition-opacity" [class.opacity-60]="reportResource.isLoading()">
-      <report-kpis [summary]="report.summary" />
-
-      <div class="grid items-start gap-4 lg:grid-cols-5">
-        <div class="flex flex-col gap-4 lg:col-span-3">
-          @if (report.daily.length > 1) {
-            <report-daily-chart [daily]="report.daily" />
-          }
-          <report-top-products [topSold]="report.topSold" [topProfit]="report.topProfit" />
-        </div>
-        <div class="flex flex-col gap-4 lg:col-span-2">
-          <report-payments [payments]="report.payments" [cash]="report.cash" />
-          <report-losses [losses]="report.losses" [total]="report.summary.losses" [topLosses]="report.topLosses" />
-        </div>
-      </div>
+  } @else if (report(); as report) {
+    <!-- Una sola pantalla: resumen arriba; en pantallas grandes, gráfico y productos lado a lado. -->
+    <div class="grid grid-cols-1 gap-4 transition-opacity xl:grid-cols-3" [class.opacity-60]="reportResource.isLoading()">
+      <report-kpis
+        class="min-w-0 xl:col-span-3"
+        [summary]="report.summary"
+        [previous]="report.previous"
+        [rooms]="report.rooms"
+        [store]="report.store"
+        [lodging]="report.lodging"
+        [total]="report.total"
+        [inventory]="report.inventory"
+        [compareLabel]="compareLabel()"
+      />
+      <!-- Con un solo día (escala "Día") no hay tendencia que mostrar. -->
+      @if (report.daily.length > 1) {
+        <report-daily-chart class="min-w-0 xl:col-span-2" [daily]="report.daily" />
+        <report-products class="min-w-0" [products]="report.products" />
+      } @else {
+        <report-products class="min-w-0 xl:col-span-3" [products]="report.products" />
+      }
     </div>
   } @else {
     <div class="grid place-items-center py-20" role="status" aria-label="Cargando reporte">

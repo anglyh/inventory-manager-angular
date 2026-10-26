@@ -32,7 +32,7 @@ export function parsePlainDate(value: string | null): string | null {
   }
 }
 
-/** Período (día, semana lunes–domingo o mes) que contiene a `anchor`. */
+/** Período (día, semana lunes–domingo, mes o año) que contiene a `anchor`. */
 export function getPeriodRange(scale: ReportScale, anchor: string): PlainRange {
   const date = Temporal.PlainDate.from(anchor);
   switch (scale) {
@@ -46,13 +46,43 @@ export function getPeriodRange(scale: ReportScale, anchor: string): PlainRange {
       const first = date.with({ day: 1 });
       return { from: first.toString(), to: first.add({ months: 1 }).subtract({ days: 1 }).toString() };
     }
+    case 'year': {
+      const first = date.with({ month: 1, day: 1 });
+      return { from: first.toString(), to: first.add({ years: 1 }).subtract({ days: 1 }).toString() };
+    }
   }
+}
+
+/** Recorta el final del rango a hoy: un período en curso se consulta "hasta la fecha". */
+export function clampToToday(range: PlainRange): PlainRange {
+  const now = today().toString();
+  return range.to > now ? { from: range.from, to: now } : range;
+}
+
+/**
+ * Mismo tramo del período anterior: "1–13 oct" se compara con "1–13 sep", no con los 13 días previos.
+ * Si el período anterior es más corto (31 → 30 días), se recorta a su último día.
+ */
+export function getComparisonRange(scale: ReportScale, range: PlainRange): PlainRange {
+  const from = Temporal.PlainDate.from(range.from);
+  const elapsedDays = from.until(Temporal.PlainDate.from(range.to)).days;
+  const previous = getPeriodRange(scale, shiftAnchor(scale, range.from, -1));
+  const previousFrom = Temporal.PlainDate.from(previous.from);
+  const end = previousFrom.add({ days: elapsedDays });
+  return {
+    from: previous.from,
+    to: Temporal.PlainDate.compare(end, previous.to) > 0 ? previous.to : end.toString(),
+  };
 }
 
 /** Mueve `anchor` un período hacia atrás (-1) o adelante (+1). */
 export function shiftAnchor(scale: ReportScale, anchor: string, step: -1 | 1): string {
   const date = Temporal.PlainDate.from(anchor);
-  const duration = scale === 'day' ? { days: step } : scale === 'week' ? { weeks: step } : { months: step };
+  const duration =
+    scale === 'day' ? { days: step }
+    : scale === 'week' ? { weeks: step }
+    : scale === 'month' ? { months: step }
+    : { years: step };
   return date.add(duration).toString();
 }
 
@@ -80,7 +110,7 @@ function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-/** Etiqueta legible del rango: "Hoy, 12 oct", "6 – 12 oct 2026", "octubre 2026". */
+/** Etiqueta legible del rango: "Hoy, 12 oct", "6 – 12 oct 2026", "Octubre 2026", "2026". */
 export function formatRangeLabel(scale: ReportScale | 'custom', range: PlainRange): string {
   const from = Temporal.PlainDate.from(range.from);
   const to = Temporal.PlainDate.from(range.to);
@@ -92,6 +122,8 @@ export function formatRangeLabel(scale: ReportScale | 'custom', range: PlainRang
     if (from.equals(now.subtract({ days: 1 }))) return `Ayer, ${dayMonth}`;
     return capitalize(format(from, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }));
   }
+
+  if (scale === 'year') return String(from.year);
 
   if (scale === 'month') {
     // "octubre de 2026" → "Octubre 2026"
