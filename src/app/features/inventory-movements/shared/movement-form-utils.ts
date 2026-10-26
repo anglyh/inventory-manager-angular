@@ -54,7 +54,7 @@ export function applyMovementError(error: unknown, form: AbstractControl): strin
         control.markAsTouched();
       }
     }
-    return Object.values(mapped.fields).join(' · ') || 'Revisa los datos del formulario.';
+    return Object.values(mapped.fields).join(' · ') || 'Revisa los datos marcados.';
   }
   return mapped.toast || apiError.message || 'No se pudo registrar. Intenta nuevamente.';
 }

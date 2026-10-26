@@ -1,8 +1,9 @@
 import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerAlertCircle, tablerPackage, tablerSearch } from '@ng-icons/tabler-icons';
+import { tablerAlertCircle, tablerHistory, tablerPackage, tablerSearch } from '@ng-icons/tabler-icons';
 import { Button } from '@/shared/components/button/button';
 import type { ProductOption } from '@/features/products/interfaces/product.interface';
 import type { StockCountRequest } from '../../interfaces/other-movement-request.interface';
@@ -10,8 +11,8 @@ import { controlError, countValidator, normalizeProductSearch, trimmedRequired }
 
 @Component({
   selector: 'stock-count-form',
-  imports: [ReactiveFormsModule, Button, NgIcon],
-  viewProviders: [provideIcons({ tablerAlertCircle, tablerPackage, tablerSearch })],
+  imports: [ReactiveFormsModule, RouterLink, Button, NgIcon],
+  viewProviders: [provideIcons({ tablerAlertCircle, tablerHistory, tablerPackage, tablerSearch })],
   templateUrl: './stock-count-form.html',
   host: { class: 'flex min-h-full flex-col' },
 })

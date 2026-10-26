@@ -1,8 +1,6 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerHistory } from '@ng-icons/tabler-icons';
+import { Router } from '@angular/router';
 import { StockCountForm } from '@/features/inventory-movements/components/stock-count-form/stock-count-form';
 import { InventoryMovementService } from '@/features/inventory-movements/services/inventory-movement.service';
 import type { StockCountRequest } from '@/features/inventory-movements/interfaces/other-movement-request.interface';
@@ -12,8 +10,7 @@ import { GlobalNotificationService } from '@/shared/components/global-notificati
 
 @Component({
   selector: 'app-stock-count-page',
-  imports: [StockCountForm, RouterLink, NgIcon],
-  viewProviders: [provideIcons({ tablerHistory })],
+  imports: [StockCountForm],
   templateUrl: './stock-count-page.html',
   host: { class: 'flex min-h-full flex-col gap-4' },
 })

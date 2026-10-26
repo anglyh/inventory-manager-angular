@@ -70,7 +70,7 @@ export class PurchasesPage {
     this.inventoryMovementService.registerPurchase(purchase).subscribe({
       next: () => {
         this.saving.set(false);
-        this.notificationService.show('Compra registrada exitosamente');
+        this.notificationService.show('Compra registrada');
         this.onSaved();
       },
       error: error => {

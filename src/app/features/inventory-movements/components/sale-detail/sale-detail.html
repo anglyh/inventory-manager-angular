@@ -6,7 +6,7 @@
           <div class="min-w-0 font-medium wrap-break-word">{{ product.name }}</div>
           <button
             type="button"
-            class="btn btn-ghost btn-square btn-sm shrink-0 border-0 text-neutral shadow-none transition-colors duration-200 ease-in-out hover:bg-error/10 hover:text-error"
+            class="btn btn-ghost btn-square btn-sm shrink-0 border-0 text-neutral shadow-none transition-colors duration-200 ease-in-out hover:bg-error-soft hover:text-error"
             (click)="productDeleted.emit(product.productId)"
           >
             <ng-icon name="tablerTrash" size="18" />
@@ -35,8 +35,8 @@
           </div>
 
           <div class="flex flex-col items-end gap-1 whitespace-nowrap tabular-nums">
-            <span class="text-caption text-neutral">S/. {{ product.salePrice.toFixed(2) }} c/u</span>
-            <span class="font-semibold">Total S/. {{ (product.quantity * product.salePrice).toFixed(2) }}</span>
+            <span class="text-caption text-neutral">S/ {{ product.salePrice.toFixed(2) }} c/u</span>
+            <span class="font-semibold">Total S/ {{ (product.quantity * product.salePrice).toFixed(2) }}</span>
           </div>
         </div>
       </div>
@@ -54,7 +54,7 @@
     <div class="flex flex-wrap items-center justify-between gap-2">
       <span class="text-body font-medium">Total a cobrar</span>
       <span class="text-title font-semibold whitespace-nowrap tabular-nums">
-        S/. {{ total().toFixed(2) }}
+        S/ {{ total().toFixed(2) }}
       </span>
     </div>
 

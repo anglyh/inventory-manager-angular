@@ -1,8 +1,6 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerHistory } from '@ng-icons/tabler-icons';
+import { Router } from '@angular/router';
 import { LossForm } from '@/features/inventory-movements/components/loss-form/loss-form';
 import { InventoryMovementService } from '@/features/inventory-movements/services/inventory-movement.service';
 import type { CreateLossRequest } from '@/features/inventory-movements/interfaces/other-movement-request.interface';
@@ -12,8 +10,7 @@ import { GlobalNotificationService } from '@/shared/components/global-notificati
 
 @Component({
   selector: 'app-losses-page',
-  imports: [LossForm, RouterLink, NgIcon],
-  viewProviders: [provideIcons({ tablerHistory })],
+  imports: [LossForm],
   templateUrl: './losses-page.html',
   host: { class: 'flex min-h-full flex-col gap-4' },
 })

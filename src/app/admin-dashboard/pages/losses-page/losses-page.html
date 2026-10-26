@@ -1,15 +1,3 @@
-<div class="flex flex-wrap items-center justify-between gap-3">
-  <div class="flex flex-col">
-    <h2 class="text-subtitle font-medium">Mermas</h2>
-    <small class="text-neutral">Registra productos vencidos o dañados.</small>
-  </div>
-
-  <a class="btn btn-ghost" routerLink="/movements" [queryParams]="{ group: 'loss' }">
-    <ng-icon name="tablerHistory" size="20" aria-hidden="true" />
-    <span class="hidden sm:inline">Historial</span>
-  </a>
-</div>
-
 @if (!productsResource.hasValue() && productsResource.isLoading()) {
   <div class="grid flex-1 place-items-center" role="status" aria-label="Cargando">
     <span class="loading loading-spinner loading-xl text-primary"></span>

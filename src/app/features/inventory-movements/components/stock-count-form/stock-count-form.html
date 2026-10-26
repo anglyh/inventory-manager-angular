@@ -1,5 +1,13 @@
 <form class="flex flex-1 flex-col gap-4 lg:flex-row lg:items-start" [formGroup]="form" (ngSubmit)="onSubmit()">
   <div class="@container flex min-w-0 flex-1 flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-6 lg:self-stretch">
+    <div class="flex items-center justify-between gap-2">
+      <h2 class="text-subtitle font-medium">Conteo físico</h2>
+      <a class="btn btn-ghost" routerLink="/movements">
+        <ng-icon name="tablerHistory" size="20" aria-hidden="true" />
+        <span class="hidden sm:inline">Historial</span>
+      </a>
+    </div>
+
     <div class="flex flex-wrap items-center gap-3">
       <label class="input min-w-0 flex-1 basis-56">
         <ng-icon class="text-neutral" name="tablerSearch" size="18" aria-hidden="true" />
@@ -129,7 +137,7 @@
     @if (counts.invalid) {
       <small role="alert" class="flex items-center gap-1 text-error">
         <ng-icon name="tablerAlertCircle" size="16" aria-hidden="true" />
-        Hay cantidades no válidas
+        Revisa las cantidades marcadas
       </small>
     }
 

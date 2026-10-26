@@ -1,5 +1,13 @@
 <form class="flex flex-1 flex-col gap-4 lg:flex-row lg:items-start" [formGroup]="form" (ngSubmit)="onSubmit()">
   <div class="@container flex min-w-0 flex-1 flex-col gap-5 rounded-box bg-base-100 p-4 sm:p-6 lg:self-stretch">
+    <div class="flex items-center justify-between gap-2">
+      <h2 class="text-subtitle font-medium">Mermas</h2>
+      <a class="btn btn-ghost" routerLink="/movements" [queryParams]="{ group: 'loss' }">
+        <ng-icon name="tablerHistory" size="20" aria-hidden="true" />
+        <span class="hidden sm:inline">Historial</span>
+      </a>
+    </div>
+
     <div class="grid gap-3 @xl:grid-cols-[1fr_16rem]">
       <div class="flex flex-col gap-1">
         <label class="text-caption text-neutral" for="loss-product">Agregar producto</label>
@@ -14,19 +22,15 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <span class="text-caption text-neutral" id="loss-reason">Motivo</span>
-        <div class="join w-full" role="radiogroup" aria-labelledby="loss-reason">
-          @for (option of lossReasons; track option.value) {
-            <input
-              class="btn join-item flex-1"
-              type="radio"
-              formControlName="reason"
-              [value]="option.value"
-              [attr.aria-label]="option.label"
-              [title]="reasonLabels[option.value]"
-            />
-          }
-        </div>
+        <span class="text-caption text-neutral">Motivo</span>
+        <app-segmented-control
+          class="w-full"
+          label="Motivo"
+          [fill]="true"
+          [options]="lossReasons"
+          [value]="form.controls.reason.value"
+          (valueChange)="form.controls.reason.setValue($event)"
+        />
       </div>
     </div>
 
@@ -37,7 +41,7 @@
           <span>Producto</span>
           <span class="text-right">Stock</span>
           <span>Quitar</span>
-          <span class="text-right">Resultante</span>
+          <span class="text-right">Queda</span>
         </div>
       }
 
@@ -50,7 +54,7 @@
 
           <button
             type="button"
-            class="btn btn-ghost btn-square btn-sm justify-self-end text-neutral hover:bg-error/10 hover:text-error @2xl:order-last"
+            class="btn btn-ghost btn-square btn-sm justify-self-end text-neutral hover:bg-error-soft hover:text-error @2xl:order-last"
             aria-label="Quitar producto"
             (click)="removeItem(i)"
           >
@@ -81,7 +85,7 @@
           <span
             class="text-right font-medium whitespace-nowrap tabular-nums"
             [class.text-error]="resultingStock(i) < 0"
-            title="Stock resultante"
+            title="Stock que queda"
           >
             {{ resultingStock(i) }}
           </span>
@@ -119,7 +123,7 @@
     </dl>
 
     <div class="flex items-baseline justify-between gap-2 rounded-field bg-base-200 px-3 py-2">
-      <span class="font-medium">Impacto en stock</span>
+      <span class="font-medium">Sale del stock</span>
       <span class="text-title font-semibold tabular-nums" [class.text-error]="totalUnits()">
         {{ totalUnits() ? '−' : '' }}{{ totalUnits() }}
       </span>

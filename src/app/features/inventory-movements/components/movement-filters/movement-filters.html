@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-3">
-  <div class="flex items-center gap-2">
-    <div class="flex min-w-0 flex-1 gap-2 overflow-x-auto" role="tablist" aria-label="Tipo de movimiento">
+  <div class="flex items-start gap-2">
+    <div class="flex min-w-0 flex-1 flex-wrap gap-2" role="tablist" aria-label="Tipo de movimiento">
       @for (option of groupOptions; track option.label) {
         <button
           type="button"
@@ -35,7 +35,7 @@
   @if (panelOpen()) {
     <div id="movement-filters-panel" class="grid gap-4 rounded-box bg-base-100 p-4 sm:p-6 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1.5fr_auto_auto]">
       <label class="flex flex-col gap-1">
-        <span class="text-caption text-neutral">Dirección</span>
+        <span class="text-caption text-neutral">Entradas o salidas</span>
         <select class="select w-full" (change)="update({ movementType: $any($event.target).value || undefined })">
           <option value="" [selected]="!filters().movementType">Todas</option>
           @for (option of typeOptions; track option[0]) {

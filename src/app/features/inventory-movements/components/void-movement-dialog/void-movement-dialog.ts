@@ -14,11 +14,11 @@ const REASON_MAX_LENGTH = 500;
 function voidConsequence(movement: InventoryMovement): string {
   if (movement.reason === 'SALE') {
     return movement.paymentMethod === 'CASH'
-      ? `Se devolverá el stock y se descontarán S/. ${movement.totalAmount} del efectivo de la caja.`
+      ? `Se devolverá el stock y se descontarán S/ ${movement.totalAmount} del efectivo de la caja.`
       : 'Se devolverá el stock y la venta dejará de contar en la caja.';
   }
   return movement.movementType === 'IN'
-    ? 'Se descontará el stock ingresado y se restaurará el costo anterior.'
+    ? 'Se quitará el stock que entró y el costo vuelve al de antes.'
     : 'Se devolverá el stock retirado.';
 }
 

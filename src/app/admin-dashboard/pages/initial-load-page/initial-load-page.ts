@@ -1,8 +1,6 @@
 import { Component, inject, signal, viewChild } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerHistory } from '@ng-icons/tabler-icons';
+import { Router } from '@angular/router';
 import { InitialLoadForm } from '@/features/inventory-movements/components/initial-load-form/initial-load-form';
 import { InventoryMovementService } from '@/features/inventory-movements/services/inventory-movement.service';
 import type { CreateInitialLoadRequest } from '@/features/inventory-movements/interfaces/other-movement-request.interface';
@@ -12,8 +10,7 @@ import { GlobalNotificationService } from '@/shared/components/global-notificati
 
 @Component({
   selector: 'app-initial-load-page',
-  imports: [InitialLoadForm, RouterLink, NgIcon],
-  viewProviders: [provideIcons({ tablerHistory })],
+  imports: [InitialLoadForm],
   templateUrl: './initial-load-page.html',
   host: { class: 'flex min-h-full flex-col gap-4' },
 })
@@ -35,14 +32,14 @@ export class InitialLoadPage {
     this.inventoryMovementService.registerInitialLoad(load).subscribe({
       next: () => {
         this.saving.set(false);
-        this.notificationService.show('Carga inicial registrada', 'success');
+        this.notificationService.show('Stock inicial registrado', 'success');
         this.form()?.reset();
         // Los productos cargados ya tienen movimientos y dejan de ser elegibles.
         this.productsResource.reload();
       },
       error: error => {
         this.saving.set(false);
-        const { message, redirect } = resolveApiError(error, 'No se pudo registrar la carga inicial. Intenta nuevamente.');
+        const { message, redirect } = resolveApiError(error, 'No se pudo registrar el stock inicial. Intenta nuevamente.');
         if (redirect) {
           void this.router.navigate([redirect]);
           return;

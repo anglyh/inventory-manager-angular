@@ -7,6 +7,7 @@ import { GlobalNotificationService } from '@/shared/components/global-notificati
 import { VoidMovementDialog } from '@/features/inventory-movements/components/void-movement-dialog/void-movement-dialog';
 import { InventoryMovementList } from '@/features/inventory-movements/components/inventory-movement-list/inventory-movement-list';
 import { MovementFilters } from '@/features/inventory-movements/components/movement-filters/movement-filters';
+import { AuthService } from '@/auth/services/auth.service';
 import type {
   InventoryMovement,
   MovementCursor,
@@ -25,6 +26,7 @@ import { mapApiError } from '@/api/error-mapper';
   templateUrl: './movements-history-page.html',
 })
 export class MovementsHistoryPage {
+  readonly isAdmin = inject(AuthService).isAdmin;
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private movementService = inject(InventoryMovementService);

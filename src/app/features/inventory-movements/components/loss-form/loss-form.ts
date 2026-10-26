@@ -1,19 +1,20 @@
+import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
 import { Component, computed, effect, inject, input, output, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerAlertCircle, tablerPackage, tablerTrash } from '@ng-icons/tabler-icons';
+import { tablerAlertCircle, tablerHistory, tablerPackage, tablerTrash } from '@ng-icons/tabler-icons';
 import { Button } from '@/shared/components/button/button';
 import { OptionSelector } from '@/shared/components/option-selector/option-selector';
 import type { ProductOption } from '@/features/products/interfaces/product.interface';
 import type { CreateLossRequest, LossReason } from '../../interfaces/other-movement-request.interface';
-import { REASON_LABELS } from '../../shared/movement-labels';
 import { controlError, itemsRequired, quantityValidator } from '../../shared/movement-form-utils';
 
 @Component({
   selector: 'app-loss-form',
-  imports: [ReactiveFormsModule, Button, OptionSelector, NgIcon],
-  viewProviders: [provideIcons({ tablerAlertCircle, tablerPackage, tablerTrash })],
+  imports: [SegmentedControl, ReactiveFormsModule, RouterLink, Button, OptionSelector, NgIcon],
+  viewProviders: [provideIcons({ tablerAlertCircle, tablerHistory, tablerPackage, tablerTrash })],
   templateUrl: './loss-form.html',
   host: { class: 'flex min-h-full flex-col' },
 })
@@ -29,7 +30,6 @@ export class LossForm {
     { value: 'LOSS_EXPIRED', label: 'Vencido' },
     { value: 'LOSS_DAMAGED', label: 'Dañado' },
   ];
-  readonly reasonLabels = REASON_LABELS;
 
   form = this.fb.nonNullable.group({
     reason: this.fb.nonNullable.control<LossReason>('LOSS_EXPIRED'),

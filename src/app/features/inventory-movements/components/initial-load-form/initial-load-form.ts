@@ -2,8 +2,9 @@ import { DecimalPipe } from '@angular/common';
 import { Component, computed, inject, input, output } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerAlertCircle, tablerPackage, tablerTrash } from '@ng-icons/tabler-icons';
+import { tablerAlertCircle, tablerHistory, tablerPackage, tablerTrash } from '@ng-icons/tabler-icons';
 import { Button } from '@/shared/components/button/button';
 import { OptionSelector } from '@/shared/components/option-selector/option-selector';
 import type { ProductOption } from '@/features/products/interfaces/product.interface';
@@ -12,8 +13,8 @@ import { controlError, itemsRequired, lineCents, moneyValidator, quantityValidat
 
 @Component({
   selector: 'initial-load-form',
-  imports: [ReactiveFormsModule, DecimalPipe, Button, OptionSelector, NgIcon],
-  viewProviders: [provideIcons({ tablerAlertCircle, tablerPackage, tablerTrash })],
+  imports: [ReactiveFormsModule, RouterLink, DecimalPipe, Button, OptionSelector, NgIcon],
+  viewProviders: [provideIcons({ tablerAlertCircle, tablerHistory, tablerPackage, tablerTrash })],
   templateUrl: './initial-load-form.html',
   host: { class: 'flex min-h-full flex-col' },
 })

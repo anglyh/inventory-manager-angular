@@ -6,13 +6,13 @@
   />
 
   @if (filters().cashRegisterId) {
-    <div class="flex items-center justify-between gap-2 rounded-field bg-info/10 px-3 py-2 text-info">
+    <div class="flex items-center justify-between gap-2 rounded-field bg-info-soft px-3 py-2 text-info">
       <small>Mostrando solo movimientos de una caja</small>
       <button type="button" class="btn btn-ghost btn-xs" (click)="onFiltersChange({ ...filters(), cashRegisterId: undefined })">Quitar</button>
     </div>
   }
 
-  <inventory-movement-list [movements]="movements()" (voidRequested)="openVoid($event)" />
+  <inventory-movement-list [movements]="movements()" [canVoid]="isAdmin()" (voidRequested)="openVoid($event)" />
 
   @if (loading()) {
     <div class="grid place-items-center py-8" role="status" aria-label="Cargando movimientos">

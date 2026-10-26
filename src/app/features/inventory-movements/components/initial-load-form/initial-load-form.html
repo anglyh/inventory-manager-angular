@@ -1,13 +1,21 @@
 <form class="flex flex-1 flex-col gap-4 lg:flex-row lg:items-start" [formGroup]="form" (ngSubmit)="onSubmit()">
   <div class="@container flex min-w-0 flex-1 flex-col gap-5 rounded-box bg-base-100 p-4 sm:p-6 lg:self-stretch">
+    <div class="flex items-center justify-between gap-2">
+      <h2 class="text-subtitle font-medium">Stock inicial</h2>
+      <a class="btn btn-ghost" routerLink="/movements" [queryParams]="{ reason: 'INITIAL_LOAD' }">
+        <ng-icon name="tablerHistory" size="20" aria-hidden="true" />
+        <span class="hidden sm:inline">Historial</span>
+      </a>
+    </div>
+
     @if (hasEligibleProducts()) {
       <div class="flex flex-col gap-1">
         <label class="text-caption text-neutral" for="initial-load-product">Agregar producto</label>
         <app-option-selector
           controlId="initial-load-product"
           mode="add"
-          placeholder="Busca un producto sin movimientos"
-          emptyText="No hay productos sin movimientos con ese nombre"
+          placeholder="Busca un producto sin historial"
+          emptyText="No hay productos sin historial con ese nombre"
           [items]="availableProducts()"
           (selectedOption)="addProduct($event)"
         />
@@ -34,7 +42,7 @@
 
           <button
             type="button"
-            class="btn btn-ghost btn-square btn-sm justify-self-end text-neutral hover:bg-error/10 hover:text-error @2xl:order-last"
+            class="btn btn-ghost btn-square btn-sm justify-self-end text-neutral hover:bg-error-soft hover:text-error @2xl:order-last"
             aria-label="Quitar producto"
             (click)="removeItem(i)"
           >
@@ -44,7 +52,7 @@
           @let costError = controlError(item.controls.unitCost);
           <div class="tooltip-error tooltip-bottom" [class.tooltip]="costError" [attr.data-tip]="costError">
             <label class="input w-full" [class.input-error]="costError">
-              <span class="text-neutral">S/.</span>
+              <span class="text-neutral">S/</span>
               <input
                 class="tabular-nums"
                 type="number" min="0" step="0.01" placeholder="0.00"
@@ -75,13 +83,13 @@
             </label>
           </div>
 
-          <span class="text-right font-medium whitespace-nowrap tabular-nums">S/. {{ lineTotal(i) | number: '1.2-2' }}</span>
+          <span class="text-right font-medium whitespace-nowrap tabular-nums">S/ {{ lineTotal(i) | number: '1.2-2' }}</span>
         </div>
       } @empty {
         <div class="grid flex-1 place-items-center content-center gap-2 rounded-field bg-base-200 py-12 text-neutral">
           <ng-icon name="tablerPackage" size="40" aria-hidden="true" />
           <span class="text-center">
-            {{ hasEligibleProducts() ? 'Busca un producto para agregarlo' : 'Todos los productos ya tienen movimientos' }}
+            {{ hasEligibleProducts() ? 'Busca un producto para agregarlo' : 'Todos los productos ya tienen historial' }}
           </span>
         </div>
       }
@@ -113,7 +121,7 @@
 
     <div class="flex items-baseline justify-between gap-2 rounded-field bg-base-200 px-3 py-2">
       <span class="font-medium">Costo total</span>
-      <span class="text-title font-semibold tabular-nums">S/. {{ totalCents() / 100 | number: '1.2-2' }}</span>
+      <span class="text-title font-semibold tabular-nums">S/ {{ totalCents() / 100 | number: '1.2-2' }}</span>
     </div>
 
     @if (invalidItemsCount) {
@@ -129,7 +137,7 @@
     }
 
     <app-button type="submit" customClass="w-full" [loading]="saving()" [disabled]="saving()">
-      Registrar carga inicial
+      Registrar stock inicial
     </app-button>
   </aside>
 </form>

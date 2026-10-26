@@ -3,33 +3,21 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   tablerAlertTriangle,
-  tablerArrowDownLeft,
-  tablerArrowUpRight,
   tablerBan,
   tablerChevronDown,
+  tablerClipboardCheck,
+  tablerPackage,
+  tablerShoppingCart,
+  tablerTruck,
 } from '@ng-icons/tabler-icons';
 import type { InventoryMovement } from '../../interfaces/inventory-movement.interface';
-import { PAYMENT_LABELS, REASON_LABELS, movementTone, unitAmount } from '../../shared/movement-labels';
+import { KIND_VIEW, PAYMENT_LABELS, REASON_LABELS, movementKind, reasonKind, unitAmount } from '../../shared/movement-labels';
 
 interface DayGroup {
   key: string;
   date: Date;
   movements: InventoryMovement[];
 }
-
-const TONE_ICON = {
-  in: 'tablerArrowDownLeft',
-  out: 'tablerArrowUpRight',
-  loss: 'tablerAlertTriangle',
-  voided: 'tablerBan',
-} as const;
-
-const TONE_CLASS = {
-  in: 'bg-success/10 text-success',
-  out: 'bg-info/10 text-info',
-  loss: 'bg-error/10 text-error',
-  voided: 'bg-base-200 text-neutral',
-} as const;
 
 /** Clave del día en hora local; `toISOString()` lo movería al día UTC. */
 function localDayKey(date: Date): string {
@@ -39,18 +27,31 @@ function localDayKey(date: Date): string {
 @Component({
   selector: 'inventory-movement-list',
   imports: [DatePipe, DecimalPipe, NgIcon],
-  viewProviders: [provideIcons({ tablerAlertTriangle, tablerArrowDownLeft, tablerArrowUpRight, tablerBan, tablerChevronDown })],
+  viewProviders: [
+    provideIcons({
+      tablerAlertTriangle,
+      tablerBan,
+      tablerChevronDown,
+      tablerClipboardCheck,
+      tablerPackage,
+      tablerShoppingCart,
+      tablerTruck,
+    }),
+  ],
   templateUrl: './inventory-movement-list.html',
 })
 export class InventoryMovementList {
   movements = input.required<InventoryMovement[]>();
+  /** Solo ADMIN puede anular movimientos. */
+  canVoid = input(true);
   voidRequested = output<InventoryMovement>();
 
   readonly reasonLabels = REASON_LABELS;
   readonly paymentLabels = PAYMENT_LABELS;
-  readonly toneOf = movementTone;
-  readonly toneClass = TONE_CLASS;
-  readonly toneIcon = (movement: InventoryMovement) => TONE_ICON[movementTone(movement)];
+  readonly kindOf = movementKind;
+  readonly kindView = KIND_VIEW;
+  /** Efecto en el stock: "+24" entra, "−2" sale. */
+  readonly signOf = (movement: InventoryMovement) => (movement.movementType === 'IN' ? '+' : '−');
   readonly unitAmount = unitAmount;
 
   groups = computed<DayGroup[]>(() => {
@@ -80,17 +81,23 @@ export class InventoryMovementList {
     return date.getFullYear() === new Date().getFullYear();
   }
 
-  productSummary(movement: InventoryMovement): string {
-    const [first, second, ...rest] = movement.items.map(item => item.productName);
-    const names = [first, second].filter(Boolean).join(', ');
-    return rest.length ? `${names} +${rest.length}` : names;
+  /** Hasta dos productos con su cantidad a la vista; el resto se resume como "+N". */
+  summaryOf(movement: InventoryMovement): { shown: InventoryMovement['items']; rest: number } {
+    return { shown: movement.items.slice(0, 2), rest: Math.max(movement.items.length - 2, 0) };
   }
 
+  /** Lo que acompaña a la etiqueta del tipo: cómo pagó, a quién se compró o el motivo exacto. */
   detail(movement: InventoryMovement): string {
+    if (movement.paymentMethod) return PAYMENT_LABELS[movement.paymentMethod];
+    if (movement.supplierName) return movement.supplierName;
+    // "Merma por daño" o "Faltante de conteo" dicen más que la etiqueta; "Stock inicial" la repetiría.
     const reason = REASON_LABELS[movement.reason];
-    if (movement.paymentMethod) return `${reason} · ${PAYMENT_LABELS[movement.paymentMethod]}`;
-    if (movement.supplierName) return `${reason} · ${movement.supplierName}`;
-    return reason;
+    return reason === KIND_VIEW[reasonKind(movement.reason)].label ? '' : reason;
+  }
+
+  /** En una venta el monto es lo cobrado; en el resto, lo que costó la mercadería. */
+  amountLabel(movement: InventoryMovement): string {
+    return movement.reason === 'SALE' ? 'cobrado' : 'costo';
   }
 
   lineTotal(movement: InventoryMovement, item: InventoryMovement['items'][number]): number {

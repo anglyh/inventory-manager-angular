@@ -7,50 +7,64 @@
 
       <div class="flex flex-col overflow-hidden rounded-box bg-base-100">
         @for (movement of group.movements; track movement.id) {
-          @let tone = toneOf(movement);
+          @let kind = kindOf(movement);
+          @let view = kindView[kind];
+          @let voided = kind === 'voided';
           <details class="collapse group rounded-none" name="movement-history">
-            <summary class="collapse-title flex cursor-pointer list-none items-center gap-3 px-4 py-3 hover:bg-base-200/60 [&::-webkit-details-marker]:hidden select-none">
-              <span
-                class="grid size-10 shrink-0 place-items-center rounded-full"
-                [class]="toneClass[tone]"
-              >
-                <ng-icon [name]="toneIcon(movement)" size="20" aria-hidden="true" />
+            <summary class="collapse-title flex min-w-0 cursor-pointer list-none items-center gap-3 px-4 py-3 hover:bg-base-200/60 [&::-webkit-details-marker]:hidden select-none">
+              <!-- El ícono dice qué operación fue (venta, compra, merma…), no hacia dónde se movió el stock. -->
+              <span class="grid size-10 shrink-0 place-items-center rounded-field" [class]="view.tone">
+                <ng-icon [name]="view.icon" size="20" aria-hidden="true" />
               </span>
 
-              <div class="flex min-w-0 flex-1 flex-col">
-                <span class="truncate font-medium" [class.text-neutral]="tone === 'voided'">{{ productSummary(movement) }}</span>
-                <small class="truncate text-neutral" [class.text-error]="tone === 'loss'">{{ detail(movement) }}</small>
+              <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+                @let summary = summaryOf(movement);
+                <span class="truncate font-medium" [class.text-neutral]="voided">
+                  @for (item of summary.shown; track item.productId; let last = $last) {
+                    <span class="font-semibold tabular-nums">{{ signOf(movement) }}{{ item.quantity }}</span>
+                    {{ item.productName }}{{ last ? '' : ',' }}
+                  }
+                  @if (summary.rest) {
+                    <span class="text-neutral">+{{ summary.rest }} más</span>
+                  }
+                </span>
+                <small class="flex min-w-0 items-center gap-1.5 text-neutral">
+                  <span class="badge badge-sm shrink-0 border-0 font-medium" [class]="view.tone">
+                    {{ voided ? 'Anulado · ' + reasonLabels[movement.reason] : view.label }}
+                  </span>
+                  <span class="truncate">{{ detail(movement) }}</span>
+                </small>
               </div>
 
               <div class="flex shrink-0 flex-col items-end">
-                <span class="font-medium tabular-nums" [class.line-through]="tone === 'voided'" [class.text-neutral]="tone === 'voided'">
-                  S/. {{ movement.totalAmount }}
+                <span class="font-medium tabular-nums" [class.line-through]="voided" [class.text-neutral]="voided">
+                  S/ {{ movement.totalAmount | number: '1.2-2' }}
                 </span>
                 <small class="text-neutral tabular-nums">
-                  @if (tone === 'voided') {
-                    Anulado
-                  } @else {
-                    {{ movement.createdAt | date: 'shortTime' }}
-                  }
+                  {{ amountLabel(movement) }} · {{ movement.createdAt | date: 'shortTime' }}
                 </small>
               </div>
 
               <ng-icon name="tablerChevronDown" size="18" class="hidden shrink-0 text-neutral transition-transform group-open:rotate-180 sm:block" aria-hidden="true" />
             </summary>
 
-            <div class="collapse-content px-4 sm:pl-17 mt-4">
+            <div class="collapse-content min-w-0 px-4 sm:pl-17 mt-4">
               <div class="flex flex-col gap-4 rounded-field bg-base-200/60 p-3 sm:p-4">
-              <ul class="flex flex-col gap-2">
+              <ul class="flex flex-col gap-3">
                 @for (item of movement.items; track item.productId) {
-                  <li class="flex items-baseline justify-between gap-3">
-                    <div class="flex min-w-0 flex-col">
-                      <span class="truncate">{{ item.productName }}</span>
-                      <small class="text-neutral tabular-nums">
-                        {{ item.quantity }} × S/. {{ unitAmount(movement, item) }}
-                        {{ movement.reason === 'SALE' ? '' : 'costo' }}
-                      </small>
+                  <li class="flex min-w-0 items-center justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-3">
+                      <span class="grid h-9 min-w-9 shrink-0 place-items-center rounded-field bg-base-100 px-2 font-semibold tabular-nums" [attr.aria-label]="item.quantity + ' unidades'">
+                        {{ signOf(movement) }}{{ item.quantity }}
+                      </span>
+                      <div class="flex min-w-0 flex-col">
+                        <span class="truncate font-medium">{{ item.productName }}</span>
+                        <small class="text-neutral tabular-nums">
+                          S/ {{ unitAmount(movement, item) | number: '1.2-2' }} c/u{{ movement.reason === 'SALE' ? '' : ' (costo)' }}
+                        </small>
+                      </div>
                     </div>
-                    <span class="shrink-0 tabular-nums">S/. {{ lineTotal(movement, item) | number: '1.2-2' }}</span>
+                    <span class="shrink-0 font-medium tabular-nums">S/ {{ lineTotal(movement, item) | number: '1.2-2' }}</span>
                   </li>
                 }
               </ul>
@@ -78,10 +92,10 @@
                 }
               </dl>
 
-              @if (movement.status === 'COMPLETED') {
+              @if (canVoid() && movement.status === 'COMPLETED') {
                 <button
                   type="button"
-                  class="btn btn-ghost btn-sm self-start text-error hover:bg-error/10"
+                  class="btn btn-ghost btn-sm self-start text-error hover:bg-error-soft"
                   (click)="voidRequested.emit(movement)"
                 >
                   <ng-icon name="tablerBan" size="16" aria-hidden="true" />
