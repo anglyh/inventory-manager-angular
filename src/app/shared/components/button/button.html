@@ -2,6 +2,7 @@
   [type]="type()"
   [disabled]="disabled() || loading()"
   [class]="buttonClasses()"
+  [attr.aria-label]="ariaLabel()"
 >
   @if (loading()) {
     <span class="loading loading-spinner loading-sm"></span>

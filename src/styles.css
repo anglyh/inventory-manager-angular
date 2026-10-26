@@ -8,6 +8,13 @@
   --text-title: 1.5rem;
   --color-primary-hover: color-mix(in oklab, var(--color-primary) 85%, white);
 
+  /* Fondos suaves de estado (badges, avisos): tono fijo en vez de opacidad, así
+     se ven igual sobre base-100 y base-200. Uso: `bg-success-soft text-success`. */
+  --color-success-soft: oklch(0.96 0.03 155);
+  --color-warning-soft: oklch(0.96 0.04 80);
+  --color-error-soft: oklch(0.96 0.03 25);
+  --color-info-soft: oklch(0.96 0.03 255);
+
   /* Notificaciones flotantes: color sólido del estado. */
   --color-notification-success: var(--color-success);
   --color-notification-error: var(--color-error);
@@ -42,19 +49,20 @@
   --color-neutral: #6b7280; 
   --color-neutral-content: #ffffff;
   
-  /* Estados: contrato de daisyUI. `*` es el color sólido (bordes, botones, texto)
-     y `*-content` el texto que va encima. Para fondos pastel usar `badge-soft`,
-     `alert-soft` o la opacidad de Tailwind (`bg-error/10`). */
-  --color-info: #2563eb;
+  /* Estados: contrato de daisyUI. `*` es el color sólido (texto, acciones) y
+     `*-content` el texto que va encima. Misma luminosidad y croma en los cuatro
+     (OKLCH) para que ninguno grite más que otro junto al primario carbón.
+     Fondos pastel: los tokens `--color-*-soft` del @theme, no opacidad. */
+  --color-info: oklch(0.52 0.12 255);
   --color-info-content: #ffffff;
 
-  --color-success: #16a34a;
+  --color-success: oklch(0.52 0.11 155);
   --color-success-content: #ffffff;
 
-  --color-warning: #d97706;
+  --color-warning: oklch(0.6 0.12 70);
   --color-warning-content: #ffffff;
 
-  --color-error: #dc2626;
+  --color-error: oklch(0.53 0.16 25);
   --color-error-content: #ffffff;
 
   /* Estructura visual */

@@ -15,7 +15,8 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
   error: 'btn-error',
 };
 
-const SIZE_CLASS: Record<'sm' | 'md' | 'lg', string> = {
+const SIZE_CLASS: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
+  xs: 'btn-xs',
   sm: 'btn-sm',
   md: 'btn-md',
   lg: 'btn-lg',
@@ -31,12 +32,14 @@ const SIZE_CLASS: Record<'sm' | 'md' | 'lg', string> = {
 })
 export class Button {
   variant = input<ButtonVariant>('primary');
-  size = input<"sm" | "md" | "lg">("md");
+  size = input<"xs" | "sm" | "md" | "lg">("md");
 
   type = input<"button" | "submit" | "reset">('button');
   disabled = input<boolean>(false);
   loading = input<boolean>(false);
   customClass = input<string>('');
+  /** Para botones de solo ícono: el host no pasa sus atributos al <button> interno. */
+  ariaLabel = input<string | null>(null);
 
   buttonClasses = computed(() => {
     const base =
