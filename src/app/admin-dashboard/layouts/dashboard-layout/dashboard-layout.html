@@ -1,11 +1,12 @@
 <div class="drawer lg:drawer-open h-full min-h-0 overflow-hidden">
   <input #drawerToggle id="my-drawer-4" type="checkbox" class="drawer-toggle" />
 
-  <div class="drawer-content grid grid-rows-[auto_1fr] min-w-0 min-h-0 h-full overflow-hidden">
+  <!-- minmax(0,1fr): sin esto la columna crece hasta el ancho mínimo del título y desborda en el celular. -->
+  <div class="drawer-content grid grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr] min-w-0 min-h-0 h-full overflow-hidden">
     <!-- Navbar -->
     <nav class="navbar w-full bg-base-100 border-b border-slate-200 justify-between px-4 sticky top-0 z-10 h-16">
       <div class="flex items-center gap-2 min-w-0">
-        <label for="my-drawer-4" aria-label="open sidebar"
+        <label for="my-drawer-4" aria-label="Abrir menú"
           class="btn btn-square btn-ghost hover:bg-secondary/10 border-none">
           <!-- Sidebar toggle icon -->
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"
@@ -18,6 +19,11 @@
   
         <!-- Título de la página -->
         <div class="divider divider-horizontal mx-0"></div>
+        @if (backLink()) {
+          <app-button variant="ghost" customClass="btn-circle" ariaLabel="Volver" (click)="goBack()">
+            <ng-icon name="tablerArrowLeft" size="20" aria-hidden="true" />
+          </app-button>
+        }
         <h1 class="text-subtitle font-semibold truncate">
           {{ currentRouteTitle() }}
         </h1>
@@ -35,13 +41,41 @@
             {{ action.label }}
           </a>
         }
-        <div class="hidden sm:flex items-center gap-2 text-caption text-slate-600">
-          <div class="avatar placeholder">
-            <div class="bg-primary/10 text-primary w-8 rounded-full">
-              <span class="text-caption font-semibold"></span>
-            </div>
-          </div>
-          <span class="font-medium">Hostal Admin</span>
+        <!-- Cuenta: lo que se usa poco (equipo, cerrar sesión) vive acá, no en el menú lateral. -->
+        <div class="dropdown dropdown-end">
+          <button
+            type="button"
+            tabindex="0"
+            class="flex items-center gap-2 rounded-field p-1 sm:pr-2 hover:bg-base-200"
+            aria-haspopup="menu"
+            [attr.aria-label]="'Cuenta de ' + userName()"
+          >
+            <span class="grid size-8 shrink-0 place-content-center rounded-full bg-primary text-caption font-semibold text-primary-content">
+              {{ userInitial() }}
+            </span>
+            <span class="hidden max-w-40 truncate font-medium sm:inline">{{ userName() }}</span>
+            <ng-icon name="tablerChevronDown" size="16" class="hidden text-neutral sm:inline" aria-hidden="true" />
+          </button>
+          <ul tabindex="-1" role="menu" class="menu dropdown-content z-20 mt-2 w-56 rounded-box bg-base-100 p-1 shadow-lg">
+            <li class="menu-title flex flex-col gap-0.5 px-3 py-2">
+              <span class="truncate font-medium text-base-content">{{ userName() }}</span>
+              <small class="font-normal text-neutral">{{ roleLabel() }}</small>
+            </li>
+            @if (isAdmin()) {
+              <li role="none">
+                <a role="menuitem" routerLink="/team" (click)="blurActive()">
+                  <ng-icon name="tablerUsers" size="18" aria-hidden="true" />
+                  Equipo
+                </a>
+              </li>
+            }
+            <li role="none">
+              <button type="button" role="menuitem" class="hover:bg-error-soft hover:text-error" (click)="blurActive(); logout()">
+                <ng-icon name="tablerLogout" size="18" aria-hidden="true" />
+                Cerrar sesión
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>
@@ -56,6 +90,5 @@
   <app-sidebar
     class="drawer-side is-drawer-close:overflow-visible border-r border-slate-300 h-full"
     (itemSelected)="closeDrawerIfMobile()"
-    (logoutRequested)="logout(); closeDrawerIfMobile()"
   />
 </div>

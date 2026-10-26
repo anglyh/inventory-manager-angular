@@ -8,6 +8,8 @@ import { NameCatalog, NameCatalogItem, NameCatalogLabels } from '@/shared/compon
 import { GlobalNotificationService } from '@/shared/components/global-notification/global-notification.service';
 import { extractApiError } from '@/api/extract-api-error';
 import { mapApiError } from '@/api/error-mapper';
+import { ModuleTabs } from '@/shared/components/module-tabs/module-tabs';
+import { PRODUCTS_TABS } from '@/admin-dashboard/module-tabs';
 
 type CatalogTab = 'categories' | 'suppliers';
 
@@ -23,7 +25,7 @@ const byName = (a: NameCatalogItem, b: NameCatalogItem) => a.name.localeCompare(
 
 @Component({
   selector: 'app-catalogs-page',
-  imports: [NameCatalog],
+  imports: [NameCatalog, ModuleTabs],
   templateUrl: './catalogs-page.html',
 })
 export class CatalogsPage {
@@ -33,7 +35,7 @@ export class CatalogsPage {
   private supplierService = inject(SupplierService);
   private notification = inject(GlobalNotificationService);
 
-  readonly tabs: CatalogTab[] = ['categories', 'suppliers'];
+  readonly moduleTabs = PRODUCTS_TABS;
 
   readonly config: Record<CatalogTab, CatalogConfig> = {
     categories: {
@@ -53,11 +55,9 @@ export class CatalogsPage {
     },
   };
 
-  /** La pestaña vive en la URL para poder enlazarla directamente. */
-  private queryParams = toSignal(this.route.queryParamMap, { requireSync: true });
-  tab = computed<CatalogTab>(() =>
-    this.queryParams().get('tab') === 'suppliers' ? 'suppliers' : 'categories'
-  );
+  /** Cada catálogo es su propia ruta (pestaña del módulo Productos): lo fija `data.catalog`. */
+  private data = toSignal(this.route.data, { initialValue: this.route.snapshot.data });
+  tab = computed<CatalogTab>(() => (this.data()['catalog'] === 'suppliers' ? 'suppliers' : 'categories'));
 
   categoriesResource = rxResource({ stream: () => this.categoryService.list() });
   suppliersResource = rxResource({ stream: () => this.supplierService.getSuppliers() });
@@ -91,10 +91,6 @@ export class CatalogsPage {
         this.saveError.set(null);
       });
     });
-  }
-
-  selectTab(tab: CatalogTab) {
-    void this.router.navigate([], { relativeTo: this.route, queryParams: { tab }, replaceUrl: true });
   }
 
   create(name: string) {
