@@ -1,0 +1,39 @@
+<section class="flex flex-col gap-3 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="stay-guests-title">
+  <h2 id="stay-guests-title" class="font-medium">Huéspedes</h2>
+  <ul class="flex flex-col gap-3">
+    @for (guest of sortedGuests(); track guest.id) {
+      <li class="flex flex-col gap-0.5">
+        <span class="flex flex-wrap items-center gap-2 font-medium">
+          {{ guest.fullName }}
+          <span class="badge badge-sm border-0" [class]="guest.isHolder ? 'bg-primary/10 text-primary' : 'bg-base-200 text-neutral'">
+            {{ guest.isHolder ? 'Principal' : 'Acompañante' }}
+          </span>
+        </span>
+        <small class="text-neutral tabular-nums">
+          {{ documentShort[guest.documentType] }} {{ guest.documentNumber }} · {{ guest.nationality }} ·
+          {{ guest.birthDate | date: 'dd/MM/yyyy' : 'UTC' }} · {{ guest.sex }}
+          @if (guest.phone) {
+            · {{ guest.phone }}
+          }
+        </small>
+      </li>
+    }
+  </ul>
+
+  @if (minors().length) {
+    <h3 class="mt-1 text-caption text-neutral">Menores de edad</h3>
+    <ul class="flex flex-col gap-2">
+      @for (minor of minors(); track minor.id) {
+        <li class="flex flex-col gap-0.5">
+          <span>{{ minor.fullName }}</span>
+          <small class="text-neutral tabular-nums">
+            {{ minor.birthDate | date: 'dd/MM/yyyy' : 'UTC' }} · con su {{ relationLabel[minor.guardianRelation] | lowercase }}
+            @if (minor.documentNumber) {
+              · {{ minor.documentType ? documentShort[minor.documentType] : '' }} {{ minor.documentNumber }}
+            }
+          </small>
+        </li>
+      }
+    </ul>
+  }
+</section>

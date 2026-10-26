@@ -1,0 +1,35 @@
+<app-modal label="Horas extra" boxClass="max-w-md" [isOpen]="open()" (closed)="closed.emit()">
+  <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="flex flex-col gap-1">
+      <h3 class="text-subtitle font-medium">Horas extra</h3>
+      <small class="text-neutral">Se suma a lo que debe. Puedes cobrarlo ahora o al registrar la salida.</small>
+    </div>
+
+    @if (suggestedExtra(); as extra) {
+      <p class="text-sm tabular-nums">
+        Se pasó {{ extra.hours }} {{ extra.hours === 1 ? 'hora' : 'horas' }}
+        <span class="text-neutral">· sugerido S/ {{ extra.amount | number: '1.2-2' }}</span>
+      </p>
+    }
+
+    <label class="flex flex-col gap-1">
+      <span class="text-caption text-neutral">Monto</span>
+      <span class="input w-full" [class.input-error]="submitAttempted() && form.controls.amount.invalid">
+        <span class="text-neutral">S/</span>
+        <input class="tabular-nums" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="0.00" formControlName="amount" />
+      </span>
+    </label>
+
+    @if (error()) {
+      <div role="alert" class="flex items-start gap-2 rounded-field bg-error-soft px-3 py-2 text-error whitespace-pre-line">
+        <ng-icon class="mt-0.5 shrink-0" name="tablerAlertCircle" size="18" aria-hidden="true" />
+        <small>{{ error() }}</small>
+      </div>
+    }
+
+    <div class="flex justify-end gap-2">
+      <app-button type="button" variant="ghost" [disabled]="saving()" (click)="cancelled.emit()">Cancelar</app-button>
+      <app-button type="submit" variant="primary" [loading]="saving()" [disabled]="saving()">Agregar a la cuenta</app-button>
+    </div>
+  </form>
+</app-modal>

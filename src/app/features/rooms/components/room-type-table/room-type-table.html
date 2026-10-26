@@ -1,0 +1,63 @@
+<!-- Sin overflow: recortaría el menú de acciones. En el celular se ocultan columnas en su lugar. -->
+<div>
+  <table class="table w-full tabular-nums">
+    <thead>
+      <tr class="border-base-200 text-neutral">
+        <th class="pl-0 font-medium">Tipo</th>
+        <th class="hidden text-end font-medium md:table-cell">Adultos</th>
+        <th class="hidden text-end font-medium sm:table-cell">Por hora</th>
+        <th class="text-end font-medium">Por noche</th>
+        <th class="hidden text-end font-medium md:table-cell">Hora extra</th>
+        <th class="hidden text-end font-medium sm:table-cell">Habitaciones</th>
+        <th class="w-0 pr-0"><span class="sr-only">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (type of roomTypes(); track type.id) {
+        <tr class="border-base-200">
+          <td class="pl-0">
+            <span class="flex min-w-0 flex-col">
+              <span class="flex items-center gap-2">
+                <span class="font-medium" [class.text-neutral]="!type.isActive">{{ type.name }}</span>
+                @if (!type.isActive) {
+                  <span class="badge badge-sm whitespace-nowrap border-0 bg-warning-soft text-warning">Inactivo</span>
+                }
+              </span>
+              @if (type.description) {
+                <small class="line-clamp-2 max-w-xs text-neutral">{{ type.description }}</small>
+              }
+              <small class="text-neutral sm:hidden">S/ {{ type.hourPrice | number: '1.2-2' }}/h · {{ type.roomCount }} hab.</small>
+            </span>
+          </td>
+          <td class="hidden text-end md:table-cell">{{ type.capacity }}</td>
+          <td class="hidden whitespace-nowrap text-end sm:table-cell">S/ {{ type.hourPrice | number: '1.2-2' }}</td>
+          <td class="whitespace-nowrap text-end">S/ {{ type.nightPrice | number: '1.2-2' }}</td>
+          <td class="hidden whitespace-nowrap text-end md:table-cell">S/ {{ type.extraHourPrice | number: '1.2-2' }}</td>
+          <td class="hidden text-end sm:table-cell" [class.text-neutral]="type.roomCount === 0">{{ type.roomCount }}</td>
+          <td class="pr-0">
+            <!-- Las últimas filas abren el menú hacia arriba: el contenedor con scroll lo recortaría. -->
+            <div class="dropdown dropdown-end" [class.dropdown-top]="$index >= 2 && $index >= $count - 2">
+              <app-button
+                variant="ghost"
+                customClass="btn-circle"
+                [ariaLabel]="'Acciones de ' + type.name"
+                [loading]="busyId() === type.id"
+              >
+                <ng-icon name="tablerDots" size="18" aria-hidden="true" />
+              </app-button>
+              <ul tabindex="-1" class="dropdown-content menu z-10 w-44 rounded-box bg-base-100 p-1 shadow-lg">
+                <li><button type="button" (click)="edit.emit(type); blurActive()">Editar</button></li>
+                <li>
+                  <button type="button" (click)="toggleActive.emit(type); blurActive()">
+                    {{ type.isActive ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </li>
+                <li><button type="button" class="text-error" (click)="remove.emit(type); blurActive()">Eliminar</button></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

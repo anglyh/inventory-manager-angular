@@ -1,0 +1,49 @@
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-4">
+  <header class="flex items-center gap-2">
+    <a class="btn btn-circle btn-ghost btn-sm" routerLink="/rooms" aria-label="Volver a habitaciones">
+      <ng-icon name="tablerArrowLeft" size="20" aria-hidden="true" />
+    </a>
+    @if (context(); as ctx) {
+      @if (!ctx.missing) {
+        <div class="flex min-w-0 flex-col">
+          <h1 class="text-title font-semibold tabular-nums">Registrar ingreso · {{ ctx.room.number }}</h1>
+          <small class="text-neutral">{{ ctx.roomType.name }} · hasta {{ ctx.room.capacity }} {{ ctx.room.capacity === 1 ? 'adulto' : 'adultos' }}</small>
+        </div>
+      }
+    }
+  </header>
+
+  @if (dataResource.error()) {
+    <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-12 text-center">
+      <ng-icon name="tablerAlertCircle" size="28" class="text-neutral" aria-hidden="true" />
+      <p class="text-neutral">No se pudo cargar la habitación.</p>
+      <app-button (click)="dataResource.reload()">Reintentar</app-button>
+    </div>
+  } @else if (context(); as ctx) {
+    @if (ctx.missing) {
+      <p class="rounded-box bg-base-100 px-4 py-12 text-center text-neutral">La habitación no existe o está inactiva.</p>
+    } @else if (ctx.room.status !== 'FREE') {
+      <div class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-12 text-center">
+        <p class="text-neutral">La habitación {{ ctx.room.number }} no está libre.</p>
+        <a class="btn btn-primary btn-sm" routerLink="/rooms">Ver habitaciones</a>
+      </div>
+    } @else {
+      <stay-check-in-form
+        [room]="ctx.room"
+        [roomType]="ctx.roomType"
+        [settings]="ctx.settings"
+        [saving]="saving()"
+        [error]="error()"
+        [lookingUp]="lookingUp()"
+        [foundGuest]="foundGuest()"
+        (guestLookup)="lookupGuest($event)"
+        (submitted)="checkIn($event)"
+        (cancelled)="cancel()"
+      />
+    }
+  } @else {
+    <div class="grid place-items-center py-20" role="status" aria-label="Cargando">
+      <span class="loading loading-spinner loading-md text-primary"></span>
+    </div>
+  }
+</div>

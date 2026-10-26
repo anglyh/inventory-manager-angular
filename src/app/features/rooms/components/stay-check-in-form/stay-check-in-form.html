@@ -1,0 +1,263 @@
+<form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <!-- 1. Tarifa -->
+  <section class="flex flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="rate-title">
+    <h2 id="rate-title" class="font-medium">Tarifa</h2>
+    <app-segmented-control
+      class="w-full"
+      label="Tarifa"
+      [fill]="true"
+      [options]="rateOptions()"
+      [value]="rateKind()"
+      (valueChange)="setRate($event)"
+    />
+    @if (rateKind() === 'HOURLY') {
+      <div class="flex flex-col gap-1">
+        <span id="hours-label" class="text-caption text-neutral">¿Cuántas horas?</span>
+        <div class="flex flex-wrap items-center gap-3">
+          <app-segmented-control
+            label="Atajos de horas"
+            [options]="hourOptions"
+            [value]="hourShortcut()"
+            (valueChange)="setHours($event)"
+          />
+          <div class="flex items-center gap-1" role="group" aria-labelledby="hours-label">
+            <app-button
+              variant="ghost"
+              customClass="btn-circle"
+              ariaLabel="Una hora menos"
+              [disabled]="hours() <= minHours"
+              (click)="setHours(hours() - 1)"
+            >
+              <ng-icon name="tablerMinus" size="16" aria-hidden="true" />
+            </app-button>
+            <span class="min-w-12 text-center font-medium tabular-nums" aria-live="polite">{{ hours() }} h</span>
+            <app-button
+              variant="ghost"
+              customClass="btn-circle"
+              ariaLabel="Una hora más"
+              [disabled]="hours() >= maxHours"
+              (click)="setHours(hours() + 1)"
+            >
+              <ng-icon name="tablerPlus" size="16" aria-hidden="true" />
+            </app-button>
+          </div>
+        </div>
+      </div>
+    }
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <label class="flex flex-col gap-1">
+        <span class="text-caption text-neutral">Precio</span>
+        <span class="input w-full" [class.input-error]="invalid(form.controls.amount)">
+          <span class="text-neutral">S/</span>
+          <input class="tabular-nums" type="number" inputmode="decimal" min="0.01" step="0.01" formControlName="amount" />
+        </span>
+        <small class="tabular-nums" [class]="priceDiffers() ? 'text-warning' : 'text-neutral'">
+          Referencia: {{ referenceText() }}
+        </small>
+      </label>
+      <label class="flex flex-col gap-1">
+        <span class="text-caption text-neutral">Sale</span>
+        <input
+          class="input w-full tabular-nums"
+          type="datetime-local"
+          formControlName="expectedCheckOut"
+          [class.input-error]="invalid(form.controls.expectedCheckOut)"
+        />
+        @if (invalid(form.controls.expectedCheckOut)) {
+          <small class="text-error">Debe ser una fecha futura.</small>
+        } @else {
+          <small class="text-neutral">Pasada esta hora se cobran horas extra.</small>
+        }
+      </label>
+    </div>
+  </section>
+
+  <!-- 2. Huésped principal y acompañantes -->
+    <section class="flex flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="main-guest-title">
+      <div class="flex flex-col">
+        <h2 id="main-guest-title" class="font-medium">Huésped principal</h2>
+        <small class="text-neutral">Quien responde por la habitación.</small>
+      </div>
+      <stay-guest-fields
+        [group]="guests.at(0)"
+        [submitAttempted]="submitAttempted()"
+        [lookingUp]="lookingUp() === 0"
+        (lookup)="lookup(0)"
+      />
+    </section>
+
+    @if (companionSlots() > 0) {
+      <section class="flex flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="companions-title">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex flex-col">
+            <h2 id="companions-title" class="font-medium">Acompañantes</h2>
+            <small class="text-neutral tabular-nums">
+              Adultos · {{ guestCount() - 1 }} de {{ companionSlots() }}
+            </small>
+          </div>
+          <app-button variant="ghost" [disabled]="!canAddCompanion()" (click)="addCompanion()">
+            <ng-icon name="tablerPlus" size="16" aria-hidden="true" />
+            Agregar
+          </app-button>
+        </div>
+
+        @for (guest of guests.controls; track guest; let i = $index) {
+          @if (i > 0) {
+            <div class="flex flex-col gap-3 rounded-field bg-base-200/60 p-3">
+              <div class="flex items-center justify-between gap-2">
+                <small class="font-medium text-neutral">Acompañante {{ i }}</small>
+                <div class="flex items-center gap-1">
+                  <app-button variant="ghost" (click)="makePrincipal(i)">
+                    <ng-icon name="tablerStar" size="16" aria-hidden="true" />
+                    Hacer principal
+                  </app-button>
+                  <app-button variant="ghost" customClass="btn-circle" ariaLabel="Quitar acompañante" (click)="removeGuest(i)">
+                    <ng-icon name="tablerTrash" size="16" aria-hidden="true" />
+                  </app-button>
+                </div>
+              </div>
+              <stay-guest-fields
+                [group]="guest"
+                [submitAttempted]="submitAttempted()"
+                [lookingUp]="lookingUp() === i"
+                (lookup)="lookup(i)"
+              />
+            </div>
+          }
+        }
+      </section>
+    }
+
+  <!-- 3. Menores (fuera de "guests": es otro arreglo del formulario) -->
+  <section class="flex flex-col gap-3 rounded-box bg-base-100 p-4 sm:p-5" formArrayName="minors">
+    <button
+      type="button"
+      class="flex cursor-pointer items-center justify-between gap-2 text-left"
+      [attr.aria-expanded]="minorsOpen()"
+      (click)="minorsOpen.set(!minorsOpen())"
+    >
+      <span class="flex flex-col">
+        <span class="flex items-center gap-2 font-medium">
+          Menores de edad
+          @if (minorCount()) {
+            <span class="badge badge-sm border-0 bg-base-200 tabular-nums">{{ minorCount() }}</span>
+          }
+        </span>
+        <small class="text-neutral">No ocupan lugar de adulto.</small>
+      </span>
+      <ng-icon name="tablerChevronDown" size="18" class="shrink-0 transition-transform" [class.rotate-180]="minorsOpen()" aria-hidden="true" />
+    </button>
+
+    @if (minorsOpen()) {
+      @for (minor of minors.controls; track minor; let i = $index) {
+        <fieldset class="flex flex-col gap-3 rounded-field bg-base-200/60 p-3" [formGroupName]="i">
+          <div class="flex items-center justify-between gap-2">
+            <small class="font-medium text-neutral">Menor {{ i + 1 }}</small>
+            <app-button variant="ghost" customClass="btn-circle" ariaLabel="Quitar menor" (click)="removeMinor(i)">
+              <ng-icon name="tablerTrash" size="16" aria-hidden="true" />
+            </app-button>
+          </div>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-6">
+            <label class="flex flex-col gap-1 sm:col-span-4">
+              <span class="text-caption text-neutral">Nombre completo</span>
+              <input class="input w-full" type="text" formControlName="fullName" [class.input-error]="invalid(minor.controls.fullName)" />
+            </label>
+            <label class="flex flex-col gap-1 sm:col-span-2">
+              <span class="text-caption text-neutral">Nacimiento</span>
+              <input class="input w-full" type="date" formControlName="birthDate" [class.input-error]="invalid(minor.controls.birthDate)" />
+              @if (submitAttempted() && minor.controls.birthDate.hasError('adult')) {
+                <small class="text-error">Tiene 18 años o más: regístralo como huésped.</small>
+              } @else if (submitAttempted() && minor.controls.birthDate.hasError('date')) {
+                <small class="text-error">Fecha no válida o futura.</small>
+              }
+            </label>
+            <label class="flex flex-col gap-1 sm:col-span-2">
+              <span class="text-caption text-neutral">Viene con su</span>
+              <select class="select w-full" formControlName="guardianRelation">
+                @for (relation of guardianRelations; track relation) {
+                  <option [value]="relation">{{ guardianRelationLabel[relation] }}</option>
+                }
+              </select>
+            </label>
+            <label class="flex flex-col gap-1 sm:col-span-2">
+              <span class="text-caption text-neutral">Documento <span class="opacity-60">(opcional)</span></span>
+              <select class="select w-full" formControlName="documentType">
+                @for (type of documentTypes; track type) {
+                  <option [value]="type">{{ documentTypeLabel[type] }}</option>
+                }
+              </select>
+            </label>
+            <label class="flex flex-col gap-1 sm:col-span-2">
+              <span class="text-caption text-neutral">Número</span>
+              <input class="input w-full tabular-nums" type="text" formControlName="documentNumber" />
+            </label>
+            <label class="flex flex-col gap-1 sm:col-span-6">
+              <span class="text-caption text-neutral">Acreditación <span class="opacity-60">(opcional)</span></span>
+              <input class="input w-full" type="text" placeholder="Ej.: partida de nacimiento" formControlName="accreditation" />
+            </label>
+          </div>
+        </fieldset>
+      }
+      <app-button variant="ghost" customClass="self-start" (click)="addMinor()">
+        <ng-icon name="tablerPlus" size="16" aria-hidden="true" />
+        Agregar menor
+      </app-button>
+    }
+  </section>
+
+  <!-- 4. Más datos -->
+  <section class="grid grid-cols-1 gap-3 rounded-box bg-base-100 p-4 sm:grid-cols-2 sm:p-5">
+    <label class="flex flex-col gap-1">
+      <span class="text-caption text-neutral">Motivo del viaje <span class="opacity-60">(opcional)</span></span>
+      <input class="input w-full" type="text" list="travel-reasons" formControlName="travelReason" />
+      <datalist id="travel-reasons">
+        @for (reason of travelReasons; track reason) {
+          <option [value]="reason"></option>
+        }
+      </datalist>
+    </label>
+    <label class="flex flex-col gap-1">
+      <span class="text-caption text-neutral">Notas <span class="opacity-60">(opcional)</span></span>
+      <input class="input w-full" type="text" formControlName="notes" />
+    </label>
+  </section>
+
+  <!-- 5. Pago: siempre se cobra al ingresar (no se da fiado); solo se elige cómo paga. -->
+  <section class="flex flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="pay-title">
+    <div class="flex flex-col">
+      <h2 id="pay-title" class="font-medium">¿Cómo paga?</h2>
+      <small class="text-neutral">Se cobra al ingresar y entra a la caja abierta.</small>
+    </div>
+    <app-segmented-control
+      class="w-full sm:max-w-xs"
+      label="Método de pago"
+      [fill]="true"
+      [options]="paymentOptions"
+      [value]="payMethod()"
+      (valueChange)="setPayMethod($event)"
+    />
+  </section>
+
+  <!-- Resumen y confirmación: queda a la vista al bajar -->
+  <div class="sticky bottom-4 z-10 flex flex-col gap-3 rounded-box bg-base-100 p-4 shadow-lg sm:p-5">
+    <div class="flex items-baseline justify-between gap-3 tabular-nums">
+      <span class="text-neutral">Total a cobrar</span>
+      <span class="text-subtitle font-semibold">S/ {{ price() | number: '1.2-2' }}</span>
+    </div>
+
+    @if (submitAttempted() && form.invalid) {
+      <p class="text-sm text-error">Completa los datos marcados en rojo.</p>
+    }
+    @if (error()) {
+      <div role="alert" class="flex items-start gap-2 rounded-field bg-error-soft px-3 py-2 text-error whitespace-pre-line">
+        <ng-icon class="mt-0.5 shrink-0" name="tablerAlertCircle" size="18" aria-hidden="true" />
+        <small>{{ error() }}</small>
+      </div>
+    }
+
+    <div class="flex justify-end gap-2">
+      <app-button type="button" variant="ghost" [disabled]="saving()" (click)="cancelled.emit()">Cancelar</app-button>
+      <app-button type="submit" variant="primary" [loading]="saving()" [disabled]="saving()">Registrar ingreso</app-button>
+    </div>
+  </div>
+</form>

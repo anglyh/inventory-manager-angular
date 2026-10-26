@@ -1,0 +1,78 @@
+@let s = stay();
+<section class="flex flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="stay-account-title">
+  <h2 id="stay-account-title" class="font-medium">Cuenta</h2>
+
+  <!-- Lo que se cobró -->
+  <div class="flex flex-col">
+    <h3 class="text-caption text-neutral">Cargos</h3>
+    <ul class="flex flex-col">
+      @for (charge of s.charges; track charge.id) {
+        <li class="flex items-center justify-between gap-3 border-b border-base-200 py-2">
+          <div class="flex min-w-0 flex-col">
+            <span class="truncate">{{ charge.description }}</span>
+            <small class="truncate text-neutral tabular-nums">
+              {{ kindLabel[charge.kind] }} · {{ charge.createdAt | date: 'd MMM · HH:mm' }}
+            </small>
+          </div>
+          <div class="flex shrink-0 items-baseline gap-2 tabular-nums">
+            @if (differs(charge.suggestedAmount, charge.amount)) {
+              <small class="text-neutral line-through" title="Precio sugerido">S/ {{ charge.suggestedAmount | number: '1.2-2' }}</small>
+            }
+            <span>S/ {{ charge.amount | number: '1.2-2' }}</span>
+          </div>
+        </li>
+      } @empty {
+        <li class="border-b border-base-200 py-2 text-sm text-neutral">Sin cargos</li>
+      }
+    </ul>
+    <div class="flex justify-between pt-2 tabular-nums">
+      <span class="text-neutral">Total</span>
+      <span class="font-medium">S/ {{ s.chargesTotal | number: '1.2-2' }}</span>
+    </div>
+  </div>
+
+  <!-- Lo que pagó -->
+  <div class="flex flex-col">
+    <h3 class="text-caption text-neutral">Pagos</h3>
+    <ul class="flex flex-col">
+      @for (payment of s.payments; track payment.id) {
+        <li class="flex items-center justify-between gap-3 border-b border-base-200 py-2">
+          <div class="flex min-w-0 flex-col">
+            <span>{{ paymentLabel[payment.paymentMethod] }}</span>
+            <small class="truncate text-neutral tabular-nums">
+              {{ payment.createdAt | date: 'd MMM · HH:mm' }}
+              @if (payment.createdByName) {
+                · {{ payment.createdByName }}
+              }
+            </small>
+          </div>
+          <span class="shrink-0 tabular-nums text-success">− S/ {{ payment.amount | number: '1.2-2' }}</span>
+        </li>
+      } @empty {
+        <li class="border-b border-base-200 py-2 text-sm text-neutral">Aún no pagó nada</li>
+      }
+    </ul>
+    <div class="flex justify-between pt-2 tabular-nums">
+      <span class="text-neutral">Pagado</span>
+      <span class="font-medium">S/ {{ s.paymentsTotal | number: '1.2-2' }}</span>
+    </div>
+  </div>
+
+  <!-- Resultado -->
+  @if (balance() > 0) {
+    <div class="flex items-center justify-between gap-3 rounded-field bg-warning-soft px-3 py-3 text-warning">
+      <span class="font-medium">Debe</span>
+      <span class="text-subtitle font-semibold tabular-nums">S/ {{ balance() | number: '1.2-2' }}</span>
+    </div>
+  } @else if (balance() < 0) {
+    <div class="flex items-center justify-between gap-3 rounded-field bg-success-soft px-3 py-3 text-success">
+      <span class="font-medium">A favor del huésped</span>
+      <span class="text-subtitle font-semibold tabular-nums">S/ {{ -balance() | number: '1.2-2' }}</span>
+    </div>
+  } @else {
+    <div class="flex items-center justify-between gap-3 rounded-field bg-success-soft px-3 py-3 text-success">
+      <span class="font-medium">Pagado completo</span>
+      <ng-icon name="tablerCircleCheck" size="22" aria-hidden="true" />
+    </div>
+  }
+</section>

@@ -1,0 +1,28 @@
+<form class="flex flex-col gap-5 rounded-box bg-base-100 p-4 sm:p-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="flex flex-col gap-1">
+    <h2 class="font-medium">Reglas de cobro</h2>
+    <small class="text-neutral">Se aplican a todos los tipos.</small>
+  </div>
+
+  <label class="flex flex-col gap-1">
+    <span class="text-caption text-neutral">Hora de salida (tarifa por noche)</span>
+    <input
+      class="input w-full tabular-nums"
+      type="time"
+      formControlName="checkoutTime"
+      [class.input-error]="submitAttempted() && form.controls.checkoutTime.invalid"
+    />
+  </label>
+
+  <label class="flex flex-col gap-1">
+    <span class="text-caption text-neutral">Minutos de gracia antes de cobrar hora extra</span>
+    <span class="input w-full" [class.input-error]="submitAttempted() && form.controls.extraToleranceMinutes.invalid">
+      <input class="tabular-nums" type="number" min="0" step="1" formControlName="extraToleranceMinutes" />
+      <span class="text-neutral">min</span>
+    </span>
+  </label>
+
+  <div class="flex justify-end">
+    <app-button type="submit" variant="primary" [loading]="saving()" [disabled]="saving()">Guardar</app-button>
+  </div>
+</form>
