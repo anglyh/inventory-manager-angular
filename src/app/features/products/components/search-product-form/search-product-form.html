@@ -1,24 +1,22 @@
-<div class="relative w-full group">
-  <input 
-    class="input input-bordered w-full pr-10 focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-all duration-200"
-    type="text"
+<label class="input w-full border-0 bg-base-200 shadow-none focus-within:outline-primary/40">
+  <ng-icon name="tablerSearch" size="18" class="text-neutral" aria-hidden="true" />
+  <input
+    type="search"
     id="productSearchInput"
-    placeholder="Busca un producto..."
+    placeholder="Buscar producto"
     [value]="searchTerm()"
     (input)="searchTerm.set(searchInputRef.value)"
     (keydown.enter)="search(searchInputRef.value)"
-    #searchInputRef 
+    #searchInputRef
   />
-
   @if (searchTerm()) {
-    <app-button 
+    <button
       type="button"
-      variant="ghost"
-      customClass="absolute inset-y-0 right-0 flex items-center pr-3 border-none !min-h-0 !h-full p-0 px-3 bg-transparent hover:bg-transparent text-base-400 hover:text-slate-800 transition-colors cursor-pointer"
-      (click)="searchTerm.set(''); searchInputRef.value = ''; searchInputRef.focus(); search('')"
+      class="btn btn-circle btn-ghost btn-xs"
       aria-label="Limpiar búsqueda"
+      (click)="searchTerm.set(''); searchInputRef.value = ''; searchInputRef.focus(); search('')"
     >
-      <ng-icon name="tablerX" class="text-title" />
-    </app-button>
+      <ng-icon name="tablerX" size="16" aria-hidden="true" />
+    </button>
   }
-</div>
+</label>

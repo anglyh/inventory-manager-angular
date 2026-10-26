@@ -123,7 +123,7 @@ export class ProductForm {
       .subscribe({
         next: () => {
           this.globalNotification.show(
-            isEdit ? 'Producto actualizado correctamente' : 'Producto creado correctamente',
+            isEdit ? 'Producto actualizado' : 'Producto creado',
             'success',
           )
           this.onSuccess.emit()

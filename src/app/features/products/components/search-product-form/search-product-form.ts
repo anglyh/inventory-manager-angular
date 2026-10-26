@@ -1,13 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgIcon, provideIcons } from "@ng-icons/core"
-import { tablerX } from '@ng-icons/tabler-icons';
-import { Button } from 'src/app/shared/components/button/button';
+import { tablerSearch, tablerX } from '@ng-icons/tabler-icons';
 
 @Component({
   selector: 'search-product-form',
-  imports: [NgIcon, Button],
-  viewProviders: [provideIcons({ tablerX })],
+  imports: [NgIcon],
+  viewProviders: [provideIcons({ tablerSearch, tablerX })],
   templateUrl: './search-product-form.html',
 })
 export class SearchProduct {

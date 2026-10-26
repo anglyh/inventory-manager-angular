@@ -22,7 +22,7 @@
         <span class="label-text font-medium text-base-content mb-1">Precio de venta</span>
       </div>
       <label class="input input-bordered flex items-center gap-2">
-        <span class="text-base-content/60">S/.</span>
+        <span class="text-base-content/60">S/</span>
         <input type="number" step="0.10" placeholder="2.50" class="grow" formControlName="salePrice" min="0.00"/>
       </label>
     </label>
@@ -75,7 +75,7 @@
       Cancelar
     </app-button>
     <app-button type="submit" [loading]="isSubmitting()" [disabled]="productForm.invalid || isSubmitting()">
-      {{ productInitialData()?.id ? 'Actualizar' : 'Guardar' }}
+      Guardar
     </app-button>
   </div>
 </form>

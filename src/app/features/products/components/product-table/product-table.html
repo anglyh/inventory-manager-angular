@@ -1,94 +1,85 @@
-<div
-  class="rounded-xl border border-base-300 bg-base-100 overflow-hidden"
->
-  @if (loading()) {
-    <div class="p-4 sm:p-6 space-y-4" aria-busy="true" aria-label="Cargando productos">
-      <div class="flex gap-4 pb-2 border-b border-base-200">
-        <div class="skeleton h-4 w-28"></div>
-        <div class="skeleton h-4 w-24"></div>
-        <div class="skeleton h-4 w-20 ml-auto"></div>
-        <div class="skeleton h-4 w-20"></div>
+@if (loading()) {
+  <div class="flex flex-col gap-4 py-2" aria-busy="true" aria-label="Cargando productos">
+    @for (row of skeletonRows; track row) {
+      <div class="flex min-w-0 items-center gap-3">
+        <div class="skeleton size-9 shrink-0 rounded-field"></div>
+        <div class="skeleton h-4 w-40"></div>
+        <div class="skeleton ml-auto h-4 w-20"></div>
         <div class="skeleton h-4 w-16"></div>
-        <div class="skeleton h-4 w-20"></div>
-        <div class="skeleton h-4 w-24"></div>
+        <div class="skeleton h-5 w-20 rounded-full"></div>
       </div>
-      @for (row of skeletonRows; track row) {
-        <div class="flex gap-4 items-center py-1">
-          <div class="skeleton h-5 flex-2 max-w-xs"></div>
-          <div class="skeleton h-5 w-24"></div>
-          <div class="skeleton h-5 w-20 ml-auto"></div>
-          <div class="skeleton h-5 w-20"></div>
-          <div class="skeleton h-5 w-14"></div>
-          <div class="skeleton h-5 w-14"></div>
-          <div class="skeleton h-9 w-24 rounded-lg"></div>
-        </div>
-      }
-    </div>
-  } @else if (products().length === 0) {
-    <div
-      class="py-14 px-4 sm:py-20 sm:px-6 flex flex-col items-center justify-center text-center gap-2"
-    >
-      <p class="text-caption sm:text-body text-base-content/70 font-medium">No se han encontrado productos</p>
-    </div>
-  } @else {
-    <div class="overflow-x-auto">
-      <table class="table table-sm sm:table-lg w-full text-caption sm:text-body">
-        <thead>
-          <tr class="border-b border-base-300 bg-base-200/40 [&>th]:font-semibold [&>th]:text-body sm:[&>th]:text-caption [&>th]:uppercase [&>th]:tracking-wide [&>th]:text-base-content/70 [&>th]:border-0">
-            <th class="pl-4 sm:pl-6">Producto</th>
-            <th>Categoría</th>
-            <th class="text-end">Precio</th>
-            <th class="text-end">Costo</th>
-            <th class="text-end">Stock</th>
-            <th class="text-end">Stock mín.</th>
-            <th class="pr-4 sm:pr-6">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="[&>tr]:border-b [&>tr]:border-base-200 [&>tr:last-child]:border-0">
-          @for (product of products(); track product.id) {
-            <tr class="hover:bg-base-200/30 transition-colors">
-              <td class="pl-4 sm:pl-6">
-                <span class="font-medium text-base-content">{{ product.name }}</span>
-              </td>
-              <td class="text-base-content/70">
-                {{ product.categoryName ?? 'Sin categoría' }}
-              </td>
-              <td class="text-end tabular-nums whitespace-nowrap font-medium">
-                S/. {{ product.salePrice | number:'1.2-2' }}
-              </td>
-              <td class="text-end tabular-nums whitespace-nowrap text-base-content/80">
-                S/. {{ product.unitCostAvg | number:'1.2-2' }}
-              </td>
-              <td class="text-end">
-                <div class="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:justify-end sm:gap-2">
-                  @if (product.stock <= 0) {
-                    <span class="badge badge-soft badge-error badge-sm whitespace-nowrap"
-                      >Sin stock</span
-                    >
-                  } @else if (product.stock < product.minStock) {
-                    <span class="badge badge-soft badge-warning badge-sm whitespace-nowrap"
-                      >Bajo</span
-                    >
-                  } @else {
-                    <span class="badge badge-soft badge-success badge-sm whitespace-nowrap"
-                      >OK</span
-                    >
+    }
+  </div>
+} @else if (products().length === 0) {
+  <p class="py-16 text-center text-neutral">No se encontraron productos</p>
+} @else {
+  <!-- Sin overflow: recortaría el menú de acciones. En el celular se ocultan columnas en su lugar. -->
+<div>
+    <table class="table w-full tabular-nums">
+      <thead>
+        <tr class="border-base-200 text-neutral">
+          <th class="w-full pl-0 font-medium">Producto</th>
+          <th class="hidden font-medium md:table-cell">Categoría</th>
+          <th class="hidden text-end font-medium sm:table-cell">Precio</th>
+          <th class="hidden text-end font-medium sm:table-cell">Costo</th>
+          <th class="hidden text-end font-medium sm:table-cell">Stock</th>
+          <th class="hidden font-medium sm:table-cell">Estado</th>
+          @if (editable()) {
+            <th class="w-0 pr-0"><span class="sr-only">Acciones</span></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (product of products(); track product.id) {
+          @let status = statusOf(product);
+          <tr class="border-base-200">
+            <td class="max-w-0 pl-0">
+              <div class="flex min-w-0 items-center gap-3">
+                <span class="hidden size-9 shrink-0 place-items-center rounded-field bg-base-200 font-medium text-neutral sm:grid" aria-hidden="true">
+                  {{ product.name.charAt(0).toUpperCase() }}
+                </span>
+                <span class="flex min-w-0 flex-col">
+                  <!-- En el celular el nombre usa hasta dos líneas; desde sm, una con "…". -->
+                  <span class="line-clamp-2 font-medium sm:line-clamp-none sm:truncate">{{ product.name }}</span>
+                  @if (product.barcode) {
+                    <small class="hidden truncate text-neutral sm:block">{{ product.barcode }}</small>
                   }
-                  <span class="tabular-nums text-base-content">{{ product.stock }}</span>
+                  <!-- Celular: precio y stock bajo el nombre, en lugar de sus columnas. -->
+                  <small class="flex flex-wrap gap-x-2 text-neutral sm:hidden">
+                    <span class="font-medium text-base-content">S/ {{ product.salePrice | number: '1.2-2' }}</span>
+                    <span>· Stock {{ product.stock }} / {{ product.minStock }}</span>
+                    @if (status.label !== 'En stock') {
+                      <span class="badge badge-sm whitespace-nowrap border-0" [class]="status.class">{{ status.label }}</span>
+                    }
+                  </small>
+                </span>
+              </div>
+            </td>
+            <td class="hidden text-neutral md:table-cell">{{ product.categoryName ?? 'Sin categoría' }}</td>
+            <td class="hidden whitespace-nowrap text-end sm:table-cell">S/ {{ product.salePrice | number: '1.2-2' }}</td>
+            <td class="hidden whitespace-nowrap text-end text-neutral sm:table-cell">S/ {{ product.unitCostAvg | number: '1.2-2' }}</td>
+            <td class="hidden whitespace-nowrap text-end sm:table-cell">
+              {{ product.stock }}
+              <small class="text-neutral">/ {{ product.minStock }}</small>
+            </td>
+            <td class="hidden sm:table-cell">
+              <span class="badge badge-sm whitespace-nowrap border-0" [class]="status.class">{{ status.label }}</span>
+            </td>
+            @if (editable()) {
+              <td class="pr-0">
+                <div class="dropdown dropdown-end">
+                  <button type="button" class="btn btn-circle btn-ghost" [attr.aria-label]="'Acciones de ' + product.name">
+                    <ng-icon name="tablerDots" size="18" aria-hidden="true" />
+                  </button>
+                  <ul tabindex="-1" class="dropdown-content menu z-10 w-36 rounded-box bg-base-100 p-1 shadow-lg">
+                    <li><button type="button" (click)="edit.emit(product); blurActive()">Editar</button></li>
+                  </ul>
                 </div>
               </td>
-              <td class="text-end tabular-nums text-base-content/80">
-                {{ product.minStock }}
-              </td>
-              <td class="pr-4 sm:pr-6">
-                <app-button variant="accent" (click)="edit.emit(product)"
-                  >Editar</app-button
-                >
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
-</div>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

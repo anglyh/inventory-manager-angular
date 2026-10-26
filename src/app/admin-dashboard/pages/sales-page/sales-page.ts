@@ -37,11 +37,37 @@ export class SalesPage {
   })
 
   searchTerm = signal('');
+  /** Categoría elegida en los chips; null = todas. */
+  categoryId = signal<string | null>(null);
+
+  /** Un chip por categoría con productos en el punto de venta, con su cantidad. */
+  categoryChips = computed(() => {
+    const chips = new Map<string, CategoryChip>();
+    for (const product of this.productsResource.value() ?? []) {
+      if (!product.categoryId) continue;
+      const chip = chips.get(product.categoryId);
+      if (chip) chip.count++;
+      else chips.set(product.categoryId, { id: product.categoryId, name: product.categoryName ?? '', count: 1 });
+    }
+    return [...chips.values()].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  });
+  totalProducts = computed(() => this.productsResource.value()?.length ?? 0);
+
+  /** Si la categoría elegida ya no tiene productos (tras recargar), se muestran todas. */
+  activeCategoryId = computed(() => {
+    const id = this.categoryId();
+    return this.categoryChips().some(chip => chip.id === id) ? id : null;
+  });
+
   filteredProducts = computed(() => {
     const products = this.productsResource.value() ?? [];
     const term = this.searchTerm().trim().toLocaleLowerCase();
+    const categoryId = this.activeCategoryId();
 
-    return products.filter(product => product.name.toLowerCase().includes(term))
+    return products.filter(product =>
+      product.name.toLocaleLowerCase().includes(term) &&
+      (categoryId === null || product.categoryId === categoryId)
+    )
   })
   selectedProducts = signal<SaleCartItem[]>([]);
 
@@ -72,6 +98,12 @@ export class SalesPage {
     );
   }
 
+  /** Enter en el buscador: agrega el primer resultado, si lo hay. */
+  addFirstMatch() {
+    const product = this.filteredProducts()[0];
+    if (product) this.addProduct(product);
+  }
+
   changeQuantity({ productId, quantity }: Pick<SaleCartItem, 'productId' | 'quantity'>) {
     if (!Number.isInteger(quantity) || quantity < 1) return;
 
@@ -90,9 +122,12 @@ export class SalesPage {
   }
 
   registerSale(paymentMethod: PaymentMethod) {
-    const register = this.cashRegisterService.currentCashRegisterResource.value();
-    if (!register || register.status !== 'OPEN' || this.savingSale()) {
-      this.notificationService.show('Abre o actualiza la caja antes de registrar una venta', 'error');
+    if (this.savingSale()) return;
+    // value() lanza si el recurso quedó en error: se trata como "sin caja" y se vuelve a consultar.
+    const resource = this.cashRegisterService.currentCashRegisterResource;
+    const register = resource.hasValue() ? resource.value() : null;
+    if (!register || register.status !== 'OPEN') {
+      this.notificationService.show('No hay una caja abierta. Ábrela para vender.', 'error');
       this.cashRegisterService.currentCashRegisterResource.reload();
       return;
     }
@@ -110,7 +145,7 @@ export class SalesPage {
         this.selectedProducts.set([])
         this.productsResource.reload()
         this.saleOpen.set(false);
-        this.notificationService.show('Venta registrada exitosamente')
+        this.notificationService.show('Venta registrada')
         this.cashRegisterService.currentCashRegisterResource.reload();
       },
       error: error => {
@@ -120,4 +155,10 @@ export class SalesPage {
       }
     })
   }
+}
+
+interface CategoryChip {
+  id: string;
+  name: string;
+  count: number;
 }
