@@ -1,7 +1,15 @@
 <div class="flex w-full flex-col gap-4">
   <header class="flex flex-wrap items-center justify-between gap-3">
-    <h1 class="text-title font-semibold">Historial de cajas</h1>
-    <a routerLink="/cash-register" class="btn btn-ghost btn-sm text-neutral">Caja actual</a>
+    <div class="flex min-w-0 flex-col">
+      <h1 class="text-title font-semibold">Historial de cajas</h1>
+      @if (registers(); as result) {
+        <small class="text-neutral tabular-nums">{{ result.meta.total }} {{ result.meta.total === 1 ? 'caja' : 'cajas' }}</small>
+      }
+    </div>
+    <app-button variant="outline" (click)="goToCurrent()">
+      <ng-icon name="tablerCashRegister" size="18" aria-hidden="true" />
+      Caja actual
+    </app-button>
   </header>
 
   <div class="flex flex-wrap gap-2" role="tablist" aria-label="Estado de la caja">
@@ -22,10 +30,9 @@
   @if (errorMessage(); as message) {
     <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">
       <p class="text-neutral">{{ message }}</p>
-      <button type="button" class="btn btn-primary btn-sm" (click)="registersResource.reload()">Reintentar</button>
+      <app-button variant="outline" (click)="registersResource.reload()">Reintentar</app-button>
     </div>
-  } @else if (registersResource.hasValue()) {
-    @let result = registersResource.value();
+  } @else if (registers(); as result) {
     @if (!result.data.length) {
       <div class="flex flex-col items-center gap-1 rounded-box bg-base-100 px-4 py-12 text-center">
         <p class="font-medium">No hay cajas</p>
@@ -34,27 +41,10 @@
     } @else {
       <cash-register-list [class.opacity-60]="registersResource.isLoading()" [registers]="result.data" />
 
-      @if (result.meta.totalPages > 1) {
-        <nav class="flex items-center justify-between gap-3" aria-label="Paginación">
-          <button
-            type="button"
-            class="btn btn-sm border-0 [--btn-color:var(--color-base-100)]"
-            [disabled]="result.meta.page <= 1 || registersResource.isLoading()"
-            (click)="goToPage(result.meta.page - 1)"
-          >
-            Anterior
-          </button>
-          <small class="text-neutral tabular-nums">Página {{ result.meta.page }} de {{ result.meta.totalPages }}</small>
-          <button
-            type="button"
-            class="btn btn-sm border-0 [--btn-color:var(--color-base-100)]"
-            [disabled]="result.meta.page >= result.meta.totalPages || registersResource.isLoading()"
-            (click)="goToPage(result.meta.page + 1)"
-          >
-            Siguiente
-          </button>
-        </nav>
-      }
+      <!-- La página vive en `?page`, igual que en `<app-pagination>`: se usa el componente compartido. -->
+      <div class="flex justify-center">
+        <app-pagination [pages]="result.meta.totalPages" [currentPage]="page()" />
+      </div>
     }
   } @else {
     <div class="grid place-items-center py-8" role="status" aria-label="Cargando cajas">

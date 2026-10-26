@@ -1,25 +1,29 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerHistory } from '@ng-icons/tabler-icons';
+import { tablerCashRegister, tablerHistory, tablerLockOpen } from '@ng-icons/tabler-icons';
 import type { OpenCashRegisterRequest } from '@/features/cash-register/interfaces/cash-register.interface';
 import { Button } from '@/shared/components/button/button';
 import { MAX_MONEY, moneyValidator } from '@/shared/utils/form-validators';
+import { CashStatusPill } from '../cash-status-pill/cash-status-pill';
 
 const NOTES_MAX_LENGTH = 500;
 
 @Component({
   selector: 'cash-register-opening',
-  imports: [ReactiveFormsModule, RouterLink, NgIcon, Button],
-  viewProviders: [provideIcons({ tablerHistory })],
+  imports: [ReactiveFormsModule, NgIcon, Button, CashStatusPill],
+  viewProviders: [provideIcons({ tablerCashRegister, tablerHistory, tablerLockOpen })],
   templateUrl: './cash-register-opening.html',
 })
 export class CashRegisterOpening {
   private fb = inject(FormBuilder);
+  private router = inject(Router);
 
   busy = input(false);
+  /** El historial de cajas es solo para ADMIN. */
+  showHistory = input(true);
   submitted = output<OpenCashRegisterRequest>();
 
   readonly presets = [0, 50, 100, 150, 200, 300];
@@ -49,6 +53,10 @@ export class CashRegisterOpening {
 
   setPreset(amount: number) {
     this.form.controls.openingAmount.setValue(amount);
+  }
+
+  openHistory() {
+    void this.router.navigateByUrl('/cash-register/history');
   }
 
   submit() {

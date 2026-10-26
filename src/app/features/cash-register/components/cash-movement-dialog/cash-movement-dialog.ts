@@ -1,8 +1,10 @@
+import { SegmentedControl } from '@/shared/components/segmented-control/segmented-control';
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerAlertCircle } from '@ng-icons/tabler-icons';
+import { tablerAlertCircle, tablerArrowDownLeft, tablerArrowUpRight } from '@ng-icons/tabler-icons';
 import { Button } from '@/shared/components/button/button';
 import { Modal } from '@/shared/components/modal/modal';
 import { MAX_MONEY, moneyValidator, trimmedRequired } from '@/shared/utils/form-validators';
@@ -11,14 +13,14 @@ import type { CashMovementType, CreateCashMovementRequest } from '../../interfac
 const REASON_MAX_LENGTH = 500;
 
 const REASON_PRESETS: Record<CashMovementType, string[]> = {
-  CASH_IN: ['Fondo adicional para vuelto', 'Inyección de monedas', 'Devolución de dinero'],
-  CASH_OUT: ['Compra urgente de insumos', 'Pago de delivery o flete', 'Pago de servicios menores', 'Retiro de seguridad'],
+  CASH_IN: ['Sencillo para dar vuelto', 'Más monedas', 'Devolución de un préstamo'],
+  CASH_OUT: ['Compra para la tienda', 'Pago de delivery', 'Pago de un servicio', 'Guardar dinero fuera de la caja'],
 };
 
 @Component({
   selector: 'cash-movement-dialog',
-  imports: [ReactiveFormsModule, NgIcon, Button, Modal],
-  viewProviders: [provideIcons({ tablerAlertCircle })],
+  imports: [SegmentedControl, ReactiveFormsModule, DecimalPipe, NgIcon, Button, Modal],
+  viewProviders: [provideIcons({ tablerAlertCircle, tablerArrowDownLeft, tablerArrowUpRight })],
   templateUrl: './cash-movement-dialog.html',
 })
 export class CashMovementDialog {
@@ -29,7 +31,7 @@ export class CashMovementDialog {
   /** Mensaje del backend (409/422): se muestra dentro del modal. */
   error = input<string | null>(null);
   /**
-   * Efectivo disponible en gaveta. `null` cuando el rol no lo recibe (conteo ciego):
+   * Efectivo que debería haber en caja. `null` cuando el rol no lo recibe (conteo ciego):
    * en ese caso no se valida el retiro aquí y decide el backend.
    */
   availableCash = input<number | null>(null);
@@ -54,6 +56,11 @@ export class CashMovementDialog {
   private value = toSignal(this.form.valueChanges, { initialValue: this.form.value });
   private submitAttempted = signal(false);
 
+  readonly types: { value: CashMovementType; label: string }[] = [
+    { value: 'CASH_IN', label: 'Poner dinero' },
+    { value: 'CASH_OUT', label: 'Sacar dinero' },
+  ];
+
   type = computed(() => this.value().type ?? 'CASH_IN');
   presets = computed(() => REASON_PRESETS[this.type()]);
 
@@ -72,12 +79,12 @@ export class CashMovementDialog {
   get amountError(): string | null {
     const control = this.form.controls.amount;
     if (!this.submitAttempted() || control.valid) return null;
-    if (control.hasError('required')) return 'Ingresa el importe.';
-    return 'Ingresa un importe mayor a cero, con hasta dos decimales.';
+    if (control.hasError('required')) return 'Ingresa el monto.';
+    return 'Ingresa un monto mayor a cero, con hasta dos decimales.';
   }
 
   get reasonError(): string | null {
-    return this.submitAttempted() && this.form.controls.reason.invalid ? 'Indica el motivo del movimiento.' : null;
+    return this.submitAttempted() && this.form.controls.reason.invalid ? 'Escribe para qué es el dinero.' : null;
   }
 
   setType(type: CashMovementType) {

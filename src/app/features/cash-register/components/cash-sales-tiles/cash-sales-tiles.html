@@ -1,0 +1,15 @@
+@let s = summary();
+<cash-stat-tile label="Ventas del turno" icon="tablerReceipt" tone="primary" [hint]="salesHint()">
+  <cash-amount [value]="s.totalSales" />
+</cash-stat-tile>
+<cash-stat-tile label="Yape / Plin" icon="tablerDeviceMobile" tone="info" hint="Cobrado en ventas">
+  <cash-amount [value]="s.yapeSales" />
+</cash-stat-tile>
+<cash-stat-tile
+  label="Habitaciones"
+  icon="tablerBed"
+  tone="warning"
+  [hint]="'S/ ' + (s.yapeStays | number: '1.2-2') + ' por Yape'"
+>
+  <cash-amount [value]="stays()" />
+</cash-stat-tile>

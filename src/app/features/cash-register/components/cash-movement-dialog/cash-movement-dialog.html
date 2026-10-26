@@ -1,36 +1,36 @@
-<app-modal label="Registrar movimiento" boxClass="max-w-md" [isOpen]="open()" (closed)="closed.emit()">
+<app-modal label="Poner o sacar dinero" boxClass="max-w-md" [isOpen]="open()" (closed)="closed.emit()">
+  @let isIn = type() === 'CASH_IN';
   <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <h3 class="text-subtitle font-medium">Movimiento de efectivo</h3>
-
-    <div class="flex gap-1 rounded-field bg-base-200 p-1" role="tablist" aria-label="Tipo de movimiento">
-      <button
-        type="button"
-        role="tab"
-        class="btn btn-sm flex-1 border-0 shadow-none"
-        [class]="type() === 'CASH_IN' ? 'bg-base-100' : 'btn-ghost text-neutral'"
-        [attr.aria-selected]="type() === 'CASH_IN'"
-        (click)="setType('CASH_IN')"
+    <!-- El ícono y el signo del monto cambian con el tipo: entra (verde) o sale (rojo). -->
+    <div class="flex items-center gap-3">
+      <span
+        class="grid size-12 shrink-0 place-items-center rounded-field transition-colors"
+        [class]="isIn ? 'bg-success-soft text-success' : 'bg-error-soft text-error'"
+        aria-hidden="true"
       >
-        Aporte
-      </button>
-      <button
-        type="button"
-        role="tab"
-        class="btn btn-sm flex-1 border-0 shadow-none"
-        [class]="type() === 'CASH_OUT' ? 'bg-base-100' : 'btn-ghost text-neutral'"
-        [attr.aria-selected]="type() === 'CASH_OUT'"
-        (click)="setType('CASH_OUT')"
-      >
-        Retiro
-      </button>
+        <ng-icon [name]="isIn ? 'tablerArrowUpRight' : 'tablerArrowDownLeft'" size="24" />
+      </span>
+      <div class="flex min-w-0 flex-col">
+        <h3 class="text-subtitle font-semibold">Poner o sacar dinero</h3>
+        <small class="text-neutral">{{ isIn ? 'El dinero entra a la caja' : 'El dinero sale de la caja' }}</small>
+      </div>
     </div>
 
+    <app-segmented-control
+      class="w-full"
+      label="¿Pones o sacas dinero?"
+      [fill]="true"
+      [options]="types"
+      [value]="type()"
+      (valueChange)="setType($event)"
+    />
+
     <label class="flex flex-col gap-1">
-      <span class="text-caption text-neutral">Importe</span>
+      <span class="text-caption text-neutral">Monto</span>
       <span class="input w-full" [class.input-error]="amountError || isExcessWithdrawal()">
-        <span class="text-neutral">S/</span>
+        <span class="font-medium" [class]="isIn ? 'text-success' : 'text-error'">{{ isIn ? '+' : '−' }} S/</span>
         <input
-          class="tabular-nums"
+          class="text-subtitle font-semibold tabular-nums"
           type="number"
           inputmode="decimal"
           min="0.01"
@@ -43,7 +43,9 @@
       @if (amountError) {
         <small class="text-error">{{ amountError }}</small>
       } @else if (isExcessWithdrawal()) {
-        <small class="text-error">Excede el efectivo disponible en gaveta.</small>
+        <small class="text-error">No hay tanto efectivo en la caja.</small>
+      } @else if (!isIn && availableCash() !== null) {
+        <small class="text-neutral tabular-nums">Debería haber en caja: S/ {{ availableCash() | number: '1.2-2' }}</small>
       }
     </label>
 
@@ -55,7 +57,7 @@
       <input
         class="input w-full"
         type="text"
-        placeholder="Ej.: cambio en monedas"
+        placeholder="¿Para qué es el dinero?"
         formControlName="reason"
         [attr.maxlength]="reasonMaxLength"
         [class.input-error]="!!reasonError"
@@ -66,16 +68,17 @@
       }
     </label>
 
-    <div class="flex flex-wrap gap-2">
-      @for (preset of presets(); track preset) {
-        <button type="button" class="btn btn-xs rounded-full border-0 bg-base-200 font-normal" (click)="setReason(preset)">
-          {{ preset }}
-        </button>
-      }
+    <div class="flex flex-col gap-2">
+      <small class="text-neutral">Motivos frecuentes</small>
+      <div class="flex flex-wrap gap-2" role="group" aria-label="Motivos sugeridos">
+        @for (preset of presets(); track preset) {
+          <app-button variant="outline" customClass="font-normal" (click)="setReason(preset)">{{ preset }}</app-button>
+        }
+      </div>
     </div>
 
     @if (error()) {
-      <div role="alert" class="flex items-start gap-2 rounded-field bg-error/10 px-3 py-2 text-error">
+      <div role="alert" class="flex items-start gap-2 rounded-field bg-error-soft px-3 py-2 text-error">
         <ng-icon class="mt-0.5 shrink-0" name="tablerAlertCircle" size="18" aria-hidden="true" />
         <small>{{ error() }}</small>
       </div>
@@ -84,7 +87,7 @@
     <div class="flex justify-end gap-2">
       <app-button type="button" variant="ghost" [disabled]="saving()" (click)="cancelled.emit()">Cancelar</app-button>
       <app-button type="submit" variant="primary" [loading]="saving()" [disabled]="saving() || isExcessWithdrawal()">
-        Registrar
+        {{ isIn ? 'Poner dinero' : 'Sacar dinero' }}
       </app-button>
     </div>
   </form>

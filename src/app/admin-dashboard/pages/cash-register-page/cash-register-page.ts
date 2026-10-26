@@ -11,6 +11,7 @@ import type {
   OpenCashRegisterRequest,
 } from '@/features/cash-register/interfaces/cash-register.interface';
 import { GlobalNotificationService } from '@/shared/components/global-notification/global-notification.service';
+import { AuthService } from '@/auth/services/auth.service';
 import { Button } from '@/shared/components/button/button';
 import { extractApiError } from '@/api/extract-api-error';
 import { resolveApiError } from '@/shared/utils/api-error';
@@ -37,9 +38,16 @@ export class CashRegisterPage {
   private notification = inject(GlobalNotificationService);
   readonly cashRegisterService = inject(CashRegisterService);
   readonly current = this.cashRegisterService.currentCashRegisterResource;
+  /** Si una recarga falla se sigue mostrando la última caja conocida. */
+  readonly register = this.cashRegisterService.currentCashRegister;
+  readonly isAdmin = inject(AuthService).isAdmin;
 
   readonly opening = signal(false);
+  /** El formulario queda bloqueado hasta que llega la caja recién abierta: un segundo toque no es posible. */
+  readonly openingBusy = computed(() => this.opening() || this.current.isLoading());
   readonly movementsRefresh = signal(0);
+  /** Lo informa la lista de movimientos; el empleado lo ve como conteo, sin montos. */
+  readonly movementsCount = signal<number | null>(null);
 
   readonly movementOpen = signal(false);
   readonly movementSaving = signal(false);
@@ -53,17 +61,23 @@ export class CashRegisterPage {
 
   /** Solo ADMIN recibe el esperado; `null` significa conteo ciego y decide el backend. */
   readonly expectedCash = computed(() => {
-    const raw = this.current.hasValue() ? this.current.value()?.summary?.expectedCash : undefined;
+    const raw = this.register()?.summary?.expectedCash;
     return raw === undefined ? null : Number(raw);
   });
 
+  constructor() {
+    // El resource vive en root: al volver a Caja se actualizan los totales (no hace nada si ya está cargando).
+    this.current.reload();
+  }
+
   openRegister(body: OpenCashRegisterRequest) {
-    if (this.opening()) return;
+    if (this.openingBusy()) return;
     this.opening.set(true);
     this.cashRegisterService.open(body).subscribe({
       next: () => {
-        this.opening.set(false);
+        // Primero se pide la recarga: `isLoading` mantiene el formulario bloqueado al soltar `opening`.
         this.refresh();
+        this.opening.set(false);
         this.notification.show('Caja abierta');
       },
       error: error => {
@@ -96,11 +110,11 @@ export class CashRegisterPage {
         this.movementSaving.set(false);
         this.movementOpen.set(false);
         this.refresh();
-        this.notification.show('Movimiento registrado');
+        this.notification.show(body.type === 'CASH_IN' ? 'Dinero puesto en la caja' : 'Dinero sacado de la caja');
       },
       error: error => {
         this.movementSaving.set(false);
-        const resolved = resolveApiError(error, 'No se pudo registrar el movimiento.');
+        const resolved = resolveApiError(error, 'No se pudo guardar. Inténtalo de nuevo.');
         if (resolved.redirect) {
           void this.router.navigate([resolved.redirect]);
           return;
@@ -159,7 +173,7 @@ export class CashRegisterPage {
   }
 
   private openRegisterValue() {
-    const register = this.current.hasValue() ? this.current.value() : null;
+    const register = this.register();
     return register?.status === 'OPEN' ? register : null;
   }
 

@@ -1,66 +1,75 @@
 <div class="flex w-full flex-col gap-4">
-  <a routerLink="/cash-register/history" class="btn btn-ghost btn-sm self-start text-neutral">
+  <app-button variant="ghost" customClass="self-start text-neutral" (click)="goTo('/cash-register/history')">
     <ng-icon name="tablerArrowLeft" size="18" aria-hidden="true" />
     Historial
-  </a>
+  </app-button>
 
   @if (notFound()) {
     <div class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-12 text-center">
       <p class="font-medium">La caja no existe</p>
       <small class="text-neutral">Puede que el enlace esté incompleto.</small>
-      <a routerLink="/cash-register/history" class="btn btn-primary btn-sm">Ver historial</a>
+      <app-button (click)="goTo('/cash-register/history')">Ver historial</app-button>
     </div>
   } @else if (errorMessage(); as message) {
     <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">
       <p class="text-neutral">{{ message }}</p>
-      <button type="button" class="btn btn-primary btn-sm" (click)="registerResource.reload()">Reintentar</button>
+      <app-button variant="outline" (click)="registerResource.reload()">Reintentar</app-button>
     </div>
   } @else if (registerResource.hasValue()) {
     @let register = registerResource.value();
-    <header class="flex flex-col gap-3 rounded-box bg-base-100 p-4 sm:p-6">
-      <div class="flex flex-wrap items-center gap-3">
-        <h1 class="text-title font-semibold">Caja</h1>
-        @if (register.status === 'OPEN') {
-          <span class="badge badge-soft badge-success">Abierta</span>
-        } @else {
-          <span class="badge badge-soft badge-neutral">Cerrada</span>
-        }
+    @let isOpen = register.status === 'OPEN';
+    <header class="flex flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex min-w-0 items-start gap-4">
+        <span
+          class="hidden size-12 shrink-0 place-items-center rounded-field sm:grid"
+          [class]="isOpen ? 'bg-success-soft text-success' : 'bg-base-200 text-neutral'"
+          aria-hidden="true"
+        >
+          <ng-icon [name]="isOpen ? 'tablerLockOpen' : 'tablerLock'" size="24" />
+        </span>
+        <div class="flex min-w-0 flex-col gap-3">
+          <div class="flex flex-col gap-1">
+            <cash-status-pill [open]="isOpen" [label]="isOpen ? 'Abierta' : 'Cerrada'" />
+            <h1 class="text-title font-semibold">Caja del {{ register.openedAt | date: 'd MMM y' }}</h1>
+          </div>
+
+          <dl class="flex flex-col gap-2 sm:flex-row sm:gap-8">
+            <div class="flex min-w-0 flex-col">
+              <dt class="text-caption text-neutral">Apertura</dt>
+              <dd class="tabular-nums">
+                {{ register.openedAt | date: 'd MMM · h:mm a' }}
+                @if (register.openedByName) {
+                  <span class="text-neutral">· {{ register.openedByName }}</span>
+                }
+              </dd>
+            </div>
+            <div class="flex min-w-0 flex-col">
+              <dt class="text-caption text-neutral">Cierre</dt>
+              <dd class="tabular-nums">
+                @if (register.closedAt) {
+                  {{ register.closedAt | date: 'd MMM · h:mm a' }}
+                  @if (register.closedByName) {
+                    <span class="text-neutral">· {{ register.closedByName }}</span>
+                  }
+                } @else {
+                  <span class="text-neutral">Sigue abierta</span>
+                }
+              </dd>
+            </div>
+          </dl>
+        </div>
       </div>
 
-      <dl class="grid gap-x-8 gap-y-2 sm:grid-cols-2">
-        <div class="flex flex-col">
-          <dt class="text-caption text-neutral">Apertura</dt>
-          <dd class="tabular-nums">
-            {{ register.openedAt | date: 'd MMM y · h:mm a' }}
-            @if (register.openedByName) {
-              <span class="text-neutral">· {{ register.openedByName }}</span>
-            }
-          </dd>
-        </div>
-        @if (register.closedAt) {
-          <div class="flex flex-col">
-            <dt class="text-caption text-neutral">Cierre</dt>
-            <dd class="tabular-nums">
-              {{ register.closedAt | date: 'd MMM y · h:mm a' }}
-              @if (register.closedByName) {
-                <span class="text-neutral">· {{ register.closedByName }}</span>
-              }
-            </dd>
-          </div>
-        }
-      </dl>
-
-      <div class="flex flex-wrap gap-2">
-        <a
-          routerLink="/movements"
-          [queryParams]="{ group: 'sales', cashRegisterId: register.id }"
-          class="btn btn-sm border-0 bg-base-200"
-        >
+      <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:shrink-0">
+        <app-button variant="outline" customClass="w-full sm:w-auto" (click)="openSales(register.id)">
           <ng-icon name="tablerReceipt" size="18" aria-hidden="true" />
           Ver ventas
-        </a>
-        @if (register.status === 'OPEN') {
-          <a routerLink="/cash-register" class="btn btn-primary btn-sm">Ir a la caja</a>
+        </app-button>
+        @if (isOpen) {
+          <app-button customClass="w-full sm:w-auto" (click)="goTo('/cash-register')">
+            <ng-icon name="tablerCashRegister" size="18" aria-hidden="true" />
+            Ir a la caja
+          </app-button>
         }
       </div>
     </header>

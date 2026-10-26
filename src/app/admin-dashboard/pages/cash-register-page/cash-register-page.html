@@ -1,33 +1,49 @@
-<main class="w-full space-y-6">
-  @if (current.error()) {
-    <div class="w-full rounded-box bg-base-100 py-20 flex flex-col items-center justify-center gap-4 text-center" role="alert">
-      <ng-icon name="tablerAlertCircle" size="32" class="text-neutral" aria-hidden="true" />
-      <h2 class="text-lg font-semibold text-base-content">No se pudo consultar la caja</h2>
-      <p class="text-sm text-neutral max-w-sm">Revisa tu conexión e inténtalo nuevamente.</p>
-      <app-button variant="outline" size="sm" customClass="mt-2" (click)="current.reload()">Reintentar</app-button>
-    </div>
-  }
-  <!-- El spinner solo se muestra mientras no hay valor: al recargar se conserva el contenido. -->
-  @else if (!current.hasValue()) {
-    <div class="w-full py-20 flex flex-col items-center justify-center gap-4 text-neutral" role="status">
-      <span class="loading loading-spinner loading-md"></span>
-      <p class="text-sm font-medium">Consultando estado...</p>
-    </div>
-  }
-  @else if (current.value(); as register) {
-    <cash-register-session
-      class="block w-full"
-      [register]="register"
-      [busy]="busy()"
-      (movementRequested)="openMovement()"
-      (closeRequested)="openClose()"
-    />
-    <cash-register-movement-table class="block w-full" [registerId]="register.id" [refreshKey]="movementsRefresh()" />
-  }
-  @else {
-    <div class="max-w-4xl mx-auto">
-      <cash-register-opening class="block w-full" [busy]="opening()" (submitted)="openRegister($event)" />
-    </div>
+<main class="flex w-full flex-col gap-4">
+  @let currentRegister = register();
+
+  <!-- `undefined`: todavía no hay nada que mostrar. Con datos previos, un error no reemplaza la pantalla. -->
+  @if (currentRegister === undefined) {
+    @if (current.error()) {
+      <div class="flex w-full flex-col items-center justify-center gap-3 rounded-box bg-base-100 px-4 py-16 text-center" role="alert">
+        <ng-icon name="tablerAlertCircle" size="32" class="text-neutral" aria-hidden="true" />
+        <h2 class="text-subtitle font-semibold">No se pudo cargar la caja</h2>
+        <small class="text-neutral">Revisa tu conexión e inténtalo de nuevo.</small>
+        <app-button variant="outline" [loading]="current.isLoading()" (click)="current.reload()">Reintentar</app-button>
+      </div>
+    } @else {
+      <div class="flex w-full flex-col items-center justify-center gap-3 py-16 text-neutral" role="status">
+        <span class="loading loading-spinner loading-md"></span>
+        <small>Cargando la caja…</small>
+      </div>
+    }
+  } @else {
+    @if (current.error()) {
+      <div class="flex items-center justify-between gap-3 rounded-box bg-warning-soft px-4 py-2 text-warning" role="alert">
+        <small>No se pudo actualizar la caja.</small>
+        <app-button variant="ghost" [loading]="current.isLoading()" (click)="current.reload()">Reintentar</app-button>
+      </div>
+    }
+
+    @if (currentRegister) {
+      <cash-register-session
+        class="block w-full"
+        [register]="currentRegister"
+        [busy]="busy()"
+        [admin]="isAdmin()"
+        [movementsCount]="movementsCount()"
+        (movementRequested)="openMovement()"
+        (closeRequested)="openClose()"
+      />
+      <cash-register-movement-table
+        class="block w-full"
+        [registerId]="currentRegister.id"
+        [current]="true"
+        [refreshKey]="movementsRefresh()"
+        (totalChange)="movementsCount.set($event)"
+      />
+    } @else {
+      <cash-register-opening class="block w-full py-2 sm:py-6" [busy]="openingBusy()" [showHistory]="isAdmin()" (submitted)="openRegister($event)" />
+    }
   }
 </main>
 

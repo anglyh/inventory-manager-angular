@@ -1,10 +1,14 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, linkedSignal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { tablerCashRegister } from '@ng-icons/tabler-icons';
 import { CashRegisterService } from '@/features/cash-register/services/cash-register.service';
 import { CashRegisterList } from '@/features/cash-register/components/cash-register-list/cash-register-list';
-import type { CashRegisterStatus } from '@/features/cash-register/interfaces/cash-register.interface';
+import type { CashRegisterPage, CashRegisterStatus } from '@/features/cash-register/interfaces/cash-register.interface';
 import { resolveApiError } from '@/shared/utils/api-error';
+import { Button } from '@/shared/components/button/button';
+import { Pagination } from '@/shared/components/pagination/pagination';
 
 const PAGE_SIZE = 12;
 
@@ -16,7 +20,8 @@ const STATUS_TABS: { value: CashRegisterStatus | undefined; label: string }[] = 
 
 @Component({
   selector: 'app-cash-register-history-page',
-  imports: [RouterLink, CashRegisterList],
+  imports: [NgIcon, Button, Pagination, CashRegisterList],
+  viewProviders: [provideIcons({ tablerCashRegister })],
   templateUrl: './cash-register-history-page.html',
 })
 export class CashRegisterHistoryPage {
@@ -44,6 +49,15 @@ export class CashRegisterHistoryPage {
     stream: ({ params }) => this.cashRegisterService.getRegisters(params),
   });
 
+  /**
+   * Al cambiar de pestaña o página el resource vacía su valor mientras carga;
+   * se conserva el anterior (atenuado) para no mostrar el spinner en cada cambio.
+   */
+  readonly registers = linkedSignal<CashRegisterPage | undefined, CashRegisterPage | undefined>({
+    source: () => (this.registersResource.hasValue() ? this.registersResource.value() : undefined),
+    computation: (value, previous) => value ?? previous?.value,
+  });
+
   private resolvedError = computed(() => {
     const error = this.registersResource.error();
     return error ? resolveApiError(error, 'No se pudo cargar el historial.') : null;
@@ -61,10 +75,8 @@ export class CashRegisterHistoryPage {
     this.navigate({ status: status ?? null, page: null });
   }
 
-  goToPage(page: number) {
-    const totalPages = this.registersResource.value()?.meta.totalPages ?? 1;
-    if (page < 1 || page > totalPages) return;
-    this.navigate({ page: page === 1 ? null : page });
+  goToCurrent() {
+    void this.router.navigateByUrl('/cash-register');
   }
 
   private navigate(queryParams: Record<string, string | number | null>) {

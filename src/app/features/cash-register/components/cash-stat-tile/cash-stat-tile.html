@@ -1,0 +1,14 @@
+<div class="flex h-full min-w-0 flex-col gap-3 rounded-box bg-base-100 p-4">
+  <span class="grid size-10 shrink-0 place-items-center rounded-field" [class]="toneClass()" aria-hidden="true">
+    <ng-icon [name]="icon()" size="20" />
+  </span>
+  <div class="flex min-w-0 flex-col">
+    <small class="truncate text-neutral" [title]="label()">{{ label() }}</small>
+    <div class="truncate text-subtitle font-semibold tabular-nums">
+      <ng-content />
+    </div>
+    @if (hint(); as hint) {
+      <small class="truncate text-neutral" [title]="hint">{{ hint }}</small>
+    }
+  </div>
+</div>

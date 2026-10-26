@@ -1,8 +1,9 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, linkedSignal, type ResourceStatus } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
 import { environment } from '@environments/environment';
+import { AuthService } from '@/auth/services/auth.service';
 import type {
   CashMovementPage,
   CashRegister,
@@ -19,9 +20,34 @@ const baseUrl = `${environment.apiUrl}/cash-register`;
 @Injectable({ providedIn: 'root' })
 export class CashRegisterService {
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
 
+  /**
+   * Depende del usuario: al cerrar sesión queda vacío (idle) y al entrar otro usuario se consulta
+   * de nuevo, así un GUEST nunca ve el resumen que había cargado un ADMIN.
+   */
   currentCashRegisterResource = rxResource({
+    params: () => this.auth.user()?.id,
     stream: () => this.loadCurrent(),
+  });
+
+  /**
+   * Última caja conocida: si una recarga falla se conserva la anterior para no tapar la pantalla.
+   * `undefined` = todavía no se sabe; `null` = no hay caja abierta.
+   */
+  readonly currentCashRegister = linkedSignal<
+    { status: ResourceStatus; value: CashRegister | null | undefined },
+    CashRegister | null | undefined
+  >({
+    source: () => {
+      const resource = this.currentCashRegisterResource;
+      return { status: resource.status(), value: resource.hasValue() ? resource.value() : undefined };
+    },
+    // Solo un error o una recarga conservan lo anterior; sin sesión u otro usuario se descarta.
+    computation: (source, previous) =>
+      source.value !== undefined || (source.status !== 'error' && source.status !== 'reloading')
+        ? source.value
+        : previous?.value,
   });
 
   loadCurrent(): Observable<CashRegister | null> {
@@ -51,6 +77,11 @@ export class CashRegisterService {
     if (query.limit) params = params.set('limit', query.limit);
     if (query.status) params = params.set('status', query.status);
     return this.http.get<CashRegisterPage>(baseUrl, { params });
+  }
+
+  getCurrentMovements(page = 1, limit = 6): Observable<CashMovementPage> {
+    const params = new HttpParams().set('page', page).set('limit', limit);
+    return this.http.get<CashMovementPage>(`${baseUrl}/current/movements`, { params });
   }
 
   getMovements(id: string, page = 1, limit = 6): Observable<CashMovementPage> {

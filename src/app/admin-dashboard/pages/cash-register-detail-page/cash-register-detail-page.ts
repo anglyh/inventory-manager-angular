@@ -1,20 +1,22 @@
 import { Component, computed, effect, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerArrowLeft, tablerReceipt } from '@ng-icons/tabler-icons';
+import { tablerArrowLeft, tablerCashRegister, tablerLock, tablerLockOpen, tablerReceipt } from '@ng-icons/tabler-icons';
 import { CashRegisterService } from '@/features/cash-register/services/cash-register.service';
 import { CashRegisterSummary } from '@/features/cash-register/components/cash-register-summary/cash-register-summary';
+import { CashStatusPill } from '@/features/cash-register/components/cash-status-pill/cash-status-pill';
 import { extractApiError } from '@/api/extract-api-error';
 import { resolveApiError } from '@/shared/utils/api-error';
 import { CashRegisterMovementTable } from '@/features/cash-register/components/cash-register-movement-table/cash-register-movement-table';
+import { Button } from '@/shared/components/button/button';
 
 @Component({
   selector: 'app-cash-register-detail-page',
-  imports: [DatePipe, RouterLink, NgIcon, CashRegisterSummary, CashRegisterMovementTable],
-  viewProviders: [provideIcons({ tablerArrowLeft, tablerReceipt })],
+  imports: [DatePipe, NgIcon, Button, CashRegisterSummary, CashRegisterMovementTable, CashStatusPill],
+  viewProviders: [provideIcons({ tablerArrowLeft, tablerCashRegister, tablerLock, tablerLockOpen, tablerReceipt })],
   templateUrl: './cash-register-detail-page.html',
 })
 export class CashRegisterDetailPage {
@@ -50,4 +52,13 @@ export class CashRegisterDetailPage {
     const redirect = this.resolvedError()?.redirect;
     if (redirect) void this.router.navigate([redirect]);
   });
+
+  goTo(url: string) {
+    void this.router.navigateByUrl(url);
+  }
+
+  /** Las ventas de esta caja en el historial de movimientos. */
+  openSales(id: string) {
+    void this.router.navigate(['/movements'], { queryParams: { group: 'sales', cashRegisterId: id } });
+  }
 }

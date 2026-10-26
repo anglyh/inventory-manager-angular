@@ -1,54 +1,46 @@
 import { Component, computed, input } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { tablerCheck, tablerNotes, tablerTrendingDown, tablerTrendingUp } from '@ng-icons/tabler-icons';
 import type { CashRegister } from '../../interfaces/cash-register.interface';
-import { absoluteAmount, DIFFERENCE_CLASS, differenceSign, differenceTone } from '../../shared/cash-register-format';
+import { absoluteAmount, DIFFERENCE_VIEW, differenceSign, differenceTone } from '../../shared/cash-register-format';
+import { cashBreakdown } from '../../utils/cash-breakdown';
+import { CashAmount } from '../cash-amount/cash-amount';
+import { CashBreakdownList } from '../cash-breakdown-list/cash-breakdown-list';
+import { CashSalesTiles } from '../cash-sales-tiles/cash-sales-tiles';
 
-interface SummaryRow {
-  label: string;
-  value: string;
-  sign?: '+' | '−';
-}
-
+/** Detalle de una caja: arqueo (contado vs esperado), desglose del efectivo, ventas y observaciones. */
 @Component({
   selector: 'cash-register-summary',
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, NgIcon, CashAmount, CashBreakdownList, CashSalesTiles],
+  viewProviders: [provideIcons({ tablerCheck, tablerNotes, tablerTrendingDown, tablerTrendingUp })],
+  host: { class: 'block' },
   templateUrl: './cash-register-summary.html',
 })
 export class CashRegisterSummary {
   register = input.required<CashRegister>();
 
-  readonly differenceClass = DIFFERENCE_CLASS;
+  readonly differenceView = DIFFERENCE_VIEW;
   readonly differenceTone = differenceTone;
   readonly differenceSign = differenceSign;
   readonly absoluteAmount = absoluteAmount;
 
-  /** Solo se listan los campos presentes: cierres antiguos no tienen resumen y GUEST no recibe el esperado. */
-  readonly salesRows = computed<SummaryRow[]>(() => {
-    const summary = this.register().summary;
-    if (!summary) return [];
-    return [
-      { label: 'Ventas en efectivo', value: summary.cashSales },
-      { label: 'Ventas por Yape', value: summary.yapeSales },
-      { label: `Total de ventas · ${summary.salesCount}`, value: summary.totalSales },
-    ];
-  });
-
-  readonly cashRows = computed<SummaryRow[]>(() => {
+  /** El esperado en vivo de una caja abierta se ve en la pantalla de Caja; aquí solo el congelado al cierre. */
+  readonly cashRows = computed(() => {
     const register = this.register();
-    const summary = register.summary;
-    const rows: SummaryRow[] = [{ label: 'Fondo inicial', value: register.openingAmount }];
-    if (summary) {
-      rows.push(
-        { label: 'Ventas en efectivo', value: summary.cashSales, sign: '+' },
-        { label: 'Aportes', value: summary.cashIn, sign: '+' },
-        { label: 'Retiros', value: summary.cashOut, sign: '−' },
-      );
-      // El esperado en vivo de una caja abierta queda fuera de alcance: solo se muestra el congelado al cierre.
-      if (register.status === 'CLOSED' && summary.expectedCash !== undefined) rows.push({ label: 'Esperado', value: summary.expectedCash });
-    }
-    if (register.closingAmount !== null) rows.push({ label: 'Contado', value: register.closingAmount });
-    return rows;
+    // Sin la fila "Esperado": el arqueo de arriba ya lo muestra junto a lo contado.
+    return cashBreakdown(register, { includeExpected: false });
   });
 
+  readonly closingAmount = computed(() => this.register().closingAmount);
+  readonly expected = computed(() =>
+    this.register().status === 'CLOSED' ? (this.register().summary?.expectedCash ?? null) : null,
+  );
   readonly difference = computed(() => this.register().summary?.difference ?? null);
+
+  /** La columna derecha (ventas y observaciones) puede quedar vacía en cierres antiguos. */
+  readonly hasAside = computed(() => {
+    const register = this.register();
+    return !!register.summary || !!register.notes || !!register.closingNotes;
+  });
 }
