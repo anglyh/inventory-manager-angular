@@ -16,29 +16,29 @@ export class FormUtils {
           return String(errors['server']);
 
         case 'required':
-          return 'Este campo es requerido';
+          return 'Completa este campo';
 
         case 'minlength':
-          return `Mínimo de ${errors['minlength'].requiredLength} caracteres.`;
+          return `Debe tener al menos ${errors['minlength'].requiredLength} caracteres.`;
 
         case 'min':
-          return `Valor mínimo de ${errors['min'].min}`;
+          return `Debe ser ${errors['min'].min} o más`;
 
         case 'email':
-          return `El valor ingresado no es un correo electrónico`;
+          return `Escribe un correo válido`;
 
         case 'emailTaken':
-          return `El correo electrónico ya está siendo usado por otro usuario`;
+          return `Ese correo ya lo usa otra cuenta`;
 
         case 'pattern':
-          return `El formato ingresado no es válido`;
+          return `Revisa el formato`;
 
         case 'notEqual':
           return `Las contraseñas no coinciden`;
 
         default:
           console.log(`Error de validacion no controlado ${key}`)
-          return `Error de validación no controlado`
+          return `Revisa este campo`
       }
     }
 
