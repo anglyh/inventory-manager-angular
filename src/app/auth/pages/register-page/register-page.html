@@ -1,20 +1,20 @@
-<div class="min-h-screen flex bg-gray-50">
+<div class="min-h-screen flex bg-base-200">
   <!-- Left Column - Register Form -->
   <div class="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-8 lg:px-12">
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="max-w-md mx-auto w-full">
       <!-- Logo/Header -->
       <div class="mb-8">
-        <h1 class="text-title font-bold text-gray-900">Bienvenido</h1>
-        <p class="text-gray-600 mt-2">Crea una cuenta nueva</p>
+        <h1 class="text-title font-semibold text-base-content">Bienvenido</h1>
+        <p class="text-neutral mt-2">Crea una cuenta nueva</p>
       </div>
 
       <!-- Name Input -->
       <div class="mb-6">
-        <div class="flex items-center border border-gray-300 rounded-full px-4 py-3 bg-white">
-          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="input w-full">
+          <svg class="size-5 shrink-0 text-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.732 6.879 1.804M12 7a4 4 0 100 8 4 4 0 000-8z" />
           </svg>
-          <input formControlName="name" type="text" placeholder="Nombre completo" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
+          <input formControlName="name" type="text" placeholder="Nombre completo" class="min-w-0 flex-1">
         </div>
         @if (formUtils.isInvalidField(registerForm, 'name')) {
           <app-form-error-label [control]="registerForm.get('name')!" />
@@ -23,11 +23,11 @@
 
       <!-- Email Input -->
       <div class="mb-6">
-        <div class="flex items-center border border-gray-300 rounded-full px-4 py-3 bg-white">
-          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="input w-full">
+          <svg class="size-5 shrink-0 text-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
           </svg>
-          <input formControlName="email" type="email" placeholder="Correo electrónico" class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500">
+          <input formControlName="email" type="email" placeholder="Correo electrónico" class="min-w-0 flex-1">
         </div>
         @if (formUtils.isInvalidField(registerForm, 'email')) {
           <app-form-error-label [control]="registerForm.get('email')!" />
@@ -36,19 +36,19 @@
 
       <!-- Password Input -->
       <div class="mb-6">
-        <div class="flex items-center border border-gray-300 rounded-full px-4 py-3 bg-white overflow-hidden">
-          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="input w-full">
+          <svg class="size-5 shrink-0 text-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
           <input
             formControlName="password"
             [type]="showPassword() ? 'text' : 'password'"
             placeholder="Contraseña"
-            class="flex-1 min-w-0 ml-3 outline-none text-gray-700 placeholder-gray-500"
+            class="min-w-0 flex-1"
           >
           <button
             type="button"
-            class="ml-2 shrink-0 flex cursor-pointer text-gray-400 hover:text-gray-600 active:text-gray-700 select-none p-1"
+            class="flex shrink-0 cursor-pointer select-none p-1 text-neutral hover:text-base-content"
             (click)="showPassword.set(!showPassword())"
             aria-label="Mostrar u ocultar contraseña"
           >
@@ -66,19 +66,19 @@
 
       <!-- Confirm Password Input -->
       <div class="mb-8">
-        <div class="flex items-center border border-gray-300 rounded-full px-4 py-3 bg-white overflow-hidden">
-          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="input w-full">
+          <svg class="size-5 shrink-0 text-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
           <input
             formControlName="confirmPassword"
             [type]="showConfirmPassword() ? 'text' : 'password'"
             placeholder="Confirmar contraseña"
-            class="flex-1 min-w-0 ml-3 outline-none text-gray-700 placeholder-gray-500"
+            class="min-w-0 flex-1"
           >
           <button
             type="button"
-            class="ml-2 shrink-0 flex cursor-pointer text-gray-400 hover:text-gray-600 active:text-gray-700 select-none p-1"
+            class="flex shrink-0 cursor-pointer select-none p-1 text-neutral hover:text-base-content"
             (click)="showConfirmPassword.set(!showConfirmPassword())"
             aria-label="Mostrar u ocultar confirmación de contraseña"
           >
@@ -93,12 +93,12 @@
         @if (formUtils.isInvalidField(registerForm, 'confirmPassword')) {
           <app-form-error-label [control]="registerForm.get('confirmPassword')!" />
         } @else if (registerForm.hasError('notEqual') && registerForm.get('confirmPassword')?.touched) {
-          <span class="text-red-500 text-caption ml-3 mt-1">Las contraseñas no coinciden</span>
+          <span class="text-error text-caption">Las contraseñas no coinciden</span>
         }
       </div>
 
       @if (hasError()) {
-        <div class="mb-4 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-caption font-medium">
+        <div class="mb-4 rounded-field bg-error-soft px-4 py-3 text-caption font-medium text-error">
           {{ errorMessage() }}
         </div>
       }
@@ -106,7 +106,7 @@
       <!-- Register Button -->
       <app-button
         type="submit"
-        customClass="w-full font-semibold rounded-full transition 
+        customClass="w-full font-semibold transition 
                     disabled:cursor-not-allowed 
                     disabled:opacity-100 
                     disabled:brightness-90"
@@ -119,15 +119,15 @@
       </app-button>
 
       <!-- Login Link -->
-      <p class="text-center mt-6 text-gray-600 text-caption">
-        ¿Ya tienes una cuenta? <a routerLink="/auth/login" class="text-primary hover:text-sky-800 font-semibold">Iniciar sesión</a>
+      <p class="text-center mt-6 text-neutral text-caption">
+        ¿Ya tienes una cuenta? <a routerLink="/auth/login" class="text-primary font-semibold underline-offset-2 hover:underline">Iniciar sesión</a>
       </p>
     </form>
   </div>
 
   <!-- Right Column - Image/Content (Hidden on mobile) -->
   <div class="hidden lg:flex w-1/2 bg-primary items-center justify-center">
-    <div class="text-center text-white px-8">
+    <div class="text-center text-primary-content px-8">
       <!-- <h2 class="text-title font-bold mb-4">IA revolucionando la forma en que creamos, renderizamos y experimentamos contenido.</h2>
       <p class="text-subtitle opacity-90">Crea briefs de diseño con comandos de voz de la IA para generar experiencias increíbles que se ajusten a tus necesidades.</p> -->
     </div>
