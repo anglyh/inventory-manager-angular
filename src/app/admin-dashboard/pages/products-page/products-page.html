@@ -11,6 +11,23 @@
           [selected]="selectedCategoryIds()"
           (selectedChange)="onCategoryChange($event)"
         />
+        <!-- Por reponer: mismo aspecto que el filtro de categorías; activo, queda como chip que se quita con ✕. -->
+        @if (lowStockOnly()) {
+          <button
+            type="button"
+            class="inline-flex min-h-10 max-w-full cursor-pointer items-center gap-1 rounded-field bg-base-200 px-3"
+            aria-label="Quitar filtro Por reponer"
+            (click)="setLowStockOnly(false)"
+          >
+            <span class="truncate">Por reponer</span>
+            <ng-icon name="tablerX" size="16" class="shrink-0 text-neutral" aria-hidden="true" />
+          </button>
+        } @else {
+          <app-button variant="ghost" customClass="bg-base-200 font-normal" (click)="setLowStockOnly(true)">
+            <ng-icon name="tablerAlertTriangle" size="18" aria-hidden="true" />
+            Por reponer
+          </app-button>
+        }
       </div>
 
       @if (isAdmin()) {

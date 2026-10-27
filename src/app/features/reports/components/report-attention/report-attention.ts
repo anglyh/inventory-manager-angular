@@ -63,6 +63,7 @@ export function attentionItems(
       text: `${plural(lowStock, 'producto', 'productos')} por reponer`,
       hint: 'Stock en o bajo el mínimo',
       link: '/products',
+      queryParams: { stock: 'low' },
       tone: 'warning',
       details,
       more: lowStock - details.length,

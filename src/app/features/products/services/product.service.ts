@@ -13,9 +13,12 @@ const baseUrl = environment.apiUrl + '/product'
 export class ProductService {
   private http = inject(HttpClient)
 
-  /** `categoryId`: ids separados por coma; "none" pide los productos sin categoría. */
-  getProducts(options: Options & { categoryId?: string }): Observable<PaginatedResponse<ProductWithStock>> {
-    const { page = 1, limit = 12, searchTerm, categoryId } = options;
+  /**
+   * `categoryId`: ids separados por coma; "none" pide los productos sin categoría.
+   * `stock: 'low'`: solo los que están en o bajo el mínimo (por reponer).
+   */
+  getProducts(options: Options & { categoryId?: string; stock?: 'low' }): Observable<PaginatedResponse<ProductWithStock>> {
+    const { page = 1, limit = 12, searchTerm, categoryId, stock } = options;
 
     let params = new HttpParams()
       .set('page', page)
@@ -27,6 +30,10 @@ export class ProductService {
 
     if (categoryId) {
       params = params.set('categoryId', categoryId)
+    }
+
+    if (stock) {
+      params = params.set('stock', stock)
     }
 
     return this.http.get<PaginatedResponse<ProductWithStock>>(`${baseUrl}`, {

@@ -1369,6 +1369,8 @@ export interface paths {
                     categoryId?: string;
                     /** @description Cantidad de productos a devolver por página */
                     limit?: number;
+                    /** @description "low": solo productos con stock en o bajo el mínimo (por reponer), los más urgentes primero. */
+                    stock?: "low";
                 };
                 header?: never;
                 path?: never;

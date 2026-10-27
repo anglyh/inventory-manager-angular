@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIcon, provideIcons } from "@ng-icons/core";
-import { tablerChevronDown, tablerPlus, tablerScan } from '@ng-icons/tabler-icons';
+import { tablerAlertTriangle, tablerChevronDown, tablerPlus, tablerScan, tablerX } from '@ng-icons/tabler-icons';
 import { AuthService } from '@/auth/services/auth.service';
 
 import { CategoryMultiselectFilter, NO_CATEGORY } from '@/features/categories/components/category-multiselect-filter/category-multiselect-filter';
@@ -27,7 +27,7 @@ import { PRODUCTS_TABS } from '@/admin-dashboard/module-tabs';
 @Component({
   selector: 'app-products-page',
   imports: [ProductTable, Pagination, ProductForm, Modal, SearchProduct, NgIcon, CategoryMultiselectFilter, ModuleTabs, Button, BarcodeScanner],
-  viewProviders: [provideIcons({ tablerPlus, tablerChevronDown, tablerScan })],
+  viewProviders: [provideIcons({ tablerAlertTriangle, tablerPlus, tablerChevronDown, tablerScan, tablerX })],
   templateUrl: './products-page.html',
 })
 export class ProductsPage {
@@ -59,6 +59,14 @@ export class ProductsPage {
       map(params => params.get('categoryId') ?? '')
     ),
     { initialValue: '' }
+  )
+
+  /** Query param `stock=low`: solo productos por reponer (stock en o bajo el mínimo). */
+  lowStockOnly = toSignal(
+    this.activatedRoute.queryParamMap.pipe(
+      map(params => params.get('stock') === 'low')
+    ),
+    { initialValue: this.activatedRoute.snapshot.queryParamMap.get('stock') === 'low' }
   )
 
   /** Ids válidos del URL: lo que no es UUID ni "none" se ignora (el API lo rechazaría). */
@@ -146,19 +154,29 @@ export class ProductsPage {
     });
   }
 
+  setLowStockOnly(lowStock: boolean) {
+    this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: { stock: lowStock ? 'low' : null, page: 1 },
+      queryParamsHandling: 'merge',
+    });
+  }
+
   productResource = rxResource({
     params: () => ({
       page: this.paginationService.currentPage(),
       limit: this.productsPerPage(),
       searchTerm: this.searchTerm(),
-      categoryId: this.selectedCategoryIds().join(',')
+      categoryId: this.selectedCategoryIds().join(','),
+      lowStock: this.lowStockOnly(),
     }),
     stream: ({ params }) => {
       return this.productService.getProducts({
         page: params.page,
         limit: params.limit,
         searchTerm: params.searchTerm,
-        categoryId: params.categoryId || undefined
+        categoryId: params.categoryId || undefined,
+        stock: params.lowStock ? 'low' : undefined,
       })
     }
   })
