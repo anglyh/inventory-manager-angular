@@ -21,8 +21,8 @@
     <span class="text-caption text-neutral">Contraseña</span>
     <span class="input w-full">
       <input [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" />
-      <button type="button" class="btn btn-ghost btn-xs btn-circle" (click)="showPassword.set(!showPassword())" aria-label="Mostrar u ocultar contraseña">
-        <ng-icon [name]="showPassword() ? 'tablerEyeOff' : 'tablerEye'" size="18" />
+      <button type="button" class="flex shrink-0 cursor-pointer p-1 text-neutral hover:text-base-content" (click)="showPassword.set(!showPassword())" aria-label="Mostrar u ocultar contraseña">
+        <ng-icon [name]="showPassword() ? 'tablerEyeOff' : 'tablerEye'" size="18" aria-hidden="true" />
       </button>
     </span>
     <small class="text-neutral">Mínimo 12 caracteres y una mayúscula.</small>
@@ -32,13 +32,10 @@
   </label>
 
   @if (error()) {
-    <p class="text-sm text-error" role="alert">{{ error() }}</p>
+    <p class="text-caption text-error" role="alert">{{ error() }}</p>
   }
 
-  <button type="submit" class="btn btn-primary" [disabled]="saving()">
-    @if (saving()) {
-      <span class="loading loading-spinner loading-sm"></span>
-    }
+  <app-button type="submit" [loading]="saving()" [disabled]="saving()">
     Crear empleado
-  </button>
+  </app-button>
 </form>

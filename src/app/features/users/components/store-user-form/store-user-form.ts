@@ -5,10 +5,11 @@ import { tablerEye, tablerEyeOff } from '@ng-icons/tabler-icons';
 import { FormUtils } from '@/utils/form-utils';
 import { FormErrorLabel } from '@/shared/components/form-error-label/form-error-label';
 import type { CreateStoreUserRequest } from '../../interfaces/store-user.interface';
+import { Button } from '@/shared/components/button/button';
 
 @Component({
   selector: 'store-user-form',
-  imports: [ReactiveFormsModule, NgIcon, FormErrorLabel],
+  imports: [ReactiveFormsModule, NgIcon, FormErrorLabel, Button],
   viewProviders: [provideIcons({ tablerEye, tablerEyeOff })],
   templateUrl: './store-user-form.html',
 })
