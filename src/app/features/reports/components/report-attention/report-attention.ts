@@ -12,6 +12,10 @@ export interface AttentionItem {
   hint: string;
   link: string;
   tone: 'error' | 'warning';
+  /** Detalle debajo del título (p. ej. qué productos reponer). */
+  details?: { id: string; label: string; value: string }[];
+  /** Cuántos más hay fuera del detalle. */
+  more?: number;
 }
 
 /** Solo lo que pide acción: faltante de caja y productos por reponer. */
@@ -30,6 +34,11 @@ export function attentionItems(total: ReportTotal, inventory: InventorySnapshot)
   }
   const lowStock = inventory.lowStockCount;
   if (lowStock > 0) {
+    const details = inventory.lowStockProducts.map(product => ({
+      id: product.productId,
+      label: product.productName,
+      value: `quedan ${product.stock} · mín. ${product.minStock}`,
+    }));
     items.push({
       id: 'stock',
       icon: 'tablerPackage',
@@ -37,6 +46,8 @@ export function attentionItems(total: ReportTotal, inventory: InventorySnapshot)
       hint: 'Stock en o bajo el mínimo',
       link: '/products',
       tone: 'warning',
+      details,
+      more: lowStock - details.length,
     });
   }
   return items;

@@ -18,6 +18,19 @@
             <span class="min-w-0 flex-1 truncate tabular-nums">{{ item.text }}</span>
             <ng-icon name="tablerChevronRight" size="18" class="shrink-0 text-neutral" aria-hidden="true" />
           </a>
+          @if (item.details?.length) {
+            <ul class="mt-1 flex flex-col px-3">
+              @for (detail of item.details; track detail.id) {
+                <li class="flex items-baseline justify-between gap-3 border-b border-base-200 py-1.5 last:border-0">
+                  <span class="min-w-0 truncate">{{ detail.label }}</span>
+                  <small class="shrink-0 tabular-nums text-neutral">{{ detail.value }}</small>
+                </li>
+              }
+              @if (item.more) {
+                <li class="pt-1.5"><small class="text-neutral">y {{ item.more }} más</small></li>
+              }
+            </ul>
+          }
         </li>
       }
     </ul>
