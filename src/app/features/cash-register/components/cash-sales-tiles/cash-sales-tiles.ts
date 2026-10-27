@@ -5,7 +5,7 @@ import { CashAmount } from '../cash-amount/cash-amount';
 import { CashStatTile } from '../cash-stat-tile/cash-stat-tile';
 
 /**
- * Ventas del turno (solo ADMIN). Las ventas en efectivo no van acá: ya están en el detalle del efectivo.
+ * Ventas del turno (solo ADMIN: GUEST no recibe importes, por eso el respaldo en 0). Las ventas en efectivo no van acá: ya están en el detalle del efectivo.
  * Las columnas las decide quien lo usa: por defecto una columna, p. ej. `class="sm:grid-cols-3"` para una fila.
  */
 @Component({
@@ -23,5 +23,5 @@ export class CashSalesTiles {
   });
 
   /** Cobros de estadías: efectivo + Yape. */
-  readonly stays = computed(() => Number(this.summary().cashStays) + Number(this.summary().yapeStays));
+  readonly stays = computed(() => Number(this.summary().cashStays ?? 0) + Number(this.summary().yapeStays ?? 0));
 }

@@ -2926,34 +2926,52 @@ export interface components {
             /** @enum {string} */
             status: "OPEN" | "CLOSED";
             summary: {
-                /** @example 20.00 */
-                cashIn: string;
-                /** @example 20.00 */
-                cashOut: string;
-                /** @example 20.00 */
-                cashSales: string;
                 /**
-                 * @description Cobros de estadías en efectivo; forman parte del efectivo esperado.
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
                  */
-                cashStays: string;
-                /** @example 20.00 */
-                difference: string | null;
+                cashIn?: string;
                 /**
-                 * @description Solo se envía a ADMIN; se omite por completo para GUEST.
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                cashOut?: string;
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                cashSales?: string;
+                /**
+                 * @description Cobros de estadías en efectivo; forman parte del efectivo esperado. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                cashStays?: string;
+                /**
+                 * @description Null mientras la caja está abierta. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                difference?: string | null;
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
                  */
                 expectedCash?: string;
                 salesCount: number;
-                /** @example 20.00 */
-                totalSales: string;
-                /** @example 20.00 */
-                yapeSales: string;
                 /**
-                 * @description Cobros de estadías por Yape.
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
                  */
-                yapeStays: string;
+                totalSales?: string;
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                yapeSales?: string;
+                /**
+                 * @description Cobros de estadías por Yape. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                yapeStays?: string;
             } | null;
         } | null;
         CashMovementPage: {
@@ -3022,34 +3040,52 @@ export interface components {
             /** @enum {string} */
             status: "OPEN" | "CLOSED";
             summary: {
-                /** @example 20.00 */
-                cashIn: string;
-                /** @example 20.00 */
-                cashOut: string;
-                /** @example 20.00 */
-                cashSales: string;
                 /**
-                 * @description Cobros de estadías en efectivo; forman parte del efectivo esperado.
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
                  */
-                cashStays: string;
-                /** @example 20.00 */
-                difference: string | null;
+                cashIn?: string;
                 /**
-                 * @description Solo se envía a ADMIN; se omite por completo para GUEST.
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                cashOut?: string;
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                cashSales?: string;
+                /**
+                 * @description Cobros de estadías en efectivo; forman parte del efectivo esperado. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                cashStays?: string;
+                /**
+                 * @description Null mientras la caja está abierta. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                difference?: string | null;
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
                  */
                 expectedCash?: string;
                 salesCount: number;
-                /** @example 20.00 */
-                totalSales: string;
-                /** @example 20.00 */
-                yapeSales: string;
                 /**
-                 * @description Cobros de estadías por Yape.
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
                  */
-                yapeStays: string;
+                totalSales?: string;
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                yapeSales?: string;
+                /**
+                 * @description Cobros de estadías por Yape. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                yapeStays?: string;
             } | null;
         };
         CreateCashMovement: {

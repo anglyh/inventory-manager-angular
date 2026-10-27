@@ -49,7 +49,7 @@ export class CashRegisterSession {
   busy = input(false);
   /**
    * ADMIN ve el efectivo, las ventas y el historial. El empleado hace el cierre ciego:
-   * no ve ningún monto de la caja, aunque el backend todavía le envíe los componentes.
+   * no ve ningún monto de la caja (el backend solo le envía la cantidad de ventas).
    */
   admin = input(false);
   /** Total de movimientos de la caja (lo informa la lista); `null` mientras carga. */

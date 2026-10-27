@@ -36,10 +36,10 @@ describe('cashBreakdown', () => {
     expect(signedCents(rows)).toBe(Math.round(Number(summary.expectedCash) * 100));
   });
 
-  it('sin esperado (GUEST) o sin resumen no agrega filas que no vinieron', () => {
-    const { expectedCash, ...guestSummary } = summary;
-
-    expect(cashBreakdown({ openingAmount: '100.00', summary: guestSummary }).some(row => row.total)).toBe(false);
+  it('con el resumen ciego (GUEST, solo salesCount) o sin resumen no agrega filas que no vinieron', () => {
+    expect(cashBreakdown({ openingAmount: '100.00', summary: { salesCount: 3 } }).map(row => row.label)).toEqual([
+      'Fondo inicial',
+    ]);
     expect(cashBreakdown({ openingAmount: '100.00', summary: null }).map(row => row.label)).toEqual(['Fondo inicial']);
   });
 });
