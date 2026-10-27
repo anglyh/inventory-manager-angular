@@ -56,7 +56,7 @@
     [class.drop-up]="dropUp()"
     [ngStyle]="dropdownStyle()"
   >
-    <ul [id]="controlId() + '-options'" role="listbox" class="inner-list rounded-box bg-base-100 shadow-xl">
+    <ul [id]="controlId() + '-options'" role="listbox" class="inner-list rounded-box bg-base-100 shadow-lg">
       @for (option of filteredOptions(); track option.id; let i = $index) {
         <li
           [id]="optionId(i)"

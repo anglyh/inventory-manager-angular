@@ -33,7 +33,7 @@
     } @else if (loadError()) {
       <div role="alert" class="flex flex-col items-center gap-3 px-4 py-12 text-center">
         <p class="text-neutral">{{ loadError() }}</p>
-        <button type="button" class="btn btn-primary btn-sm" (click)="retry.emit()">Reintentar</button>
+        <app-button (click)="retry.emit()">Reintentar</app-button>
       </div>
     } @else {
       <ul class="flex flex-col">
@@ -41,18 +41,18 @@
           <li class="flex items-center justify-between gap-2 rounded-field px-3 py-2 transition-colors hover:bg-base-200/60">
             <span class="truncate font-medium">{{ item.name }}</span>
             <div class="flex shrink-0 gap-1">
-              <button
-                type="button"
-                class="btn btn-ghost btn-square btn-sm text-neutral"
-                [attr.aria-label]="'Editar ' + item.name"
+              <app-button
+                variant="ghost"
+                customClass="btn-circle text-neutral"
+                [ariaLabel]="'Editar ' + item.name"
                 (click)="openEdit(item)"
               >
                 <ng-icon name="tablerPencil" size="18" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                class="btn btn-ghost btn-square btn-sm text-neutral hover:bg-error-soft hover:text-error"
-                [attr.aria-label]="'Eliminar ' + item.name"
+              </app-button>
+              <app-button
+                variant="ghost"
+                customClass="btn-circle text-neutral hover:bg-error-soft hover:text-error"
+                [ariaLabel]="'Eliminar ' + item.name"
                 [disabled]="deletingId() === item.id"
                 (click)="confirmRemove(item)"
               >
@@ -61,7 +61,7 @@
                 } @else {
                   <ng-icon name="tablerTrash" size="18" aria-hidden="true" />
                 }
-              </button>
+              </app-button>
             </div>
           </li>
         } @empty {

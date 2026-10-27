@@ -2,7 +2,7 @@
 @if (total > 1) {
   <nav class="flex items-center gap-1" aria-label="Paginación">
     <a
-      class="btn btn-circle btn-ghost btn-sm"
+      class="btn btn-circle btn-ghost"
       aria-label="Página anterior"
       [class.btn-disabled]="activePage() <= 1"
       [routerLink]="[]"
@@ -14,10 +14,10 @@
 
     @for (item of getPagesList(); track $index) {
       @if (item === '...') {
-        <span class="grid size-8 place-items-center text-neutral" aria-hidden="true">…</span>
+        <span class="grid size-10 place-items-center text-neutral" aria-hidden="true">…</span>
       } @else {
         <a
-          class="btn btn-sm min-w-8 rounded-field border-0 px-2 tabular-nums shadow-none"
+          class="btn min-w-10 rounded-field border-0 px-2 tabular-nums shadow-none"
           [class]="item === activePage() ? 'btn-primary' : 'font-normal [--btn-color:var(--color-base-100)]'"
           [attr.aria-current]="item === activePage() ? 'page' : null"
           [routerLink]="[]"
@@ -30,7 +30,7 @@
     }
 
     <a
-      class="btn btn-circle btn-ghost btn-sm"
+      class="btn btn-circle btn-ghost"
       aria-label="Página siguiente"
       [class.btn-disabled]="activePage() >= total"
       [routerLink]="[]"

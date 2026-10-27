@@ -15,13 +15,10 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
   error: 'btn-error',
 };
 
-const SIZE_CLASS: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
-  xs: 'btn-xs',
-  sm: 'btn-sm',
-  md: 'btn-md',
-  lg: 'btn-lg',
-};
-
+/**
+ * Always the default size (see CLAUDE.md): there is no size input on purpose.
+ * The radius comes from daisy (`--radius-field`), so `btn-circle` in `customClass` stays round.
+ */
 @Component({
   selector: 'app-button',
   imports: [],
@@ -32,7 +29,6 @@ const SIZE_CLASS: Record<'xs' | 'sm' | 'md' | 'lg', string> = {
 })
 export class Button {
   variant = input<ButtonVariant>('primary');
-  size = input<"xs" | "sm" | "md" | "lg">("md");
 
   type = input<"button" | "submit" | "reset">('button');
   disabled = input<boolean>(false);
@@ -43,10 +39,9 @@ export class Button {
 
   buttonClasses = computed(() => {
     const base =
-      'btn flex items-center justify-center gap-2 rounded-md transition-colors duration-200 cursor-pointer';
+      'btn flex items-center justify-center gap-2 transition-colors duration-200 cursor-pointer';
     const variantClass = VARIANT_CLASS[this.variant()];
-    const sizeClass = SIZE_CLASS[this.size()];
     const stateClass = this.loading() ? 'opacity-70 pointer-events-none' : '';
-    return `${base} ${variantClass} ${sizeClass} ${stateClass} ${this.customClass()}`.trim();
+    return `${base} ${variantClass} ${stateClass} ${this.customClass()}`.trim();
   });
 }
