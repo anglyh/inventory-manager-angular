@@ -7,55 +7,48 @@
   }
   @else if (cashRegisterService.currentCashRegisterResource.error()) {
     <div class="grid flex-1 place-items-center px-4 py-8">
-      <section class="card surface w-full max-w-md overflow-hidden" role="alert">
+      <section class="card w-full max-w-md overflow-hidden rounded-box bg-base-100" role="alert">
         <div class="grid min-h-40 place-items-center bg-error-soft">
-          <div class="grid size-20 place-items-center rounded-full border border-error/20 bg-base-100 text-error">
+          <div class="grid size-20 place-items-center rounded-full bg-base-100 text-error">
             <ng-icon name="tablerAlertCircle" size="48" aria-hidden="true" />
           </div>
         </div>
         <div class="card-body items-center gap-3 p-6 text-center sm:p-8">
-          <span class="badge border-0 bg-error-soft text-error">Problema de conexión</span>
+          <span class="badge badge-sm border-0 bg-error-soft text-error">Problema de conexión</span>
           <h2 class="text-subtitle font-semibold">No pudimos consultar la caja</h2>
           <p class="text-body text-neutral">
             No se pudo verificar si hay una caja abierta. Revisa tu conexión e inténtalo de nuevo.
           </p>
-          <button
-            class="btn btn-primary mt-2"
-            type="button"
-            (click)="cashRegisterService.currentCashRegisterResource.reload()"
-          >
+          <app-button customClass="mt-2" (click)="cashRegisterService.currentCashRegisterResource.reload()">
             <ng-icon name="tablerRefresh" size="20" aria-hidden="true" />
             Reintentar
-          </button>
+          </app-button>
         </div>
       </section>
     </div>
   }
   @else if (cashRegisterService.currentCashRegisterResource.value() === null){
     <div class="grid flex-1 place-items-center px-4">
-      <section class="card surface w-full max-w-sm overflow-hidden">
+      <section class="card w-full max-w-sm overflow-hidden rounded-box bg-base-100">
         <div class="grid min-h-44 place-items-center bg-base-200">
-          <div class="grid size-24 place-items-center rounded-full border border-base-300 bg-base-100 text-primary">
+          <div class="grid size-24 place-items-center rounded-full bg-base-100 text-primary">
             <ng-icon name="tablerCashRegister" size="56" aria-hidden="true" />
           </div>
         </div>
         <div class="card-body items-center gap-3 p-6 text-center sm:p-8">
-          <span class="badge badge-ghost">Caja cerrada</span>
+          <span class="badge badge-sm border-0 bg-base-200 text-neutral">Caja cerrada</span>
           <h2 class="text-subtitle font-semibold">Abre la caja para vender</h2>
           <a class="btn btn-primary mt-1" routerLink="/cash-register">Ir a la caja</a>
         </div>
       </section>
     </div>
   } @else if (cashRegisterService.currentCashRegisterResource.hasValue()){
-      <div class="min-w-0 flex-3 surface p-6 flex flex-col gap-4 w-full">
+      <div class="min-w-0 flex-3 rounded-box bg-base-100 p-4 sm:p-5 flex flex-col gap-4 w-full">
         <div class="flex justify-between">
           <h2 class="text-subtitle font-medium">Productos</h2>
-          <button 
-            class="btn btn-primary lg:hidden" 
-            (click)="saleOpen.set(true)"
-          >
+          <app-button customClass="lg:hidden" (click)="saleOpen.set(true)">
             Ver venta
-          </button>
+          </app-button>
         </div>
     
         <!-- Buscador y, debajo, los chips de categoría (un toque filtra; se combinan). -->
@@ -131,11 +124,11 @@
       </div>
   
     <aside
-      class="max-h-[85dvh] flex-1 lg:min-w-92 shrink-0 surface lg:h-full lg:max-h-none flex min-h-0 flex-col fixed inset-x-0 bottom-0 z-50 lg:static lg:z-auto lg:translate-y-0 transition-transform duration-200"
+      class="max-h-[85dvh] flex-1 lg:min-w-92 shrink-0 rounded-box bg-base-100 shadow-lg lg:shadow-none lg:h-full lg:max-h-none flex min-h-0 flex-col fixed inset-x-0 bottom-0 z-50 lg:static lg:z-auto lg:translate-y-0 transition-transform duration-200"
       [class.translate-y-full]="!saleOpen()"
       [class.translate-y-0]="saleOpen()"
     >
-      <h2 class="shrink-0 p-6 pb-5 text-subtitle font-medium">Venta actual</h2>
+      <h2 class="shrink-0 p-4 pb-3 text-subtitle font-medium sm:p-5 sm:pb-4">Venta actual</h2>
     
       <div class="divider my-0 px-5"></div>
     
@@ -153,6 +146,6 @@
 </div>
 
 @if (saleOpen()) {
-  <div class="fixed inset-0 z-40 bg-black/40 lg:hidden" (click)="saleOpen.set(false)">
+  <div class="fixed inset-0 z-40 bg-base-content/40 lg:hidden" (click)="saleOpen.set(false)">
   </div>
 }

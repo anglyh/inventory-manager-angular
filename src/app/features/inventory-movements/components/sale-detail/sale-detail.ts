@@ -1,12 +1,13 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerTrash } from '@ng-icons/tabler-icons';
+import { Button } from '@/shared/components/button/button';
 import type { PaymentMethod } from '../../interfaces/inventory-movement.interface';
 import type { SaleCartItem } from '../../interfaces/sale.interface';
 
 @Component({
   selector: 'sale-detail',
-  imports: [NgIcon],
+  imports: [NgIcon, Button],
   viewProviders: [provideIcons({ tablerTrash })],
   templateUrl: './sale-detail.html',
 })

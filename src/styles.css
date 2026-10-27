@@ -117,11 +117,6 @@
 
 /* Componentes */
 @layer components {
-  /* Fondo y borde comunes para paneles */
-  .surface {
-    @apply rounded-xl border-base-300 border bg-base-100;
-  }
-
   .notification {
     --notification-offset-x: 0;
     --notification-offset-y: -1rem;

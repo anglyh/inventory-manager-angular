@@ -1,37 +1,40 @@
 <div class="flex h-full min-h-0 flex-col gap-6 overflow-y-auto">
   <div class="flex min-h-0 flex-1 flex-col overflow-y-auto p-3 gap-2">
     @for (product of products(); track product.productId) {
-      <div class="group flex shrink-0 flex-col gap-2 bg-base-200 p-3 rounded-xl">
+      <div class="group flex shrink-0 flex-col gap-2 bg-base-200 p-3 rounded-field">
         <div class="flex items-center justify-between gap-3">
           <div class="min-w-0 font-medium wrap-break-word">{{ product.name }}</div>
-          <button
-            type="button"
-            class="btn btn-ghost btn-square btn-sm shrink-0 border-0 text-neutral shadow-none transition-colors duration-200 ease-in-out hover:bg-error-soft hover:text-error"
+          <app-button
+            variant="ghost"
+            customClass="btn-circle shrink-0 text-neutral hover:bg-error-soft hover:text-error"
+            [ariaLabel]="'Quitar ' + product.name"
             (click)="productDeleted.emit(product.productId)"
           >
-            <ng-icon name="tablerTrash" size="18" />
-          </button>
+            <ng-icon name="tablerTrash" size="18" aria-hidden="true" />
+          </app-button>
         </div>
 
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2">
-            <button 
-              type="button" 
-              class="btn btn-square btn-sm border-0 bg-base-100 shadow-none hover:bg-base-300 select-none"
+            <app-button
+              variant="ghost"
+              customClass="btn-circle bg-base-100 hover:bg-base-300 select-none"
+              ariaLabel="Restar uno"
               (click)="decrease(product)"
               [disabled]="product.quantity <= 1"
             >
               -
-            </button>
+            </app-button>
             <span class="min-w-6 text-center font-medium tabular-nums">{{ product.quantity }}</span>
-            <button
-              type="button"
-              class="btn btn-square btn-sm border-0 bg-base-100 shadow-none hover:bg-base-300 select-none"
+            <app-button
+              variant="ghost"
+              customClass="btn-circle bg-base-100 hover:bg-base-300 select-none"
+              ariaLabel="Sumar uno"
               (click)="increase(product)"
               [disabled]="product.quantity >= product.stock"
             >
               +
-            </button>
+            </app-button>
           </div>
 
           <div class="flex flex-col items-end gap-1 whitespace-nowrap tabular-nums">
@@ -48,7 +51,7 @@
     }
   </div>
 
-  <div class="flex shrink-0 flex-col gap-5 p-6">
+  <div class="flex shrink-0 flex-col gap-5 p-4 sm:p-5">
 
     <div class="divider my-1"></div>
     <div class="flex flex-wrap items-center justify-between gap-2">
@@ -65,7 +68,7 @@
           <input class="peer sr-only" type="radio" name="paymentMethod" value="CASH" [checked]="paymentMethod() === 'CASH'" 
           (change)="paymentMethod.set('CASH')"
           />
-          <span class="flex justify-center rounded-lg bg-base-200 px-3 py-3 text-body text-neutral transition-colors duration-200 hover:bg-base-300 peer-checked:bg-primary peer-checked:hover:bg-primary-hover peer-checked:text-primary-content peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
+          <span class="flex justify-center rounded-field bg-base-200 px-3 py-3 text-body text-neutral transition-colors duration-200 hover:bg-base-300 peer-checked:bg-primary peer-checked:hover:bg-primary-hover peer-checked:text-primary-content peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
             Efectivo
           </span>
         </label>
@@ -73,20 +76,19 @@
           <input class="peer sr-only" type="radio" name="paymentMethod" value="YAPE" [checked]="paymentMethod() === 'YAPE'"
           (change)="paymentMethod.set('YAPE')"
           />
-          <span class="flex justify-center rounded-lg bg-base-200 px-3 py-3 text-body text-neutral transition-colors duration-200 hover:bg-base-300 peer-checked:bg-primary peer-checked:hover:bg-primary-hover peer-checked:text-primary-content peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
+          <span class="flex justify-center rounded-field bg-base-200 px-3 py-3 text-body text-neutral transition-colors duration-200 hover:bg-base-300 peer-checked:bg-primary peer-checked:hover:bg-primary-hover peer-checked:text-primary-content peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
             Yape
           </span>
         </label>
       </div>
     </fieldset>
 
-    <button 
-      type="button"
-      class="btn btn-primary py-6 w-full border-0 shadow-none" 
+    <app-button
+      customClass="w-full py-6"
       [disabled]="products().length === 0 || !canSubmit()"
       (click)="saleRequested.emit(paymentMethod())"
     >
       Registrar venta
-    </button>
+    </app-button>
   </div>
 </div>
