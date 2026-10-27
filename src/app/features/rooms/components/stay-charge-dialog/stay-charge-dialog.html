@@ -6,7 +6,7 @@
     </div>
 
     @if (suggestedExtra(); as extra) {
-      <p class="text-sm tabular-nums">
+      <p class="tabular-nums">
         Se pasó {{ extra.hours }} {{ extra.hours === 1 ? 'hora' : 'horas' }}
         <span class="text-neutral">· sugerido S/ {{ extra.amount | number: '1.2-2' }}</span>
       </p>

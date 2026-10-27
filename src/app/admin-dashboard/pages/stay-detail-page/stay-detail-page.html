@@ -113,10 +113,10 @@
             </small>
           </div>
         </div>
-        <label class="flex cursor-pointer items-center gap-2 text-sm">
+        <label class="flex cursor-pointer items-center gap-2">
           <input
             type="checkbox"
-            class="toggle toggle-primary toggle-sm"
+            class="toggle toggle-primary"
             [checked]="!!s.migrationsReportedAt"
             [disabled]="migrationsSaving()"
             (change)="toggleMigrations($any($event.target).checked)"

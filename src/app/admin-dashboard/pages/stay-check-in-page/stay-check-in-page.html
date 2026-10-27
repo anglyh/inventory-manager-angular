@@ -1,6 +1,6 @@
 <div class="mx-auto flex w-full max-w-3xl flex-col gap-4">
   <header class="flex items-center gap-2">
-    <a class="btn btn-circle btn-ghost btn-sm" routerLink="/rooms" aria-label="Volver a habitaciones">
+    <a class="btn btn-circle btn-ghost" routerLink="/rooms" aria-label="Volver a habitaciones">
       <ng-icon name="tablerArrowLeft" size="20" aria-hidden="true" />
     </a>
     @if (context(); as ctx) {
@@ -25,7 +25,7 @@
     } @else if (ctx.room.status !== 'FREE') {
       <div class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-12 text-center">
         <p class="text-neutral">La habitación {{ ctx.room.number }} no está libre.</p>
-        <a class="btn btn-primary btn-sm" routerLink="/rooms">Ver habitaciones</a>
+        <a class="btn btn-primary" routerLink="/rooms">Ver habitaciones</a>
       </div>
     } @else {
       <stay-check-in-form
