@@ -1,7 +1,7 @@
 <label class="input w-full border-0 bg-base-200 shadow-none focus-within:outline-primary/40">
   <ng-icon name="tablerSearch" size="18" class="text-neutral" aria-hidden="true" />
   <input
-    type="search"
+    type="text"
     id="productSearchInput"
     placeholder="Buscar producto"
     [value]="searchTerm()"
@@ -12,7 +12,7 @@
   @if (searchTerm()) {
     <button
       type="button"
-      class="btn btn-circle btn-ghost btn-xs"
+      class="btn btn-circle btn-ghost"
       aria-label="Limpiar búsqueda"
       (click)="searchTerm.set(''); searchInputRef.value = ''; searchInputRef.focus(); search('')"
     >
