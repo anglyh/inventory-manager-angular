@@ -20,12 +20,15 @@ export const MOVEMENT_TYPE_LABELS: Record<MovementType, string> = {
   OUT: 'Salidas',
 };
 
-export const GROUP_OPTIONS: { value: MovementGroup | undefined; label: string }[] = [
+/** Filtro por tipo: cada grupo usa el mismo ícono y color que ese tipo en la lista (`kind`). */
+export const GROUP_OPTIONS: { value: MovementGroup | undefined; label: string; kind?: MovementKind }[] = [
   { value: undefined, label: 'Todos' },
-  { value: 'sales', label: 'Ventas' },
-  { value: 'purchase', label: 'Compras' },
-  { value: 'loss', label: 'Mermas' },
-  { value: 'voids', label: 'Anulados' },
+  { value: 'sales', label: 'Ventas', kind: 'sale' },
+  { value: 'purchase', label: 'Compras', kind: 'purchase' },
+  { value: 'loss', label: 'Mermas', kind: 'loss' },
+  { value: 'count', label: 'Conteos', kind: 'count' },
+  { value: 'initial', label: 'Stock inicial', kind: 'initial' },
+  { value: 'voids', label: 'Anulados', kind: 'voided' },
 ];
 
 /** Qué operación fue (venta, compra…), no hacia dónde se movió el stock: así lo piensa el dueño. */

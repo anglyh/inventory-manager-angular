@@ -1,8 +1,22 @@
-<div class="flex flex-col gap-6">
+<!-- Espacios >= la franja del encabezado fijo (h-4 / md:h-8), para que nunca tape la tarjeta de arriba. -->
+<div class="flex flex-col gap-6 md:gap-10 md:pt-4">
   @for (group of groups(); track group.key) {
-    <section class="flex flex-col gap-2" [attr.aria-label]="dayLabel(group.date) ?? (group.date | date: 'fullDate')">
-      <h3 class="px-1 text-caption font-medium text-neutral first-letter:uppercase">
-        {{ dayLabel(group.date) ?? (group.date | date: (isCurrentYear(group.date) ? "EEEE d 'de' MMMM" : 'fullDate')) }}
+    <section class="flex flex-col gap-1" [attr.aria-label]="dayLabel(group.date) ?? (group.date | date: 'fullDate')">
+      <!--
+        Fijo arriba al scrollear: siempre se sabe de qué día es lo que se ve.
+        El sticky se pega debajo del padding del contenedor que scrollea (p-4 / md:p-8 en dashboard-layout):
+        el ::before tapa esa franja con el fondo de página para que no se vea lo que pasa por detrás.
+      -->
+      <h3
+        class="sticky top-0 z-[1] flex items-baseline gap-2 bg-base-200 py-2
+          before:absolute before:inset-x-0 before:bottom-full before:h-4 before:bg-base-200 md:before:h-8"
+      >
+        <span class="inline-block text-body font-semibold text-base-content first-letter:uppercase">
+          {{ dayLabel(group.date) ?? (group.date | date: 'EEEE') }}
+        </span>
+        <span class="min-w-0 truncate text-neutral">
+          {{ group.date | date: (isCurrentYear(group.date) ? "d 'de' MMMM" : "d 'de' MMMM 'de' y") }}
+        </span>
       </h3>
 
       <div class="flex flex-col overflow-hidden rounded-box bg-base-100">
