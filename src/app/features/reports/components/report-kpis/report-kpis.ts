@@ -4,6 +4,7 @@ import { tablerChevronDown } from '@ng-icons/tabler-icons';
 import type {
   InventorySnapshot,
   ReportLodging,
+  ReportMigrations,
   ReportPrevious,
   ReportRooms,
   ReportStore,
@@ -33,12 +34,13 @@ export class ReportKpis {
   lodging = input.required<ReportLodging>();
   total = input.required<ReportTotal>();
   inventory = input.required<InventorySnapshot>();
+  migrations = input.required<ReportMigrations>();
   /** Período comparado, p. ej. "1 – 13 sep 2026". */
   compareLabel = input('');
 
   readonly breakdownOpen = signal(false);
 
-  readonly attention = computed(() => attentionItems(this.total(), this.inventory()));
+  readonly attention = computed(() => attentionItems(this.total(), this.inventory(), this.migrations()));
 
   /** Sin avisos, la ganancia neta ocupa todo el ancho. */
   readonly heroClass = computed(() => (this.attention().length ? 'lg:col-span-2' : 'lg:col-span-4'));

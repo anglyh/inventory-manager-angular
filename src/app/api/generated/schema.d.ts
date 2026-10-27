@@ -2455,6 +2455,8 @@ export interface paths {
                     /** @description Ingresos antes de esta fecha (exclusivo). */
                     to?: string | null;
                     roomId?: string;
+                    /** @description pending: solo estadías con huéspedes extranjeros que aún no se reportaron a Migraciones. */
+                    migrations?: "pending";
                     page?: number;
                     limit?: number;
                 };
@@ -3541,6 +3543,11 @@ export interface components {
                 damaged: string;
                 /** @example 20.00 */
                 expired: string;
+            };
+            /** @description Foto actual de lo pendiente con Migraciones: no depende del rango. */
+            migrations: {
+                /** @description Estadías (abiertas o cerradas, de cualquier fecha) con al menos un huésped extranjero que aún no se reportaron a Migraciones. */
+                pendingCount: number;
             };
             /** @description Cobros por método: ventas de la tienda más habitaciones. */
             payments: {

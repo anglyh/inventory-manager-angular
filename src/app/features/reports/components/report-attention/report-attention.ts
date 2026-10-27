@@ -1,8 +1,8 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerAlertTriangle, tablerChevronRight, tablerPackage } from '@ng-icons/tabler-icons';
-import type { InventorySnapshot, ReportTotal } from '../../interfaces/report.interface';
+import { tablerAlertTriangle, tablerChevronRight, tablerPackage, tablerPlaneArrival } from '@ng-icons/tabler-icons';
+import type { InventorySnapshot, ReportMigrations, ReportTotal } from '../../interfaces/report.interface';
 import { money, plural } from '../../utils/report-math';
 
 export interface AttentionItem {
@@ -11,6 +11,8 @@ export interface AttentionItem {
   text: string;
   hint: string;
   link: string;
+  /** Filtro que abre la lista ya filtrada (p. ej. `{ migrations: 'pending' }`). */
+  queryParams?: Record<string, string>;
   tone: 'error' | 'warning';
   /** Detalle debajo del título (p. ej. qué productos reponer). */
   details?: { id: string; label: string; value: string }[];
@@ -18,8 +20,12 @@ export interface AttentionItem {
   more?: number;
 }
 
-/** Solo lo que pide acción: faltante de caja y productos por reponer. */
-export function attentionItems(total: ReportTotal, inventory: InventorySnapshot): AttentionItem[] {
+/** Solo lo que pide acción: faltante de caja, reportes a Migraciones y productos por reponer. */
+export function attentionItems(
+  total: ReportTotal,
+  inventory: InventorySnapshot,
+  migrations: ReportMigrations,
+): AttentionItem[] {
   const items: AttentionItem[] = [];
   const shortage = Number(total.cashShortage);
   if (shortage > 0) {
@@ -30,6 +36,18 @@ export function attentionItems(total: ReportTotal, inventory: InventorySnapshot)
       hint: 'Cajas que cerraron con menos dinero del que debía haber',
       link: '/cash-register/history',
       tone: 'error',
+    });
+  }
+  const pendingMigrations = migrations.pendingCount;
+  if (pendingMigrations > 0) {
+    items.push({
+      id: 'migrations',
+      icon: 'tablerPlaneArrival',
+      text: `${plural(pendingMigrations, 'estadía', 'estadías')} por reportar a Migraciones`,
+      hint: 'Huéspedes extranjeros que todavía no se reportaron',
+      link: '/stays',
+      queryParams: { migrations: 'pending' },
+      tone: 'warning',
     });
   }
   const lowStock = inventory.lowStockCount;
@@ -57,7 +75,7 @@ export function attentionItems(total: ReportTotal, inventory: InventorySnapshot)
 @Component({
   selector: 'report-attention',
   imports: [RouterLink, NgIcon],
-  viewProviders: [provideIcons({ tablerAlertTriangle, tablerChevronRight, tablerPackage })],
+  viewProviders: [provideIcons({ tablerAlertTriangle, tablerChevronRight, tablerPackage, tablerPlaneArrival })],
   templateUrl: './report-attention.html',
 })
 export class ReportAttention {

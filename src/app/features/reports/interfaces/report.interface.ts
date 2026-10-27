@@ -7,6 +7,7 @@ export type ReportDailyPoint = ReportOverview['daily'][number];
 export type ProductRanking = ReportOverview['products'][number];
 export type ReportPrevious = ReportOverview['previous'];
 export type InventorySnapshot = ReportOverview['inventory'];
+export type ReportMigrations = ReportOverview['migrations'];
 
 /** Escala del período navegable con flechas. */
 export type ReportScale = 'day' | 'week' | 'month' | 'year';

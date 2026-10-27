@@ -6,7 +6,7 @@ import { map } from 'rxjs';
 import { DateRangeFilter } from '@/shared/components/date-range-filter/date-range-filter';
 import type { DateRangeValue } from '@/shared/components/date-range-filter/date-range';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerAlertCircle } from '@ng-icons/tabler-icons';
+import { tablerAlertCircle, tablerPlaneArrival, tablerX } from '@ng-icons/tabler-icons';
 import { Pagination } from '@/shared/components/pagination/pagination';
 import { PaginationService } from '@/shared/components/pagination/pagination.service';
 import { StayService } from '@/features/rooms/services/stay.service';
@@ -24,7 +24,7 @@ const PAGE_SIZE = 20;
 @Component({
   selector: 'app-guest-register-page',
   imports: [Button, DateRangeFilter, NgIcon, Pagination, GuestRegisterTable],
-  viewProviders: [provideIcons({ tablerAlertCircle })],
+  viewProviders: [provideIcons({ tablerAlertCircle, tablerPlaneArrival, tablerX })],
   templateUrl: './guest-register-page.html',
 })
 export class GuestRegisterPage {
@@ -48,15 +48,28 @@ export class GuestRegisterPage {
     { initialValue: this.defaultRange },
   );
 
+  /**
+   * `?migrations=pending`: solo estadías con extranjeros sin reportar a Migraciones.
+   * Es una foto de lo pendiente, así que ignora el rango de fechas.
+   */
+  readonly pendingOnly = toSignal(
+    this.route.queryParamMap.pipe(map(params => params.get('migrations') === 'pending')),
+    { initialValue: this.route.snapshot.queryParamMap.get('migrations') === 'pending' },
+  );
+
   readonly staysResource = rxResource({
-    params: () => ({ ...this.range(), page: this.paginationService.currentPage() }),
+    params: () => ({ ...this.range(), pendingOnly: this.pendingOnly(), page: this.paginationService.currentPage() }),
     stream: ({ params }) =>
-      this.stayService.getStays({
-        from: limaPlainDateToStartISO(params.from),
-        to: limaPlainDateToEndISO(params.to),
-        page: params.page,
-        limit: PAGE_SIZE,
-      }),
+      this.stayService.getStays(
+        params.pendingOnly
+          ? { migrations: 'pending', page: params.page, limit: PAGE_SIZE }
+          : {
+              from: limaPlainDateToStartISO(params.from),
+              to: limaPlainDateToEndISO(params.to),
+              page: params.page,
+              limit: PAGE_SIZE,
+            },
+      ),
   });
 
   readonly stays = computed(() => this.staysResource.value()?.data ?? []);
@@ -67,6 +80,14 @@ export class GuestRegisterPage {
 
   openStay(id: string) {
     void this.router.navigate(['/rooms/stay', id]);
+  }
+
+  setPendingOnly(pending: boolean) {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { migrations: pending ? 'pending' : null, page: null },
+      queryParamsHandling: 'merge',
+    });
   }
 
   apply({ from, to }: DateRangeValue) {
