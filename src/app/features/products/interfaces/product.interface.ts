@@ -3,7 +3,7 @@ import { components } from 'src/app/api/generated/schema';
 export interface Product {
   id:           string;
   name:         string;
-  barcode:      null;
+  barcode:      string | null;
   salePrice:    string;
   unitCostAvg:  string;
   stock:        number;
@@ -38,3 +38,10 @@ export interface ProductWithStock extends Product {
 
 
 
+
+/**
+ * GET /product/barcode-lookup/{code}: producto de la tienda con ese código o datos sugeridos
+ * de una base abierta (Open Food Facts y afines).
+ */
+export type BarcodeLookup = components['schemas']['BarcodeLookup'];
+export type BarcodeSuggestion = NonNullable<BarcodeLookup['suggestion']>;

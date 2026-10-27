@@ -1,9 +1,9 @@
-import { map } from 'rxjs';
+import { finalize, map } from 'rxjs';
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgIcon, provideIcons } from "@ng-icons/core";
-import { tablerChevronDown, tablerPlus, tablerTable } from '@ng-icons/tabler-icons';
+import { tablerChevronDown, tablerPlus, tablerScan } from '@ng-icons/tabler-icons';
 import { AuthService } from '@/auth/services/auth.service';
 
 import { CategoryMultiselectFilter, NO_CATEGORY } from '@/features/categories/components/category-multiselect-filter/category-multiselect-filter';
@@ -11,7 +11,10 @@ import { CategoryService } from '@/features/categories/services/category.service
 import { Category } from '@/features/categories/interfaces/category.interface';
 import { ProductForm } from "@/features/products/components/product-form/product-form";
 import { ProductTable } from '@/features/products/components/product-table/product-table';
-import { ProductWithStock } from '@/features/products/interfaces/product.interface';
+import { BarcodeLookup, ProductWithStock } from '@/features/products/interfaces/product.interface';
+import { BarcodeScanner } from '@/features/products/components/barcode-scanner/barcode-scanner';
+import { GlobalNotificationService } from '@/shared/components/global-notification/global-notification.service';
+import { resolveApiError } from '@/shared/utils/api-error';
 import { ProductService } from '@/features/products/services/product.service';
 import { SearchProduct } from "@/features/products/components/search-product-form/search-product-form";
 import { Modal } from "@/shared/components/modal/modal";
@@ -23,8 +26,8 @@ import { PRODUCTS_TABS } from '@/admin-dashboard/module-tabs';
 
 @Component({
   selector: 'app-products-page',
-  imports: [ProductTable, Pagination, ProductForm, Modal, SearchProduct, NgIcon, CategoryMultiselectFilter, ModuleTabs, Button],
-  viewProviders: [provideIcons({ tablerPlus, tablerTable, tablerChevronDown })],
+  imports: [ProductTable, Pagination, ProductForm, Modal, SearchProduct, NgIcon, CategoryMultiselectFilter, ModuleTabs, Button, BarcodeScanner],
+  viewProviders: [provideIcons({ tablerPlus, tablerChevronDown, tablerScan })],
   templateUrl: './products-page.html',
 })
 export class ProductsPage {
@@ -35,8 +38,13 @@ export class ProductsPage {
   paginationService = inject(PaginationService)
   activatedRoute = inject(ActivatedRoute)
   private router = inject(Router)
+  private notification = inject(GlobalNotificationService)
 
   isModalOpen = signal(false);
+  /** Búsqueda por código que abre el formulario (escaneo); el formulario completa los campos vacíos. */
+  initialLookup = signal<BarcodeLookup | null>(null);
+  scannerOpen = signal(false);
+  lookingUp = signal(false);
 
   searchTerm = toSignal(
     this.activatedRoute.queryParamMap.pipe(
@@ -74,9 +82,37 @@ export class ProductsPage {
   });
   // productModal = viewChild<Modal>('productModal');
 
-  openModal(product: Partial<ProductWithStock>) {
+  openModal(product: Partial<ProductWithStock>, lookup: BarcodeLookup | null = null) {
     this.selectedProduct.set(product);
+    this.initialLookup.set(lookup);
     this.isModalOpen.set(true)
+  }
+
+  /** Escaneo: si el código ya es de un producto se edita ese; si no, se abre uno nuevo con lo sugerido. */
+  onScanned(code: string) {
+    this.lookingUp.set(true);
+    this.productService
+      .lookupBarcode(code)
+      .pipe(finalize(() => this.lookingUp.set(false)))
+      .subscribe({
+        next: lookup => {
+          if (lookup.existingProduct) {
+            this.notification.show(`Ya tienes «${lookup.existingProduct.name}» con ese código`);
+            this.editProduct(lookup.existingProduct.id);
+          } else {
+            this.openModal({ barcode: lookup.code }, lookup);
+          }
+        },
+        error: error => this.notification.show(resolveApiError(error, 'No se pudo buscar el código.').message, 'error'),
+      });
+  }
+
+  /** Abre la edición de un producto que no está en la página actual de la tabla. */
+  editProduct(id: string) {
+    this.productService.getProductById(id).subscribe({
+      next: product => this.openModal(product),
+      error: error => this.notification.show(resolveApiError(error, 'No se pudo abrir el producto.').message, 'error'),
+    });
   }
 
   openNewProduct() {

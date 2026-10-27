@@ -1,7 +1,7 @@
 import { ProductService } from '@/features/products/services/product.service';
-import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, input, output, signal, untracked, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ProductUpsertBody, ProductWithStock } from '@/features/products/interfaces/product.interface';
+import { BarcodeLookup, BarcodeSuggestion, ProductUpsertBody, ProductWithStock } from '@/features/products/interfaces/product.interface';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 
@@ -11,10 +11,22 @@ import { CategoryService } from '@/features/categories/services/category.service
 import { CategorySelector } from '@/features/categories/components/category-selector/category-selector';
 import { extractApiError } from '@/api/extract-api-error';
 import { mapApiError } from '@/api/error-mapper';
+import { resolveApiError } from '@/shared/utils/api-error';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { tablerScan } from '@ng-icons/tabler-icons';
+import { BarcodeScanner } from '@/features/products/components/barcode-scanner/barcode-scanner';
+import { isValidGtin } from '@/features/products/utils/gtin';
+
+const SOURCE_LABEL: Record<BarcodeSuggestion['source'], string> = {
+  OPEN_FOOD_FACTS: 'Open Food Facts',
+  OPEN_PRODUCTS_FACTS: 'Open Products Facts',
+  OPEN_BEAUTY_FACTS: 'Open Beauty Facts',
+};
 
 @Component({
   selector: 'product-form',
-  imports: [ReactiveFormsModule, Button, CategorySelector],
+  imports: [ReactiveFormsModule, Button, CategorySelector, NgIcon, BarcodeScanner],
+  viewProviders: [provideIcons({ tablerScan })],
   templateUrl: './product-form.html',
 })
 export class ProductForm {
@@ -38,6 +50,10 @@ export class ProductForm {
   onCancel = output();
 
   productInitialData = input<Partial<ProductWithStock> | null>(null)
+  /** Resultado de una búsqueda por código hecha antes de abrir el formulario (escaneo desde la página). */
+  initialLookup = input<BarcodeLookup | null>(null)
+  /** Se pidió editar el producto que ya tiene el código buscado. */
+  editExisting = output<string>()
   productForm = this.fb.group({
     name: ['', [Validators.required]],
     barcode: [''],
@@ -49,6 +65,83 @@ export class ProductForm {
   categoryId = toSignal(this.productForm.controls.categoryId.valueChanges, {
     initialValue: this.productForm.controls.categoryId.value,
   })
+
+  // --- Código de barras: escáner, lector de mano (dígitos + Enter) y datos sugeridos ---
+  private barcodeInput = viewChild<ElementRef<HTMLInputElement>>('barcodeInput')
+  scannerOpen = signal(false)
+  lookingUp = signal(false)
+  barcodeError = signal<string | null>(null)
+  private lookup = signal<BarcodeLookup | null>(null)
+  private barcodeValue = toSignal(this.productForm.controls.barcode.valueChanges, {
+    initialValue: this.productForm.controls.barcode.value,
+  })
+
+  /** Solo vale mientras el campo conserva el código buscado. */
+  visibleLookup = computed(() => {
+    const lookup = this.lookup()
+    return lookup && lookup.code === (this.barcodeValue() ?? '').trim() ? lookup : null
+  })
+  suggestion = computed(() => this.visibleLookup()?.suggestion ?? null)
+  sourceLabel = computed(() => {
+    const source = this.suggestion()?.source
+    return source ? SOURCE_LABEL[source] : ''
+  })
+  /** Otro producto de la tienda ya usa el código (el que se edita no cuenta). */
+  existingProduct = computed(() => {
+    const existing = this.visibleLookup()?.existingProduct
+    return existing && existing.id !== this.productInitialData()?.id ? existing : null
+  })
+  notFound = computed(() => {
+    const lookup = this.visibleLookup()
+    return Boolean(lookup && !lookup.existingProduct && !lookup.suggestion)
+  })
+
+  /** Lector de mano: escribe los dígitos y Enter. El Enter busca el código en vez de guardar. */
+  onBarcodeEnter(event: Event) {
+    event.preventDefault()
+    this.lookupBarcode()
+  }
+
+  onScanned(code: string) {
+    this.productForm.controls.barcode.setValue(code)
+    this.lookupBarcode()
+  }
+
+  focusBarcode() {
+    this.barcodeInput()?.nativeElement.focus()
+  }
+
+  lookupBarcode() {
+    const code = (this.productForm.controls.barcode.value ?? '').trim()
+    this.barcodeError.set(null)
+    if (!code || this.lookingUp()) return
+    if (!isValidGtin(code)) {
+      this.barcodeError.set('Este código no es válido. Revisa los dígitos.')
+      return
+    }
+
+    this.lookingUp.set(true)
+    this.productService
+      .lookupBarcode(code)
+      .pipe(finalize(() => this.lookingUp.set(false)))
+      .subscribe({
+        next: lookup => {
+          this.lookup.set(lookup)
+          this.applySuggestion(lookup)
+        },
+        error: error => {
+          this.globalNotification.show(resolveApiError(error, 'No se pudo buscar el código.').message, 'error')
+        },
+      })
+  }
+
+  /** Completa solo los campos vacíos: nunca pisa lo que la persona ya escribió. */
+  private applySuggestion(lookup: BarcodeLookup | null) {
+    if (!lookup) return
+    const { name, barcode } = this.productForm.controls
+    if (!(barcode.value ?? '').trim()) barcode.setValue(lookup.code)
+    if (lookup.suggestion && !(name.value ?? '').trim()) name.setValue(lookup.suggestion.name)
+  }
 
   setCategory(id: string | null) {
     this.productForm.controls.categoryId.setValue(id)
@@ -90,6 +183,13 @@ export class ProductForm {
       salePrice: salePrice != null ? Number(salePrice) : 1,
       minStock: this.productInitialData()?.minStock ?? 10,
       categoryId
+    })
+
+    const lookup = this.initialLookup()
+    untracked(() => {
+      this.barcodeError.set(null)
+      this.lookup.set(lookup)
+      this.applySuggestion(lookup)
     })
   })
 

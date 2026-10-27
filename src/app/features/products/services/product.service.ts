@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, tap } from 'rxjs';
-import { Product, ProductOption, ProductUpsertBody, ProductWithStock } from '../interfaces/product.interface';
+import { BarcodeLookup, Product, ProductOption, ProductUpsertBody, ProductWithStock } from '../interfaces/product.interface';
 import { environment } from '@environments/environment';
 import { Options, PaginatedResponse } from '@/shared/interfaces/pagination.interface';
 
@@ -32,6 +32,11 @@ export class ProductService {
     return this.http.get<PaginatedResponse<ProductWithStock>>(`${baseUrl}`, {
       params
     })
+  }
+
+  /** Producto de la tienda con ese código o datos sugeridos de una base abierta. */
+  lookupBarcode(code: string): Observable<BarcodeLookup> {
+    return this.http.get<BarcodeLookup>(`${baseUrl}/barcode-lookup/${encodeURIComponent(code)}`);
   }
 
   getProductById(id: string): Observable<Product> {

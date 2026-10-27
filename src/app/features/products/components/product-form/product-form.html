@@ -7,6 +7,25 @@
   (ngSubmit)="onSubmit()"
   [formGroup]="productForm"
 >
+  <!-- Datos sugeridos por el código de barras: la persona confirma antes de guardar. -->
+  @if (suggestion(); as suggestion) {
+    <div class="flex items-center gap-3 rounded-field bg-base-200/60 p-3">
+      @if (suggestion.imageUrl) {
+        <img
+          [src]="suggestion.imageUrl"
+          alt=""
+          class="size-14 shrink-0 rounded-field bg-base-100 object-contain"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+        />
+      }
+      <div class="flex min-w-0 flex-col">
+        <span class="truncate font-medium text-base-content">{{ suggestion.name }}</span>
+        <small class="text-neutral">Datos sugeridos de {{ sourceLabel() }}. Revisa antes de guardar.</small>
+      </div>
+    </div>
+  }
+
   <!-- Nombre -->
   <label class="form-control w-full">
     <div class="label">
@@ -37,20 +56,47 @@
     </label>
   </div>
 
-  <!-- Código de barras -->
-  <label class="form-control w-full">
-    <div class="label">
+  <!-- Código de barras: un <div> y no un <label>, porque contiene botones. -->
+  <div class="form-control w-full">
+    <label class="label" for="product-barcode">
       <span class="label-text font-medium text-base-content mb-1">Código de barras</span>
+    </label>
+    <div class="flex items-center gap-2">
+      <label class="input input-bordered flex w-full items-center gap-2">
+        <input
+          #barcodeInput
+          id="product-barcode"
+          type="text"
+          placeholder="Ej. 7501030300050"
+          class="grow"
+          formControlName="barcode"
+          inputmode="numeric"
+          autocomplete="off"
+          (keydown.enter)="onBarcodeEnter($event)"
+        />
+        @if (lookingUp()) {
+          <span class="loading loading-spinner text-neutral" aria-label="Buscando el código"></span>
+        }
+      </label>
+      <app-button variant="outline" customClass="btn-circle" ariaLabel="Escanear código" (click)="scannerOpen.set(true)">
+        <ng-icon name="tablerScan" size="18" aria-hidden="true" />
+      </app-button>
     </div>
-    <input
-      type="text"
-      placeholder="Ej. 7501030300050"
-      class="input input-bordered w-full"
-      formControlName="barcode"
-      inputmode="numeric"
-      autocomplete="off"
-    />
-  </label>
+    @if (barcodeError()) {
+      <small role="alert" class="mt-1 block text-error">{{ barcodeError() }}</small>
+    } @else if (existingProduct(); as existing) {
+      <small class="mt-1 block text-neutral">
+        Ya tienes «{{ existing.name }}» con este código.
+        <button type="button" class="text-base-content underline underline-offset-2" (click)="editExisting.emit(existing.id)">
+          Editarlo
+        </button>
+      </small>
+    } @else if (notFound()) {
+      <small class="mt-1 block text-neutral">No encontramos datos para este código; complétalo a mano.</small>
+    } @else {
+      <small class="mt-1 block text-neutral">Escanéalo o escríbelo y presiona Enter.</small>
+    }
+  </div>
 
   <div class="form-control w-full">
     <label class="label" for="product-category">
@@ -79,3 +125,11 @@
     </app-button>
   </div>
 </form>
+
+<!-- Fuera del <form>: el diálogo del escáner trae su propio <form method="dialog">. -->
+<barcode-scanner
+  [open]="scannerOpen()"
+  (closed)="scannerOpen.set(false)"
+  (scanned)="onScanned($event)"
+  (manualRequested)="focusBarcode()"
+/>
