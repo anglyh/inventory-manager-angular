@@ -1,13 +1,14 @@
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { map } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerAlertCircle, tablerPlus, tablerReceipt } from '@ng-icons/tabler-icons';
 import { Button } from '@/shared/components/button/button';
 import { ModuleTabs } from '@/shared/components/module-tabs/module-tabs';
+import { DateRangeFilter } from '@/shared/components/date-range-filter/date-range-filter';
+import type { DateRangeValue } from '@/shared/components/date-range-filter/date-range';
 import { Pagination } from '@/shared/components/pagination/pagination';
 import { PaginationService } from '@/shared/components/pagination/pagination.service';
 import { GlobalNotificationService } from '@/shared/components/global-notification/global-notification.service';
@@ -42,7 +43,7 @@ function parseGroup(value: string | null): ExpenseGroup | null {
 /** Gastos de un período (rango y grupo en la URL), con su total y el registro de nuevos gastos. */
 @Component({
   selector: 'app-expenses-page',
-  imports: [Button, DecimalPipe, ReactiveFormsModule, NgIcon, ModuleTabs, Pagination, ExpenseTable, ExpenseForm, DeleteConfirmDialog],
+  imports: [Button, DecimalPipe, DateRangeFilter, NgIcon, ModuleTabs, Pagination, ExpenseTable, ExpenseForm, DeleteConfirmDialog],
   viewProviders: [provideIcons({ tablerAlertCircle, tablerPlus, tablerReceipt })],
   templateUrl: './expenses-page.html',
 })
@@ -52,7 +53,6 @@ export class ExpensesPage {
   private notification = inject(GlobalNotificationService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private fb = inject(FormBuilder).nonNullable;
   readonly paginationService = inject(PaginationService);
 
   readonly moduleTabs = EXPENSES_TABS;
@@ -92,16 +92,6 @@ export class ExpensesPage {
   readonly totalAmount = computed(() => this.expensesResource.value()?.totalAmount ?? null);
   readonly categories = computed(() => this.categoriesResource.value() ?? []);
 
-  rangeForm = this.fb.group({
-    from: this.fb.control('', Validators.required),
-    to: this.fb.control('', Validators.required),
-  });
-
-  syncForm = effect(() => {
-    const { from, to } = this.filters();
-    untracked(() => this.rangeForm.setValue({ from, to }));
-  });
-
   // Registro
   readonly formOpen = signal(false);
   readonly saving = signal(false);
@@ -113,9 +103,8 @@ export class ExpensesPage {
   readonly deleting = signal(false);
   readonly deleteError = signal<string | null>(null);
 
-  applyRange() {
-    if (this.rangeForm.invalid) return;
-    const { from, to } = this.rangeForm.getRawValue();
+  applyRange({ from, to }: DateRangeValue) {
+    if (!from || !to) return;
     this.navigate({ from, to });
   }
 

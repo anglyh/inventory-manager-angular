@@ -30,34 +30,21 @@
         [value]="scaleValue()"
         (valueChange)="selectScale($event)"
       />
-      <app-button
+      <!-- Sin rangos rápidos: Día/Semana/Mes ya los ofrece la escala de al lado. -->
+      <app-date-range-filter
         ariaLabel="Elegir rango de fechas"
-        [variant]="mode() === 'custom' || rangeOpen() ? 'primary' : 'ghost'"
-        [customClass]="mode() === 'custom' || rangeOpen() ? 'btn-circle' : 'btn-circle bg-base-100'"
-        (click)="toggleRange()"
-      >
-        <ng-icon name="tablerCalendar" size="20" aria-hidden="true" />
-      </app-button>
+        surface="page"
+        align="end"
+        [compact]="true"
+        [presets]="false"
+        [active]="mode() === 'custom'"
+        [from]="range().from"
+        [to]="range().to"
+        [max]="today"
+        (rangeChange)="applyRange($event)"
+      />
     </div>
   </header>
-
-  @if (rangeOpen()) {
-    <form
-      class="flex flex-wrap items-end gap-3 rounded-box bg-base-100 p-4"
-      [formGroup]="rangeForm"
-      (ngSubmit)="applyRange()"
-    >
-      <label class="flex min-w-0 flex-1 flex-col gap-1 sm:flex-none">
-        <small class="text-neutral">Desde</small>
-        <input type="date" class="input w-full" formControlName="from" [max]="today" />
-      </label>
-      <label class="flex min-w-0 flex-1 flex-col gap-1 sm:flex-none">
-        <small class="text-neutral">Hasta</small>
-        <input type="date" class="input w-full" formControlName="to" [max]="today" />
-      </label>
-      <app-button type="submit">Aplicar</app-button>
-    </form>
-  }
 
   @if (errorMessage(); as message) {
     <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">

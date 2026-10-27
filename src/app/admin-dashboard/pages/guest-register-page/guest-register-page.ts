@@ -1,9 +1,10 @@
 import { Button } from '@/shared/components/button/button';
-import { Component, computed, effect, inject, untracked } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { map } from 'rxjs';
+import { DateRangeFilter } from '@/shared/components/date-range-filter/date-range-filter';
+import type { DateRangeValue } from '@/shared/components/date-range-filter/date-range';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerAlertCircle } from '@ng-icons/tabler-icons';
 import { Pagination } from '@/shared/components/pagination/pagination';
@@ -22,7 +23,7 @@ const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-guest-register-page',
-  imports: [Button, ReactiveFormsModule, NgIcon, Pagination, GuestRegisterTable],
+  imports: [Button, DateRangeFilter, NgIcon, Pagination, GuestRegisterTable],
   viewProviders: [provideIcons({ tablerAlertCircle })],
   templateUrl: './guest-register-page.html',
 })
@@ -30,7 +31,6 @@ export class GuestRegisterPage {
   private stayService = inject(StayService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private fb = inject(FormBuilder).nonNullable;
   readonly paginationService = inject(PaginationService);
 
   readonly today = getLimaTodayPlainDate();
@@ -65,23 +65,12 @@ export class GuestRegisterPage {
     () => this.stays().filter(stay => stay.hasForeignGuests && !stay.migrationsReportedAt).length,
   );
 
-  form = this.fb.group({
-    from: this.fb.control('', Validators.required),
-    to: this.fb.control('', Validators.required),
-  });
-
-  syncForm = effect(() => {
-    const range = this.range();
-    untracked(() => this.form.setValue(range));
-  });
-
   openStay(id: string) {
     void this.router.navigate(['/rooms/stay', id]);
   }
 
-  apply() {
-    if (this.form.invalid) return;
-    const { from, to } = this.form.getRawValue();
+  apply({ from, to }: DateRangeValue) {
+    if (!from || !to) return;
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { from, to, page: null },

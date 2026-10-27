@@ -1,0 +1,52 @@
+/*
+ * Cally on top of daisyUI's `.cally` styles (component encapsulation is off: every rule is scoped by
+ * `.date-range-calendar`). Unlayered rules win over daisyUI's layered ones.
+ */
+.date-range-calendar {
+  --color-accent: var(--color-primary);
+  --color-text-on-accent: var(--color-primary-content);
+}
+
+/* daisyUI uses 0.7rem: a bit too small to read on a phone. */
+.date-range-calendar ::part(day) {
+  font-size: 0.8125rem;
+}
+
+.date-range-calendar ::part(head) {
+  font-size: 0.75rem;
+}
+
+/* With one month the header already names it. */
+.date-range-calendar[data-months='1'] calendar-month::part(heading) {
+  display: none;
+}
+
+.date-range-calendar calendar-month::part(heading) {
+  font-weight: 600;
+  padding-block: 0.25rem;
+}
+
+/* Today is a hint, not a selection: outlined instead of filled. */
+.date-range-calendar ::part(today) {
+  background: transparent;
+  color: var(--color-base-content);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--color-base-300);
+}
+
+/* Ends of the range filled, the days between them soft. */
+.date-range-calendar ::part(range-inner) {
+  background: var(--color-base-200);
+  color: var(--color-base-content);
+}
+
+.date-range-calendar ::part(range-start),
+.date-range-calendar ::part(range-end) {
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+}
+
+.date-range-calendar ::part(day):focus-visible {
+  outline: 2px solid var(--color-base-content);
+  outline-offset: -2px;
+}
