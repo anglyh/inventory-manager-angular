@@ -1311,8 +1311,8 @@ export interface paths {
                     to?: string;
                     /** @description Filtra movimientos vinculados a una caja de esta tienda. Se puede combinar con movementType y group. */
                     cashRegisterId?: string;
-                    /** @description sales incluye SALE; purchase incluye PURCHASE; loss incluye LOSS_EXPIRED, LOSS_DAMAGED y COUNT_SHORTAGE. Sin grupo incluye todos los motivos completados. voids incluye anulados de cualquier motivo. */
-                    group?: "sales" | "purchase" | "loss" | "voids";
+                    /** @description sales incluye SALE; purchase incluye PURCHASE; loss incluye LOSS_EXPIRED y LOSS_DAMAGED; count incluye COUNT_SURPLUS y COUNT_SHORTAGE; initial incluye INITIAL_LOAD. Sin grupo incluye todos los motivos completados. voids incluye anulados de cualquier motivo. */
+                    group?: "sales" | "purchase" | "loss" | "count" | "initial" | "voids";
                     limit?: number;
                     /** @description Valor nextCursor.cursorId de la página anterior; enviar junto con cursorDate. */
                     cursorId?: string;
@@ -1618,6 +1618,56 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/product/barcode-lookup/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Buscar datos de un producto por código de barras
+         * @description Primero busca un producto de la tienda con ese código. Si no existe, consulta Open Food Facts, Open Products Facts y Open Beauty Facts (con caché en memoria y un máximo de 15 consultas externas por minuto) y devuelve datos sugeridos para registrar el producto. Un código con dígito verificador inválido devuelve 400.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /**
+                     * @description Código de barras GTIN (EAN-8, UPC-A, EAN-13 o GTIN-14) con dígito verificador válido
+                     * @example 7750182005814
+                     */
+                    code: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Producto existente, datos sugeridos o ninguno de los dos. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BarcodeLookup"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 500: components["responses"]["InternalError"];
                 503: components["responses"]["DatabaseUnavailable"];
             };
@@ -3332,6 +3382,27 @@ export interface components {
             /** @example 20.00 */
             salePrice: string;
         };
+        BarcodeLookup: {
+            /** @example 7750182005814 */
+            code: string;
+            /** @description Producto de la tienda (activo o desactivado) que ya usa este código; si existe no se consulta ninguna fuente externa. */
+            existingProduct: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+            } | null;
+            /** @description Datos sugeridos de una base abierta. null si no se encontró, si la fuente no respondió o si se alcanzó el límite de consultas. */
+            suggestion: {
+                /** @example Gaseosa Inca Kola 1.5 lt. */
+                name: string;
+                brand: string | null;
+                quantity: string | null;
+                /** @description Imagen de la fuente (solo para vista previa; no se guarda). */
+                imageUrl: string | null;
+                /** @enum {string} */
+                source: "OPEN_FOOD_FACTS" | "OPEN_PRODUCTS_FACTS" | "OPEN_BEAUTY_FACTS";
+            } | null;
+        };
         ReportOverview: {
             cash: {
                 closedCount: number;
@@ -3391,6 +3462,14 @@ export interface components {
             inventory: {
                 /** @description Productos activos con stock en o bajo el mínimo. */
                 lowStockCount: number;
+                /** @description Hasta 5 de esos productos, los más urgentes primero (menor stock − mínimo). */
+                lowStockProducts: {
+                    /** Format: uuid */
+                    productId: string;
+                    productName: string;
+                    stock: number;
+                    minStock: number;
+                }[];
                 /**
                  * @description Stock actual × costo promedio.
                  * @example 20.00
