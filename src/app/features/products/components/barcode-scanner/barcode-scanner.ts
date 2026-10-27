@@ -295,10 +295,24 @@ async function createDetector(): Promise<Detector> {
       // Fall back to the ponyfill.
     }
   }
-  // Dynamic import: the ponyfill (and its wasm, fetched from jsDelivr) only loads when needed.
-  const { BarcodeDetector } = await import('barcode-detector/ponyfill');
+  // Dynamic import: the ponyfill (and its wasm) only loads when needed.
+  const { BarcodeDetector, prepareZXingModule } = await import('barcode-detector/ponyfill');
+  // The wasm is served by the app itself (angular.json copies it to /zxing), not by jsDelivr:
+  // it works when the CDN is down or blocked and always matches the installed version.
+  // Configured once: new overrides on every scan could make the library reload the module.
+  if (!zxingConfigured) {
+    prepareZXingModule({
+      overrides: {
+        locateFile: (path: string, prefix: string) =>
+          path.endsWith('.wasm') ? new URL(`zxing/${path}`, document.baseURI).href : prefix + path,
+      },
+    });
+    zxingConfigured = true;
+  }
   return new BarcodeDetector({ formats: FORMATS });
 }
+
+let zxingConfigured = false;
 
 /** Opens the saved camera; if it is gone (new phone, other browser), falls back to any back camera. */
 async function openCamera(deviceId: string | null): Promise<MediaStream> {
