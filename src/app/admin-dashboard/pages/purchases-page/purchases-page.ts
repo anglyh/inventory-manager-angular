@@ -10,10 +10,11 @@ import type { Supplier } from '@/features/suppliers/interfaces/supplier.interfac
 import { GlobalNotificationService } from '@/shared/components/global-notification/global-notification.service';
 import { extractApiError } from '@/api/extract-api-error';
 import { mapApiError } from '@/api/error-mapper';
+import { Button } from '@/shared/components/button/button';
 
 @Component({
   selector: 'app-purchases-page',
-  imports: [PurchaseForm],
+  imports: [PurchaseForm, Button],
   templateUrl: './purchases-page.html',
 })
 export class PurchasesPage {

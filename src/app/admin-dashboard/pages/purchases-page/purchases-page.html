@@ -5,7 +5,7 @@
 } @else if (productsResource.error()) {
   <div class="grid h-full place-items-center gap-3">
     <p class="text-neutral">No se pudieron cargar los productos.</p>
-    <button class="btn btn-primary" type="button" (click)="productsResource.reload()">Reintentar</button>
+    <app-button (click)="productsResource.reload()">Reintentar</app-button>
   </div>
 } @else {
   <purchase-form

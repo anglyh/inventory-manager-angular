@@ -6,9 +6,9 @@
   />
 
   @if (filters().cashRegisterId) {
-    <div class="flex items-center justify-between gap-2 rounded-field bg-info-soft px-3 py-2 text-info">
+    <div class="flex items-center justify-between gap-2 rounded-field bg-info-soft py-1 pl-3 pr-1 text-info">
       <small>Mostrando solo movimientos de una caja</small>
-      <button type="button" class="btn btn-ghost btn-xs" (click)="onFiltersChange({ ...filters(), cashRegisterId: undefined })">Quitar</button>
+      <app-button variant="ghost" (click)="onFiltersChange({ ...filters(), cashRegisterId: undefined })">Quitar</app-button>
     </div>
   }
 
@@ -21,7 +21,7 @@
   } @else if (error()) {
     <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">
       <p class="text-neutral">{{ error() }}</p>
-      <button type="button" class="btn btn-primary btn-sm" (click)="retry()">Reintentar</button>
+      <app-button (click)="retry()">Reintentar</app-button>
     </div>
   } @else if (!movements().length) {
     <div class="flex flex-col items-center gap-1 rounded-box bg-base-100 px-4 py-12 text-center">

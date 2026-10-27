@@ -107,14 +107,14 @@
               </dl>
 
               @if (canVoid() && movement.status === 'COMPLETED') {
-                <button
-                  type="button"
-                  class="btn btn-ghost btn-sm self-start text-error hover:bg-error-soft"
+                <app-button
+                  variant="ghost"
+                  customClass="self-start text-error hover:bg-error-soft"
                   (click)="voidRequested.emit(movement)"
                 >
                   <ng-icon name="tablerBan" size="16" aria-hidden="true" />
                   Anular
-                </button>
+                </app-button>
               }
 
               @if (movement.status === 'VOIDED') {

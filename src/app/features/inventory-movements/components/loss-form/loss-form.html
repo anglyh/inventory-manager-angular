@@ -37,7 +37,7 @@
     <!-- Productos -->
     <div class="flex flex-1 flex-col gap-2" formArrayName="items">
       @if (items.length) {
-        <div class="hidden gap-3 px-3 text-caption text-neutral @2xl:grid @2xl:grid-cols-[1fr_6rem_8rem_6rem_2rem]">
+        <div class="hidden gap-3 px-3 text-caption text-neutral @2xl:grid @2xl:grid-cols-[1fr_6rem_8rem_6rem_2.5rem]">
           <span>Producto</span>
           <span class="text-right">Stock</span>
           <span>Quitar</span>
@@ -47,19 +47,19 @@
 
       @for (item of items.controls; track item.controls.productId.value; let i = $index) {
         <div
-          class="grid grid-cols-[1fr_1fr_auto] items-center gap-3 rounded-field bg-base-200 p-3 @2xl:grid-cols-[1fr_6rem_8rem_6rem_2rem]"
+          class="grid grid-cols-[1fr_1fr_auto] items-center gap-3 rounded-field bg-base-200 p-3 @2xl:grid-cols-[1fr_6rem_8rem_6rem_2.5rem]"
           [formGroupName]="i"
         >
           <span class="col-span-2 truncate font-medium @2xl:col-span-1">{{ item.controls.name.value }}</span>
 
-          <button
-            type="button"
-            class="btn btn-ghost btn-square btn-sm justify-self-end text-neutral hover:bg-error-soft hover:text-error @2xl:order-last"
-            aria-label="Quitar producto"
+          <app-button
+            variant="ghost"
+            customClass="btn-circle justify-self-end text-neutral hover:bg-error-soft hover:text-error @2xl:order-last"
+            ariaLabel="Quitar producto"
             (click)="removeItem(i)"
           >
             <ng-icon name="tablerTrash" size="18" aria-hidden="true" />
-          </button>
+          </app-button>
 
           <span class="text-neutral tabular-nums @2xl:text-right">
             <span class="@2xl:hidden">Stock </span>{{ stockOf(item.controls.productId.value) }}

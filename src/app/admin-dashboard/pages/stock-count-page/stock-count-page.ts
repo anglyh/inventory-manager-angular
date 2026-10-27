@@ -7,10 +7,11 @@ import type { StockCountRequest } from '@/features/inventory-movements/interface
 import { resolveApiError } from '@/features/inventory-movements/shared/movement-form-utils';
 import { ProductService } from '@/features/products/services/product.service';
 import { GlobalNotificationService } from '@/shared/components/global-notification/global-notification.service';
+import { Button } from '@/shared/components/button/button';
 
 @Component({
   selector: 'app-stock-count-page',
-  imports: [StockCountForm],
+  imports: [StockCountForm, Button],
   templateUrl: './stock-count-page.html',
   host: { class: 'flex min-h-full flex-col gap-4' },
 })

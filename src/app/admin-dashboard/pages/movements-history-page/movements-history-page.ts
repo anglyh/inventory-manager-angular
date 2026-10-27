@@ -19,10 +19,11 @@ import { ProductService } from '@/features/products/services/product.service';
 import { InfiniteScrollDirective } from '@/shared/directives/infinite-scroll.directive';
 import { extractApiError } from '@/api/extract-api-error';
 import { mapApiError } from '@/api/error-mapper';
+import { Button } from '@/shared/components/button/button';
 
 @Component({
   selector: 'app-movements-history-page',
-  imports: [InventoryMovementList, MovementFilters, InfiniteScrollDirective, VoidMovementDialog],
+  imports: [InventoryMovementList, MovementFilters, InfiniteScrollDirective, VoidMovementDialog, Button],
   templateUrl: './movements-history-page.html',
 })
 export class MovementsHistoryPage {

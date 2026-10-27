@@ -12,6 +12,7 @@ import {
 } from '@ng-icons/tabler-icons';
 import type { InventoryMovement } from '../../interfaces/inventory-movement.interface';
 import { KIND_VIEW, PAYMENT_LABELS, REASON_LABELS, movementKind, reasonKind, unitAmount } from '../../shared/movement-labels';
+import { Button } from '@/shared/components/button/button';
 
 interface DayGroup {
   key: string;
@@ -26,7 +27,7 @@ function localDayKey(date: Date): string {
 
 @Component({
   selector: 'inventory-movement-list',
-  imports: [DatePipe, DecimalPipe, NgIcon],
+  imports: [DatePipe, DecimalPipe, NgIcon, Button],
   viewProviders: [
     provideIcons({
       tablerAlertTriangle,
