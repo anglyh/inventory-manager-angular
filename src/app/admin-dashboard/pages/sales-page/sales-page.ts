@@ -13,15 +13,49 @@ import { CashRegisterService } from '@/features/cash-register/services/cash-regi
 import { extractApiError } from '@/api/extract-api-error';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { tablerAlertCircle, tablerCashRegister, tablerRefresh } from '@ng-icons/tabler-icons';
+import { tablerAlertCircle, tablerCashRegister, tablerRefresh, tablerScan } from "@ng-icons/tabler-icons";
+import { Button } from "@/shared/components/button/button";
+import { BarcodeScanner } from "@/features/products/components/barcode-scanner/barcode-scanner";
+
+/** Las pistolas lectoras teclean cada dígito en pocos milisegundos; una persona tarda más. */
+const SCANNER_KEY_GAP_MS = 50;
 
 @Component({
   selector: 'app-sales-page',
-  imports: [ProductPicker, SaleDetail, RouterLink, NgIcon],
-  viewProviders: [provideIcons({ tablerAlertCircle, tablerCashRegister, tablerRefresh })],
+  imports: [ProductPicker, SaleDetail, RouterLink, NgIcon, Button, BarcodeScanner],
+  viewProviders: [provideIcons({ tablerAlertCircle, tablerCashRegister, tablerRefresh, tablerScan })],
   templateUrl: './sales-page.html',
+  host: { '(document:keydown)': 'onScannerKey($event)' },
 })
 export class SalesPage {
+  private scanBuffer = '';
+  private lastScanKeyAt = 0;
+
+  /**
+   * Pistola lectora con el foco fuera de un campo (p. ej. tras tocar un producto): teclea los dígitos
+   * muy rápido y termina con Enter. Una persona tecleando no llega a ese ritmo, así que no se confunde.
+   * Dentro de un campo no interviene: el buscador maneja su propio Enter.
+   */
+  onScannerKey(event: KeyboardEvent) {
+    const target = event.target as HTMLElement | null;
+    if (this.scannerOpen() || target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+
+    const now = performance.now();
+    if (now - this.lastScanKeyAt > SCANNER_KEY_GAP_MS) this.scanBuffer = '';
+    this.lastScanKeyAt = now;
+
+    if (/^\d$/.test(event.key)) {
+      this.scanBuffer += event.key;
+      return;
+    }
+    if (event.key === 'Enter' && /^\d{8,14}$/.test(this.scanBuffer)) {
+      // Evita que el Enter también "presione" el botón que tenga el foco.
+      event.preventDefault();
+      this.addByBarcode(this.scanBuffer);
+    }
+    this.scanBuffer = '';
+  }
+
   productService = inject(ProductService);
   inventoryMovementService = inject(InventoryMovementService)
   saleOpen = signal(false);
@@ -65,10 +99,11 @@ export class SalesPage {
     const categoryId = this.activeCategoryId();
 
     return products.filter(product =>
-      product.name.toLocaleLowerCase().includes(term) &&
+      (product.name.toLocaleLowerCase().includes(term) || product.barcode === term) &&
       (categoryId === null || product.categoryId === categoryId)
     )
   })
+  scannerOpen = signal(false);
   selectedProducts = signal<SaleCartItem[]>([]);
 
   addProduct(product: ProductOption) {
@@ -98,10 +133,36 @@ export class SalesPage {
     );
   }
 
-  /** Enter en el buscador: agrega el primer resultado, si lo hay. */
-  addFirstMatch() {
+  /**
+   * Enter en el buscador: si es un código de barras (lo tipea una pistola lectora), agrega ese
+   * producto y limpia el campo para el siguiente; si no, agrega el primer resultado.
+   */
+  addFirstMatch(input: HTMLInputElement) {
+    const term = input.value.trim();
+    if (/^\d{8,14}$/.test(term)) {
+      this.addByBarcode(term);
+      input.value = '';
+      this.searchTerm.set('');
+      return;
+    }
     const product = this.filteredProducts()[0];
     if (product) this.addProduct(product);
+  }
+
+  /** Código leído con la cámara o la pistola: busca entre todos los productos, sin el filtro de categoría. */
+  addByBarcode(code: string) {
+    const product = (this.productsResource.value() ?? []).find(option => option.barcode === code);
+    if (!product) {
+      this.notificationService.show(`No tienes un producto con el código ${code}`, 'error');
+      return;
+    }
+    const inCart = this.selectedProducts().find(item => item.productId === product.id)?.quantity ?? 0;
+    if (inCart >= product.stock) {
+      this.notificationService.show(`No queda stock de ${product.name}`, 'error');
+      return;
+    }
+    this.addProduct(product);
+    this.notificationService.show(`${product.name} agregado`);
   }
 
   changeQuantity({ productId, quantity }: Pick<SaleCartItem, 'productId' | 'quantity'>) {

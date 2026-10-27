@@ -11,13 +11,26 @@
     <div class="grid gap-3 @xl:grid-cols-[1fr_16rem]">
       <div class="flex flex-col gap-1">
         <label class="text-caption text-neutral" for="purchase-product">Agregar producto</label>
-        <app-option-selector
-          controlId="purchase-product"
-          mode="add"
-          placeholder="Busca un producto para agregarlo"
-          emptyText="No hay productos con ese nombre"
-          [items]="products()"
-          (selectedOption)="addProduct($event)"
+        <!-- La pistola lectora tipea el código en el buscador y Enter lo agrega; el botón usa la cámara. -->
+        <div class="flex items-center gap-2">
+          <app-option-selector
+            class="min-w-0 flex-1"
+            controlId="purchase-product"
+            mode="add"
+            placeholder="Busca o escanea un producto"
+            emptyText="No hay productos con ese nombre o código"
+            [items]="products()"
+            (selectedOption)="addProduct($event)"
+          />
+          <app-button variant="outline" customClass="btn-circle" ariaLabel="Escanear código" (click)="scannerOpen.set(true)">
+            <ng-icon name="tablerScan" size="18" aria-hidden="true" />
+          </app-button>
+        </div>
+        <barcode-scanner
+          [open]="scannerOpen()"
+          (closed)="scannerOpen.set(false)"
+          (scanned)="addByBarcode($event)"
+          (manualRequested)="focusProductSearch()"
         />
       </div>
       <div class="flex flex-col gap-1">

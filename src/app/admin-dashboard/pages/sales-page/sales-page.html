@@ -60,7 +60,8 @@
     
         <!-- Buscador y, debajo, los chips de categoría (un toque filtra; se combinan). -->
         <div class="flex flex-col gap-3">
-        <label class="input w-full min-w-0">
+        <div class="flex items-center gap-2">
+        <label class="input w-full min-w-0 flex-1">
           <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor">
               <circle cx="11" cy="11" r="8"></circle>
@@ -72,16 +73,28 @@
             placeholder="Busca un producto"
             type="text"
             (input)="searchTerm.set(input.value)"
-            (keydown.enter)="addFirstMatch()"
+            (keydown.enter)="addFirstMatch(input)"
             #input
-            required 
+            required
           />
         </label>
+        <app-button variant="outline" customClass="btn-circle" ariaLabel="Escanear código" (click)="scannerOpen.set(true)">
+          <ng-icon name="tablerScan" size="18" aria-hidden="true" />
+        </app-button>
+        </div>
+        <!-- "Escribir el código" vuelve al buscador: ahí Enter con un código agrega ese producto. -->
+        <barcode-scanner
+          [open]="scannerOpen()"
+          (closed)="scannerOpen.set(false)"
+          (scanned)="addByBarcode($event)"
+          (manualRequested)="input.focus()"
+        />
         @if (categoryChips().length) {
-          <div class="flex flex-wrap gap-2" role="group" aria-label="Filtrar por categoría">
+          <!-- Celular y tablet: una fila que se desliza (no empuja los productos hacia abajo). Escritorio: bajan de línea. -->
+          <div class="flex gap-2 overflow-x-auto [scrollbar-width:none] lg:flex-wrap lg:overflow-visible" role="group" aria-label="Filtrar por categoría">
             <button
               type="button"
-              class="btn rounded-full border-0 px-4"
+              class="btn shrink-0 rounded-full border-0 px-4"
               [class]="activeCategoryId() === null ? 'btn-primary' : '[--btn-color:var(--color-base-200)]'"
               [attr.aria-pressed]="activeCategoryId() === null"
               (click)="categoryId.set(null)"
@@ -92,7 +105,7 @@
             @for (chip of categoryChips(); track chip.id) {
               <button
                 type="button"
-                class="btn max-w-full rounded-full border-0 px-4"
+                class="btn max-w-60 shrink-0 rounded-full border-0 px-4"
                 [class]="activeCategoryId() === chip.id ? 'btn-primary' : '[--btn-color:var(--color-base-200)]'"
                 [attr.aria-pressed]="activeCategoryId() === chip.id"
                 (click)="categoryId.set(activeCategoryId() === chip.id ? null : chip.id)"

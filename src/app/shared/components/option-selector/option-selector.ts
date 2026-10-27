@@ -9,6 +9,8 @@ import { Button } from 'src/app/shared/components/button/button';
 interface Option {
   id: string;
   name: string;
+  /** Si viene, un código exacto también encuentra la opción (lo tipea una pistola lectora + Enter). */
+  barcode?: string | null;
 }
 
 const removeAccents = (text: string) => {
@@ -145,10 +147,11 @@ export class OptionSelector<T extends Option> {
     const cleanQuery = removeAccents(this.inputValue())
 
     if (!cleanQuery) return allProducts;
+    const code = cleanQuery.trim();
 
     return allProducts.filter(product => {
       const cleanName = removeAccents(product.name)
-      return cleanName.includes(cleanQuery)
+      return cleanName.includes(cleanQuery) || (!!product.barcode && product.barcode === code)
     })
   })
 
