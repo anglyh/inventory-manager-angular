@@ -9,6 +9,8 @@ export interface AttentionItem {
   id: string;
   icon: string;
   text: string;
+  /** Una línea corta debajo del título (p. ej. de dónde sale el monto). */
+  note?: string;
   hint: string;
   link: string;
   /** Filtro que abre la lista ya filtrada (p. ej. `{ migrations: 'pending' }`). */
@@ -32,7 +34,8 @@ export function attentionItems(
     items.push({
       id: 'cash',
       icon: 'tablerAlertTriangle',
-      text: `Faltó ${money(shortage)} en caja`,
+      text: `Faltaron ${money(shortage)} al cerrar caja`,
+      note: `${plural(total.cashShortageCount, 'cierre', 'cierres')} con menos dinero del esperado · se resta de tu ganancia`,
       hint: 'Cajas que cerraron con menos dinero del que debía haber',
       link: '/cash-register/history',
       tone: 'error',

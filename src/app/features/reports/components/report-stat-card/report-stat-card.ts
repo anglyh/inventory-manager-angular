@@ -39,6 +39,8 @@ export class ReportStatCard {
   /** Para pérdidas: subir es malo. */
   invertDelta = input(false);
   hint = input<string | null>(null);
+  /** Qué significa la cifra, en palabras simples: va en el `title` de la card. */
+  explanation = input<string | null>(null);
   /** Retraso de la animación de entrada (ms), para escalonar las cards. */
   delay = input(0);
 

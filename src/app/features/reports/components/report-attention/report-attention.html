@@ -16,7 +16,12 @@
             >
               <ng-icon [name]="item.icon" size="18" aria-hidden="true" />
             </span>
-            <span class="min-w-0 flex-1 truncate tabular-nums">{{ item.text }}</span>
+            <span class="flex min-w-0 flex-1 flex-col">
+              <span class="truncate tabular-nums">{{ item.text }}</span>
+              @if (item.note) {
+                <small class="tabular-nums text-neutral">{{ item.note }}</small>
+              }
+            </span>
             <ng-icon name="tablerChevronRight" size="18" class="shrink-0 text-neutral" aria-hidden="true" />
           </a>
           @if (item.details?.length) {

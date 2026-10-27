@@ -3669,6 +3669,8 @@ export interface components {
                  * @example 20.00
                  */
                 cashShortage: string;
+                /** @description Cajas cerradas en el período con faltante (diferencia negativa). */
+                cashShortageCount: number;
                 /**
                  * @description Gastos del grupo GENERAL del período.
                  * @example 20.00
