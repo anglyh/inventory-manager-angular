@@ -10,13 +10,13 @@
     #searchInputRef
   />
   @if (searchTerm()) {
-    <button
-      type="button"
-      class="btn btn-circle btn-ghost"
-      aria-label="Limpiar búsqueda"
+    <app-button
+      variant="ghost"
+      customClass="btn-circle"
+      ariaLabel="Limpiar búsqueda"
       (click)="searchTerm.set(''); searchInputRef.value = ''; searchInputRef.focus(); search('')"
     >
       <ng-icon name="tablerX" size="16" aria-hidden="true" />
-    </button>
+    </app-button>
   }
 </label>

@@ -68,9 +68,9 @@
             @if (editable()) {
               <td class="pr-0">
                 <div class="dropdown dropdown-end">
-                  <button type="button" class="btn btn-circle btn-ghost" [attr.aria-label]="'Acciones de ' + product.name">
+                  <app-button variant="ghost" customClass="btn-circle" [ariaLabel]="'Acciones de ' + product.name">
                     <ng-icon name="tablerDots" size="18" aria-hidden="true" />
-                  </button>
+                  </app-button>
                   <ul tabindex="-1" class="dropdown-content menu z-10 w-36 rounded-box bg-base-100 p-1 shadow-lg">
                     <li><button type="button" (click)="edit.emit(product); blurActive()">Editar</button></li>
                   </ul>

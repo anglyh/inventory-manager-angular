@@ -3,6 +3,7 @@ import { Component, input, output } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerDots } from '@ng-icons/tabler-icons';
+import { Button } from '@/shared/components/button/button';
 
 interface StockStatus {
   label: string;
@@ -11,7 +12,7 @@ interface StockStatus {
 
 @Component({
   selector: 'product-table',
-  imports: [DecimalPipe, NgIcon],
+  imports: [DecimalPipe, NgIcon, Button],
   viewProviders: [provideIcons({ tablerDots })],
   templateUrl: './product-table.html',
 })
