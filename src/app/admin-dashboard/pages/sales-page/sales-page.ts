@@ -15,7 +15,7 @@ import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerAlertCircle, tablerCashRegister, tablerRefresh, tablerScan } from "@ng-icons/tabler-icons";
 import { Button } from "@/shared/components/button/button";
-import { BarcodeScanner } from "@/features/products/components/barcode-scanner/barcode-scanner";
+import { BarcodeScanner, type ScanFeedback } from "@/features/products/components/barcode-scanner/barcode-scanner";
 
 /** Las pistolas lectoras teclean cada dígito en pocos milisegundos; una persona tarda más. */
 const SCANNER_KEY_GAP_MS = 50;
@@ -104,7 +104,24 @@ export class SalesPage {
     )
   })
   scannerOpen = signal(false);
+  /** Cámara en modo continuo: lo sumado desde que se abrió el lector y el último resultado. */
+  cameraFeedback = signal<ScanFeedback>({ added: 0, message: '', tone: 'ok' });
   selectedProducts = signal<SaleCartItem[]>([]);
+
+  openScanner() {
+    this.cameraFeedback.set({ added: 0, message: '', tone: 'ok' });
+    this.scannerOpen.set(true);
+  }
+
+  /** Cada código de la cámara: el resultado se ve dentro del lector, que sigue abierto. */
+  addCameraScan(code: string) {
+    const result = this.addBarcodeToCart(code);
+    this.cameraFeedback.update(feedback => ({
+      added: feedback.added + (result.ok ? 1 : 0),
+      message: result.message,
+      tone: result.ok ? 'ok' : 'error',
+    }));
+  }
 
   addProduct(product: ProductOption) {
     const existingItem = this.selectedProducts().find(item => item.productId === product.id);
@@ -149,20 +166,20 @@ export class SalesPage {
     if (product) this.addProduct(product);
   }
 
-  /** Código leído con la cámara o la pistola: busca entre todos los productos, sin el filtro de categoría. */
+  /** Código leído con la pistola o escrito: avisa con una notificación. */
   addByBarcode(code: string) {
+    const result = this.addBarcodeToCart(code);
+    this.notificationService.show(result.message, result.ok ? undefined : 'error');
+  }
+
+  /** Busca el código entre todos los productos, sin el filtro de categoría, y suma una unidad. */
+  private addBarcodeToCart(code: string): { ok: boolean; message: string } {
     const product = (this.productsResource.value() ?? []).find(option => option.barcode === code);
-    if (!product) {
-      this.notificationService.show(`No tienes un producto con el código ${code}`, 'error');
-      return;
-    }
+    if (!product) return { ok: false, message: `No tienes un producto con el código ${code}` };
     const inCart = this.selectedProducts().find(item => item.productId === product.id)?.quantity ?? 0;
-    if (inCart >= product.stock) {
-      this.notificationService.show(`No queda stock de ${product.name}`, 'error');
-      return;
-    }
+    if (inCart >= product.stock) return { ok: false, message: `No queda stock de ${product.name}` };
     this.addProduct(product);
-    this.notificationService.show(`${product.name} agregado`);
+    return { ok: true, message: `${product.name} agregado` };
   }
 
   changeQuantity({ productId, quantity }: Pick<SaleCartItem, 'productId' | 'quantity'>) {

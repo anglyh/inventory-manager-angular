@@ -78,15 +78,18 @@
             required
           />
         </label>
-        <app-button variant="outline" customClass="btn-circle" ariaLabel="Escanear código" (click)="scannerOpen.set(true)">
+        <app-button variant="outline" customClass="btn-circle" ariaLabel="Escanear código" (click)="openScanner()">
           <ng-icon name="tablerScan" size="18" aria-hidden="true" />
         </app-button>
         </div>
-        <!-- "Escribir el código" vuelve al buscador: ahí Enter con un código agrega ese producto. -->
+        <!-- Lectura continua: la cámara queda abierta y suma un producto por código.
+             "Escribir el código" vuelve al buscador: ahí Enter con un código agrega ese producto. -->
         <barcode-scanner
           [open]="scannerOpen()"
+          [continuous]="true"
+          [feedback]="cameraFeedback()"
           (closed)="scannerOpen.set(false)"
-          (scanned)="addByBarcode($event)"
+          (scanned)="addCameraScan($event)"
           (manualRequested)="input.focus()"
         />
         @if (categoryChips().length) {

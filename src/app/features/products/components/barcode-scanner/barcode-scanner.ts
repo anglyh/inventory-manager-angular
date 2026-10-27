@@ -12,6 +12,8 @@ const FORMATS: BarcodeFormat[] = ['ean_13', 'ean_8', 'upc_a', 'upc_e'];
 const DETECT_INTERVAL_MS = 200;
 const MAX_DETECT_FAILURES = 5;
 const CAMERA_STORAGE_KEY = 'barcode-scanner.camera';
+/** Continuous mode: the same code is ignored until it has been out of view this long. */
+const REPEAT_COOLDOWN_MS = 2000;
 
 type Detector = { detect(source: HTMLVideoElement): Promise<DetectedBarcode[]> };
 type DetectorClass = {
@@ -19,6 +21,13 @@ type DetectorClass = {
   getSupportedFormats(): Promise<readonly BarcodeFormat[]>;
 };
 type ScannerStatus = 'idle' | 'starting' | 'scanning' | 'error';
+
+/** Lo que el padre informa en modo continuo: cuántos productos sumó y qué pasó con el último código. */
+export interface ScanFeedback {
+  added: number;
+  message: string;
+  tone: 'ok' | 'error';
+}
 // Image-capture extensions (Chrome Android) missing from the DOM typings.
 type CameraCapabilities = MediaTrackCapabilities & {
   torch?: boolean;
@@ -37,6 +46,7 @@ const MESSAGES = {
  * Lector de códigos de barras con la cámara, dentro de su propio diálogo.
  * Usa el BarcodeDetector nativo si lee EAN-13; si no, carga el ponyfill (zxing-wasm) bajo demanda.
  * Acepta un código cuando se lee igual dos veces seguidas y su dígito verificador es válido.
+ * Con `continuous` la cámara sigue abierta y emite cada código (útil en la caja para vender varios).
  */
 @Component({
   selector: 'barcode-scanner',
@@ -46,7 +56,14 @@ const MESSAGES = {
 })
 export class BarcodeScanner {
   open = input(false);
-  /** Código leído (GTIN válido). El diálogo ya se está cerrando. */
+  /**
+   * Modo continuo: no se cierra al leer, emite cada código y no repite el mismo
+   * hasta que pasen ~2 s sin verlo. Por defecto lee uno y se cierra.
+   */
+  continuous = input(false);
+  /** Respuesta del padre a cada lectura (solo modo continuo): contador y último resultado. */
+  feedback = input<ScanFeedback | null>(null);
+  /** Código leído (GTIN válido). En modo normal el diálogo ya se está cerrando. */
   scanned = output<string>();
   /** La persona prefiere escribir el código. El diálogo ya se está cerrando. */
   manualRequested = output<void>();
@@ -73,6 +90,9 @@ export class BarcodeScanner {
   private session = 0;
   private lastRead: string | null = null;
   private failures = 0;
+  /** Continuous mode: last emitted code and when it was last seen in the frame. */
+  private lastEmitted: string | null = null;
+  private lastEmittedSeenAt = 0;
 
   constructor() {
     effect(() => {
@@ -211,10 +231,31 @@ export class BarcodeScanner {
       return false;
     }
 
+    if (this.continuous()) {
+      this.emitContinuous(code);
+      return false;
+    }
+
     navigator.vibrate?.(60);
     this.close();
     this.scanned.emit(code);
     return true;
+  }
+
+  /**
+   * Keeps the camera open. A product left in front of the camera is read every few frames,
+   * so the same code only counts again after it has been out of view for REPEAT_COOLDOWN_MS.
+   */
+  private emitContinuous(code: string) {
+    const now = Date.now();
+    const repeated = code === this.lastEmitted && now - this.lastEmittedSeenAt < REPEAT_COOLDOWN_MS;
+    this.lastEmittedSeenAt = now;
+    if (repeated) return;
+
+    this.lastEmitted = code;
+    this.lastRead = null;
+    navigator.vibrate?.(60);
+    this.scanned.emit(code);
   }
 
   private fail(message: string, canRetry = true) {
@@ -235,6 +276,8 @@ export class BarcodeScanner {
     this.torchAvailable.set(false);
     this.torchOn.set(false);
     this.lastRead = null;
+    this.lastEmitted = null;
+    this.lastEmittedSeenAt = 0;
     this.failures = 0;
     if (this.status() !== 'error') this.status.set('idle');
   }
