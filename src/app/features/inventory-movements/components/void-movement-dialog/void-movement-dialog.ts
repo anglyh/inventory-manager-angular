@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerAlertCircle } from '@ng-icons/tabler-icons';
@@ -24,7 +24,7 @@ function voidConsequence(movement: InventoryMovement): string {
 
 @Component({
   selector: 'void-movement-dialog',
-  imports: [ReactiveFormsModule, DatePipe, NgIcon, Button, Modal],
+  imports: [ReactiveFormsModule, DatePipe, DecimalPipe, NgIcon, Button, Modal],
   viewProviders: [provideIcons({ tablerAlertCircle })],
   templateUrl: './void-movement-dialog.html',
 })

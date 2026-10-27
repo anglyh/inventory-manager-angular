@@ -3,8 +3,8 @@
     <form class="flex flex-col gap-4" [formGroup]="voidForm" (ngSubmit)="onSubmit()">
       <div class="flex flex-col gap-1">
         <h3 class="text-subtitle font-medium">Anular movimiento</h3>
-        <small class="text-neutral">
-          {{ reasonLabels[movement.reason] }} · {{ movement.createdAt | date: 'medium' }} · S/ {{ movement.totalAmount }}
+        <small class="text-neutral tabular-nums">
+          {{ reasonLabels[movement.reason] }} · {{ movement.createdAt | date: 'medium' }} · S/ {{ movement.totalAmount | number: '1.2-2' }}
         </small>
       </div>
 
