@@ -2780,6 +2780,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stay/{id}/payment/{paymentId}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Anular un pago registrado por error
+         * @description Solo ADMIN, igual que anular una venta. Exige motivo; el pago no se edita ni se borra: queda anulado con quién, cuándo y por qué, y deja de sumar al saldo, a la caja y a los reportes. Solo en estadías activas. Requiere la caja original del pago abierta; si fue en efectivo, efectivo suficiente para revertirlo. Rechaza pagos ya anulados.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    paymentId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["VoidStayPayment"];
+                };
+            };
+            responses: {
+                /** @description Estadía actualizada. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StayDetail"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["StayConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/store/settings": {
         parameters: {
             query?: never;
@@ -3957,6 +4011,17 @@ export interface components {
                 id: string;
                 /** @enum {string} */
                 paymentMethod: "CASH" | "YAPE";
+                /**
+                 * @description VOIDED: anulado; no suma al saldo, a la caja ni a los reportes.
+                 * @enum {string}
+                 */
+                status: "COMPLETED" | "VOIDED";
+                voidReason: string | null;
+                /** Format: date-time */
+                voidedAt: string | null;
+                /** Format: uuid */
+                voidedBy: string | null;
+                voidedByName: string | null;
             }[];
             /** @example 50.00 */
             paymentsTotal: string;
@@ -4092,6 +4157,10 @@ export interface components {
              * @example 15
              */
             extraToleranceMinutes?: number;
+        };
+        VoidStayPayment: {
+            /** @example Se digitó 500 en vez de 50 */
+            reason: string;
         };
     };
     responses: {

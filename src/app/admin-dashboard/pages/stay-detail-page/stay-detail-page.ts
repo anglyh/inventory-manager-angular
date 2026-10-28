@@ -22,16 +22,19 @@ import { StayAccount } from '@/features/rooms/components/stay-account/stay-accou
 import { StayChargeDialog } from '@/features/rooms/components/stay-charge-dialog/stay-charge-dialog';
 import { StayPaymentDialog } from '@/features/rooms/components/stay-payment-dialog/stay-payment-dialog';
 import { StayCheckOutDialog } from '@/features/rooms/components/stay-check-out-dialog/stay-check-out-dialog';
+import { StayVoidPaymentDialog } from '@/features/rooms/components/stay-void-payment-dialog/stay-void-payment-dialog';
+import { AuthService } from '@/auth/services/auth.service';
 import type {
   CheckOutRequest,
   CreateStayChargeRequest,
   CreateStayPaymentRequest,
   StayDetail,
+  StayPayment,
 } from '@/features/rooms/interfaces/stay.interface';
 import { rateText } from '@/features/rooms/utils/stay-labels';
 import { formatDuration, minutesSince } from '@/features/rooms/utils/stay-time';
 
-type DialogKind = 'charge' | 'payment' | 'checkOut';
+type DialogKind = 'charge' | 'payment' | 'checkOut' | 'voidPayment';
 
 @Component({
   selector: 'app-stay-detail-page',
@@ -45,6 +48,7 @@ type DialogKind = 'charge' | 'payment' | 'checkOut';
     StayChargeDialog,
     StayPaymentDialog,
     StayCheckOutDialog,
+    StayVoidPaymentDialog,
   ],
   viewProviders: [
     provideIcons({ tablerAlertCircle, tablerArrowLeft, tablerCash, tablerCircleCheck, tablerClockExclamation, tablerDoorExit, tablerWorld }),
@@ -78,6 +82,9 @@ export class StayDetailPage {
 
   readonly stay = computed(() => (this.stayResource.hasValue() ? this.stayResource.value() : null));
   readonly isActive = computed(() => this.stay()?.status === 'ACTIVE');
+  /** Anular un pago es solo de ADMIN (igual que anular una venta) y solo con la estadía activa. */
+  readonly canVoidPayments = computed(() => this.isAdmin() && this.isActive());
+  private isAdmin = inject(AuthService).isAdmin;
   readonly balance = computed(() => Number(this.stay()?.balance ?? 0));
   readonly holderName = computed(() => this.stay()?.guests.find(guest => guest.isHolder)?.fullName ?? null);
   /** Minutos pasados de la salida prevista; el backend los da junto al adicional sugerido. */
@@ -100,6 +107,22 @@ export class StayDetailPage {
   readonly saving = signal(false);
   readonly dialogError = signal<string | null>(null);
   readonly migrationsSaving = signal(false);
+  readonly voidTarget = signal<StayPayment | null>(null);
+
+  openVoidPayment(payment: StayPayment) {
+    this.voidTarget.set(payment);
+    this.openDialog('voidPayment');
+  }
+
+  voidPayment(reason: string) {
+    const payment = this.voidTarget();
+    if (!payment) return;
+    this.mutate(
+      id => this.stayService.voidPayment(id, payment.id, { reason }),
+      'Pago anulado',
+      'No se pudo anular el pago.',
+    );
+  }
 
   openDialog(kind: DialogKind) {
     this.dialogError.set(null);
@@ -108,6 +131,7 @@ export class StayDetailPage {
 
   onDialogClosed(kind: DialogKind) {
     if (this.dialog() === kind) this.dialog.set(null);
+    if (kind === 'voidPayment') this.voidTarget.set(null);
     this.dialogError.set(null);
   }
 

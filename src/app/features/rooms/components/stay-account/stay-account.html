@@ -36,17 +36,41 @@
     <h3 class="text-caption text-neutral">Pagos</h3>
     <ul class="flex flex-col">
       @for (payment of s.payments; track payment.id) {
-        <li class="flex items-center justify-between gap-3 border-b border-base-200 py-2">
-          <div class="flex min-w-0 flex-col">
-            <span>{{ paymentLabel[payment.paymentMethod] }}</span>
+        @let voided = payment.status === 'VOIDED';
+        <li
+          class="flex items-center justify-between gap-3 border-b border-base-200 py-2"
+          [attr.title]="voided ? voidedTitle(payment) : null"
+        >
+          <div class="flex min-w-0 flex-col" [class.text-neutral]="voided">
+            <span [class.line-through]="voided">{{ paymentLabel[payment.paymentMethod] }}</span>
             <small class="truncate text-neutral tabular-nums">
-              {{ payment.createdAt | date: 'd MMM · HH:mm' }}
-              @if (payment.createdByName) {
-                · {{ payment.createdByName }}
+              @if (voided) {
+                Anulado · {{ payment.voidReason }}
+              } @else {
+                {{ payment.createdAt | date: 'd MMM · HH:mm' }}
+                @if (payment.createdByName) {
+                  · {{ payment.createdByName }}
+                }
               }
             </small>
           </div>
-          <span class="shrink-0 tabular-nums text-success">− S/ {{ payment.amount | number: '1.2-2' }}</span>
+          <div class="flex shrink-0 items-center gap-1">
+            @if (voided) {
+              <span class="tabular-nums text-neutral line-through">S/ {{ payment.amount | number: '1.2-2' }}</span>
+            } @else {
+              <span class="tabular-nums text-success">− S/ {{ payment.amount | number: '1.2-2' }}</span>
+              @if (canVoid()) {
+                <app-button
+                  variant="ghost"
+                  customClass="btn-circle"
+                  ariaLabel="Anular pago"
+                  (click)="voidRequested.emit(payment)"
+                >
+                  <ng-icon name="tablerBan" size="18" aria-hidden="true" />
+                </app-button>
+              }
+            }
+          </div>
         </li>
       } @empty {
         <li class="border-b border-base-200 py-2 text-neutral">Aún no pagó nada</li>

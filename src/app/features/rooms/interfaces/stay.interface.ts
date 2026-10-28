@@ -21,3 +21,4 @@ export type SuggestedExtra = NonNullable<StayDetail['suggestedExtra']>;
 export type CreateStayChargeRequest = Schemas['CreateStayCharge'];
 export type CreateStayPaymentRequest = Schemas['CreateStayPayment'];
 export type CheckOutRequest = Schemas['CheckOut'];
+export type VoidStayPaymentRequest = Schemas['VoidStayPayment'];

@@ -11,6 +11,7 @@ import type {
   StayDetail,
   StayPage,
   StayQuery,
+  VoidStayPaymentRequest,
 } from '../interfaces/stay.interface';
 
 const stayUrl = `${environment.apiUrl}/stay`;
@@ -48,6 +49,11 @@ export class StayService {
 
   addPayment(id: string, body: CreateStayPaymentRequest): Observable<StayDetail> {
     return this.http.post<StayDetail>(`${stayUrl}/${id}/payment`, body);
+  }
+
+  /** Solo ADMIN. El pago queda registrado como anulado y deja de sumar al saldo y a la caja. */
+  voidPayment(id: string, paymentId: string, body: VoidStayPaymentRequest): Observable<StayDetail> {
+    return this.http.post<StayDetail>(`${stayUrl}/${id}/payment/${paymentId}/void`, body);
   }
 
   checkOut(id: string, body: CheckOutRequest): Observable<StayDetail> {

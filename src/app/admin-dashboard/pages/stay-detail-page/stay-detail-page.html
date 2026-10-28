@@ -127,7 +127,7 @@
     }
 
     <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-      <stay-account [stay]="s" />
+      <stay-account [stay]="s" [canVoid]="canVoidPayments()" (voidRequested)="openVoidPayment($event)" />
       <div class="flex flex-col gap-4">
         <stay-guests [guests]="s.guests" [minors]="s.minors" />
         @if (s.travelReason || s.notes || s.createdByName) {
@@ -181,6 +181,15 @@
       (confirmed)="checkOut($event)"
       (cancelled)="dialog.set(null)"
       (closed)="onDialogClosed('checkOut')"
+    />
+    <stay-void-payment-dialog
+      [open]="dialog() === 'voidPayment'"
+      [saving]="saving()"
+      [error]="dialog() === 'voidPayment' ? dialogError() : null"
+      [payment]="voidTarget()"
+      (confirmed)="voidPayment($event)"
+      (cancelled)="dialog.set(null)"
+      (closed)="onDialogClosed('voidPayment')"
     />
   } @else {
     <div class="grid place-items-center py-20" role="status" aria-label="Cargando estadía">
