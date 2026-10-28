@@ -1691,7 +1691,7 @@ export interface paths {
         };
         /**
          * Resumen del periodo
-         * @description Ventas, ganancia neta (bruta − mermas, faltantes de conteo y de caja), cobros por método, descuadres de caja, serie diaria (día Lima), productos vendidos, comparación con el período anterior, compras y retiros del rango, y una foto actual del inventario.
+         * @description Ventas, resultado de la tienda y del hospedaje, ganancia neta (con la diferencia neta de caja y los gastos generales), cobros por método, serie diaria (día Lima), productos vendidos, comparación con el período anterior, compras del rango y una foto actual del inventario.
          *     Si no se envían `from` y `to`, se asumen los últimos 30 días. Máximo 366 días.
          */
         get: {
@@ -3444,25 +3444,18 @@ export interface components {
             } | null;
         };
         ReportOverview: {
-            cash: {
-                closedCount: number;
-                /** @example 20.00 */
-                difference: string;
-                /**
-                 * @description Suma de faltantes de las cajas cerradas (positivo).
-                 * @example 20.00
-                 */
-                shortage: string;
-                /**
-                 * @description Suma de sobrantes de las cajas cerradas.
-                 * @example 20.00
-                 */
-                surplus: string;
-            };
             daily: {
                 /** Format: date */
                 date: string;
-                /** @example 20.00 */
+                /**
+                 * @description Cobros de habitaciones del día − gastos del hospedaje del día.
+                 * @example 20.00
+                 */
+                lodgingResult: string;
+                /**
+                 * @description Ganancia bruta de la tienda del día (ventas − costo).
+                 * @example 20.00
+                 */
                 profit: string;
                 /**
                  * @description Ventas de la tienda del día.
@@ -3475,23 +3468,9 @@ export interface components {
                  */
                 rooms: string;
             }[];
-            /** @description Gastos del período por categoría, de mayor a menor. Solo categorías con gastos. */
-            expensesByCategory: {
-                /** @example 20.00 */
-                amount: string;
-                /** Format: uuid */
-                categoryId: string;
-                group: components["schemas"]["ExpenseGroup"];
-                name: string;
-            }[];
             flows: {
                 /**
-                 * @description Retiros de caja en el rango. No restan ganancia. Excluye los gastos pagados con la caja (ya restan como gasto).
-                 * @example 20.00
-                 */
-                ownerWithdrawals: string;
-                /**
-                 * @description Mercadería comprada en el rango (a costo). No resta ganancia.
+                 * @description Mercadería comprada en el rango (a costo). No resta ganancia: pasa al stock.
                  * @example 20.00
                  */
                 purchases: string;
@@ -3533,18 +3512,6 @@ export interface components {
                  * @example 20.00
                  */
                 revenue: string;
-            };
-            losses: {
-                /** @example 20.00 */
-                cashShortage: string;
-                /** @example 20.00 */
-                countShortage: string;
-                /** @example 20.00 */
-                countSurplus: string;
-                /** @example 20.00 */
-                damaged: string;
-                /** @example 20.00 */
-                expired: string;
             };
             /** @description Foto actual de lo pendiente con Migraciones: no depende del rango. */
             migrations: {
@@ -3609,15 +3576,20 @@ export interface components {
             store: {
                 /** @example 20.00 */
                 cogs: string;
+                /**
+                 * @description Sobrantes de conteo (a costo). Suman al resultado.
+                 * @example 20.00
+                 */
+                countSurplus: string;
                 /** @example 20.00 */
                 grossProfit: string;
                 /**
-                 * @description Solo mercadería: mermas + faltantes de conteo − sobrantes (a costo).
+                 * @description Vencidos, dañados y faltantes de conteo (a costo).
                  * @example 20.00
                  */
                 losses: string;
                 /**
-                 * @description grossProfit − losses.
+                 * @description grossProfit − losses + countSurplus.
                  * @example 20.00
                  */
                 result: string;
@@ -3632,17 +3604,12 @@ export interface components {
                 /** @example 20.00 */
                 grossProfit: string;
                 /**
-                 * @description Mermas y faltantes de conteo menos sobrantes (a costo), más faltantes de caja. Se mantiene por compatibilidad; store.losses no incluye la caja.
-                 * @example 20.00
-                 */
-                losses: string;
-                /**
                  * @description netProfit / (revenue + rooms.revenue) × 100.
                  * @example 20.00
                  */
                 marginPct: string;
                 /**
-                 * @description store.result + lodging.result − total.cashShortage − total.generalExpenses. Sin gastos equivale a grossProfit − losses + rooms.revenue.
+                 * @description store.result + lodging.result − total.cashShortage + total.cashSurplus − total.generalExpenses.
                  * @example 20.00
                  */
                 netProfit: string;
@@ -3655,14 +3622,6 @@ export interface components {
             };
             /** Format: date-time */
             to: string;
-            topLosses: {
-                /** @example 20.00 */
-                amount: string;
-                /** Format: uuid */
-                productId: string;
-                productName: string;
-                quantity: number;
-            }[];
             total: {
                 /**
                  * @description Faltantes de las cajas cerradas en el período.
@@ -3672,6 +3631,11 @@ export interface components {
                 /** @description Cajas cerradas en el período con faltante (diferencia negativa). */
                 cashShortageCount: number;
                 /**
+                 * @description Sobrantes de las cajas cerradas en el período.
+                 * @example 20.00
+                 */
+                cashSurplus: string;
+                /**
                  * @description Gastos del grupo GENERAL del período.
                  * @example 20.00
                  */
@@ -3679,7 +3643,7 @@ export interface components {
                 /** @example 20.00 */
                 lodgingResult: string;
                 /**
-                 * @description storeResult + lodgingResult − cashShortage − generalExpenses (igual a summary.netProfit).
+                 * @description storeResult + lodgingResult − cashShortage + cashSurplus − generalExpenses (igual a summary.netProfit).
                  * @example 20.00
                  */
                 netProfit: string;

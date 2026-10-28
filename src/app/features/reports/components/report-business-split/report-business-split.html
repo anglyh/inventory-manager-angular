@@ -18,10 +18,16 @@
           <dt class="text-neutral">− Costo de lo vendido</dt>
           <dd>S/ {{ st.cogs | number: '1.2-2' }}</dd>
         </div>
-        <div class="flex justify-between gap-3" title="Vencidos, dañados y faltantes de conteo">
-          <dt class="text-neutral">− Mermas</dt>
+        <div class="flex justify-between gap-3" title="Vencidos, dañados y faltantes de conteo, a costo">
+          <dt class="text-neutral">− Pérdidas</dt>
           <dd [class.text-error]="+st.losses > 0">S/ {{ st.losses | number: '1.2-2' }}</dd>
         </div>
+        @if (+st.countSurplus > 0) {
+          <div class="flex justify-between gap-3" title="Productos que aparecieron de más al contar, a costo">
+            <dt class="text-neutral">+ Sobrantes de conteo</dt>
+            <dd class="text-success">S/ {{ st.countSurplus | number: '1.2-2' }}</dd>
+          </div>
+        }
         <div class="mt-1 flex justify-between gap-3 border-t border-base-300 pt-2 font-semibold">
           <dt>Resultado tienda</dt>
           <dd [class.text-error]="isNegative(st.result)">S/ {{ st.result | number: '1.2-2' }}</dd>
@@ -62,10 +68,18 @@
           <dt class="text-neutral">+ Resultado hospedaje</dt>
           <dd [class.text-error]="isNegative(to.lodgingResult)">S/ {{ to.lodgingResult | number: '1.2-2' }}</dd>
         </div>
-        <div class="flex justify-between gap-3">
-          <dt class="text-neutral">− Faltó en caja</dt>
-          <dd [class.text-error]="+to.cashShortage > 0">S/ {{ to.cashShortage | number: '1.2-2' }}</dd>
-        </div>
+        @if (+to.cashShortage > 0) {
+          <div class="flex justify-between gap-3" title="Cajas que cerraron con menos dinero del esperado">
+            <dt class="text-neutral">− Faltantes de caja</dt>
+            <dd class="text-error">S/ {{ to.cashShortage | number: '1.2-2' }}</dd>
+          </div>
+        }
+        @if (+to.cashSurplus > 0) {
+          <div class="flex justify-between gap-3" title="Cajas que cerraron con más dinero del esperado">
+            <dt class="text-neutral">+ Sobrantes de caja</dt>
+            <dd class="text-success">S/ {{ to.cashSurplus | number: '1.2-2' }}</dd>
+          </div>
+        }
         <div class="flex justify-between gap-3" title="Gastos compartidos: luz, agua, sueldos…">
           <dt class="text-neutral">− Gastos generales</dt>
           <dd>S/ {{ to.generalExpenses | number: '1.2-2' }}</dd>

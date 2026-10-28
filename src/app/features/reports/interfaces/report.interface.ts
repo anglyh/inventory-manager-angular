@@ -8,6 +8,8 @@ export type ProductRanking = ReportOverview['products'][number];
 export type ReportPrevious = ReportOverview['previous'];
 export type InventorySnapshot = ReportOverview['inventory'];
 export type ReportMigrations = ReportOverview['migrations'];
+export type ReportPayments = ReportOverview['payments'];
+export type ReportFlows = ReportOverview['flows'];
 
 /** Escala del período navegable con flechas. */
 export type ReportScale = 'day' | 'week' | 'month' | 'year';

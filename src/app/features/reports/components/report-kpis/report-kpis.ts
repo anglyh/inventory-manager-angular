@@ -3,8 +3,10 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerChevronDown } from '@ng-icons/tabler-icons';
 import type {
   InventorySnapshot,
+  ReportFlows,
   ReportLodging,
   ReportMigrations,
+  ReportPayments,
   ReportPrevious,
   ReportRooms,
   ReportStore,
@@ -18,7 +20,7 @@ import { ReportAttention, attentionItems } from '../report-attention/report-atte
 
 /**
  * Resumen: la ganancia neta manda (con su desglose a pedido), los avisos al lado
- * y debajo ingresos, ganancia bruta, ocupación y gastos.
+ * y debajo ingresos, ganancia bruta de cada negocio, ocupación, cobros por método, gastos y compras.
  */
 @Component({
   selector: 'report-kpis',
@@ -35,6 +37,8 @@ export class ReportKpis {
   total = input.required<ReportTotal>();
   inventory = input.required<InventorySnapshot>();
   migrations = input.required<ReportMigrations>();
+  payments = input.required<ReportPayments>();
+  flows = input.required<ReportFlows>();
   /** Período comparado, p. ej. "1 – 13 sep 2026". */
   compareLabel = input('');
 
@@ -61,13 +65,18 @@ export class ReportKpis {
     () => `${plural(this.summary().salesCount, 'venta', 'ventas')} · ${plural(this.rooms().stays, 'estadía', 'estadías')}`,
   );
 
-  readonly grossChange = computed(() => change(this.store().grossProfit, this.previous().grossProfit));
-  readonly grossHint = computed(() => {
-    const revenue = Number(this.store().revenue);
-    return revenue ? `Margen ${percent((Number(this.store().grossProfit) / revenue) * 100)}` : 'Tienda';
-  });
+  readonly storeGrossChange = computed(() => change(this.store().grossProfit, this.previous().grossProfit));
+  readonly storeGrossHint = computed(() => marginHint(this.store().grossProfit, this.store().revenue, 'Tienda'));
+
+  /** Del hospedaje: cobros de habitaciones menos sus gastos (el resultado del hospedaje). */
+  readonly lodgingGrossChange = computed(() => change(this.lodging().result, this.previous().lodgingResult));
+  readonly lodgingGrossHint = computed(() => marginHint(this.lodging().result, this.lodging().revenue, 'Hostal'));
 
   readonly occupancyHint = computed(() => plural(this.rooms().stays, 'estadía', 'estadías'));
+
+  /** Parte de lo cobrado (tienda + habitaciones) que entró por cada método. */
+  readonly cashHint = computed(() => shareHint(this.payments().cash, this.payments().yape));
+  readonly yapeHint = computed(() => shareHint(this.payments().yape, this.payments().cash));
 
   /** Gastos registrados: los del hospedaje más los generales. */
   readonly expenses = computed(() => Number(this.lodging().costs) + Number(this.total().generalExpenses));
@@ -87,4 +96,14 @@ export class ReportKpis {
   toggleBreakdown() {
     this.breakdownOpen.update((open) => !open);
   }
+}
+
+function marginHint(profit: string, revenue: string, fallback: string): string {
+  const base = Number(revenue);
+  return base ? `Margen ${percent((Number(profit) / base) * 100)}` : fallback;
+}
+
+function shareHint(part: string, other: string): string {
+  const total = Number(part) + Number(other);
+  return total ? `${percent((Number(part) / total) * 100)} de lo cobrado` : 'Sin cobros';
 }

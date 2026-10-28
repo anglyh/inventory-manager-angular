@@ -4,7 +4,7 @@ import type { ReportLodging, ReportPrevious, ReportStore, ReportTotal } from '..
 
 /**
  * Resultado de cada negocio por separado (tienda y hospedaje) y cómo se llega a la ganancia neta:
- * se restan el faltante de caja y los gastos generales.
+ * se suma la diferencia neta de caja (sobrantes − faltantes) y se restan los gastos generales.
  */
 @Component({
   selector: 'report-business-split',

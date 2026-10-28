@@ -48,13 +48,23 @@
   />
   <report-stat-card
     class="min-w-0"
-    label="Ganancia bruta"
-    explanation="Ventas menos lo que te costó la mercadería vendida"
+    label="Ganancia bruta tienda"
+    explanation="Ventas de la tienda menos lo que te costó la mercadería vendida"
     size="md"
     [value]="store().grossProfit"
-    [delta]="grossChange()"
-    [hint]="grossHint()"
+    [delta]="storeGrossChange()"
+    [hint]="storeGrossHint()"
     [delay]="120"
+  />
+  <report-stat-card
+    class="min-w-0"
+    label="Ganancia bruta hostal"
+    explanation="Cobros de habitaciones menos los gastos del hospedaje"
+    size="md"
+    [value]="lodging().result"
+    [delta]="lodgingGrossChange()"
+    [hint]="lodgingGrossHint()"
+    [delay]="180"
   />
   <report-stat-card
     class="min-w-0"
@@ -63,7 +73,25 @@
     format="percent"
     [value]="rooms().occupancyPct"
     [hint]="occupancyHint()"
-    [delay]="180"
+    [delay]="240"
+  />
+  <report-stat-card
+    class="min-w-0"
+    label="Efectivo"
+    explanation="Cobrado en efectivo: ventas de la tienda y habitaciones"
+    size="md"
+    [value]="payments().cash"
+    [hint]="cashHint()"
+    [delay]="300"
+  />
+  <report-stat-card
+    class="min-w-0"
+    label="Yape"
+    explanation="Cobrado por Yape: ventas de la tienda y habitaciones"
+    size="md"
+    [value]="payments().yape"
+    [hint]="yapeHint()"
+    [delay]="360"
   />
   <!-- Subir los gastos es malo: la variación se pinta al revés. -->
   <report-stat-card
@@ -74,6 +102,16 @@
     [value]="expenses()"
     [delta]="expensesChange()"
     [invertDelta]="true"
-    [delay]="240"
+    [delay]="420"
+  />
+  <!-- Comprar mercadería no es gasto: el dinero pasa al stock. -->
+  <report-stat-card
+    class="min-w-0"
+    label="Compras del período"
+    explanation="Mercadería comprada en el período. No es gasto: pasa a tu stock."
+    size="md"
+    hint="Pasa a tu stock"
+    [value]="flows().purchases"
+    [delay]="480"
   />
 </section>
