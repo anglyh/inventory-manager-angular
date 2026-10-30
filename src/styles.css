@@ -15,6 +15,9 @@
   --color-error-soft: oklch(0.96 0.03 25);
   --color-info-soft: oklch(0.96 0.03 255);
 
+  /* Identifica a Yape en los gráficos; misma luminosidad que los estados. */
+  --color-yape: oklch(0.52 0.16 305);
+
   /* Notificaciones flotantes: color sólido del estado. */
   --color-notification-success: var(--color-success);
   --color-notification-error: var(--color-error);
