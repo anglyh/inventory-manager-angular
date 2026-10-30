@@ -185,6 +185,11 @@
     }
   }
 
+  /* ng-icon trae overflow: hidden, así que en un flex se achica y se ve cortado. */
+  .input > ng-icon {
+    flex-shrink: 0;
+  }
+
   :where(.btn, .input, .textarea, .select, .badge, .fieldset, .label,
     .label-text, .label-text-alt, .menu, .menu-title, .menu li > a,
     .menu li > button, .menu summary, .table, .table tr, .table th,
