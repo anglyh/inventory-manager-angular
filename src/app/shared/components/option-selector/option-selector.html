@@ -17,6 +17,7 @@
       [disabled]="busy()"
       (input)="onInput(searchInput.value)"
       (focus)="openDropdown()"
+      (click)="openDropdown()"
       (keydown.enter)="onEnter($event)"
       (keydown.arrowdown)="onArrow($event, 1)"
       (keydown.arrowup)="onArrow($event, -1)"

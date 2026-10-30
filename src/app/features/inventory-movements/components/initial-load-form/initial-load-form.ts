@@ -7,6 +7,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerAlertCircle, tablerHistory, tablerPackage, tablerTrash } from '@ng-icons/tabler-icons';
 import { Button } from '@/shared/components/button/button';
 import { OptionSelector } from '@/shared/components/option-selector/option-selector';
+import { injectRowFlash } from '@/shared/utils/row-flash';
 import type { ProductOption } from '@/features/products/interfaces/product.interface';
 import type { CreateInitialLoadRequest } from '../../interfaces/other-movement-request.interface';
 import { controlError, itemsRequired, lineCents, moneyValidator, quantityValidator } from '../../shared/movement-form-utils';
@@ -20,6 +21,7 @@ import { controlError, itemsRequired, lineCents, moneyValidator, quantityValidat
 })
 export class InitialLoadForm {
   private fb = inject(FormBuilder);
+  private flashRow = injectRowFlash();
 
   products = input<ProductOption[]>([]);
   saving = input(false);
@@ -83,6 +85,7 @@ export class InitialLoadForm {
   addProduct(product: ProductOption | null) {
     if (!product || this.items.controls.some(item => item.controls.productId.value === product.id)) return;
     this.items.push(this.createItem(product));
+    this.flashRow(product.id);
   }
 
   removeItem(index: number) {

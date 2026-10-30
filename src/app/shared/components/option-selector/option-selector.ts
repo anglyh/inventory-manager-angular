@@ -51,8 +51,9 @@ export class OptionSelector<T extends Option> {
   emptyText = input('No hay coincidencias');
 
   /**
-   * `add`: cada elección agrega un elemento; el buscador se limpia y conserva el
-   * foco para seguir agregando. `select`: el texto elegido queda en el input.
+   * `add`: cada elección agrega un elemento; el buscador se limpia, la lista se cierra
+   * para dejar ver la fila y conserva el foco para seguir agregando.
+   * `select`: el texto elegido queda en el input.
    */
   mode = input<'select' | 'add'>('select');
 
@@ -174,7 +175,7 @@ export class OptionSelector<T extends Option> {
 
     if (this.mode() === 'add') {
       this.inputValue.set('')
-      this.activeIndex.set(-1)
+      this.closeDropdown()
       return
     }
 

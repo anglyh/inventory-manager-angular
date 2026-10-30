@@ -9,6 +9,7 @@ import { Button } from '@/shared/components/button/button';
 import { GlobalNotificationService } from '@/shared/components/global-notification/global-notification.service';
 import { BarcodeScanner } from '@/features/products/components/barcode-scanner/barcode-scanner';
 import { OptionSelector } from '@/shared/components/option-selector/option-selector';
+import { injectRowFlash } from '@/shared/utils/row-flash';
 import type { ProductOption } from '@/features/products/interfaces/product.interface';
 import type { Supplier } from '@/features/suppliers/interfaces/supplier.interface';
 import { SupplierSelector } from '@/features/suppliers/components/supplier-selector/supplier-selector';
@@ -26,6 +27,7 @@ export class PurchaseForm {
   private fb = inject(FormBuilder);
   private document = inject(DOCUMENT);
   private notificationService = inject(GlobalNotificationService);
+  private flashRow = injectRowFlash();
 
   scannerOpen = signal(false);
 
@@ -113,6 +115,7 @@ export class PurchaseForm {
 
   addProduct(product: ProductOption | null) {
     if (!product) return;
+    this.flashRow(product.id);
 
     const existing = this.items.controls.find(item => item.controls.productId.value === product.id);
     if (existing) {
