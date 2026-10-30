@@ -75,24 +75,7 @@
     [hint]="occupancyHint()"
     [delay]="240"
   />
-  <report-stat-card
-    class="min-w-0"
-    label="Efectivo"
-    explanation="Cobrado en efectivo: ventas de la tienda y habitaciones"
-    size="md"
-    [value]="payments().cash"
-    [hint]="cashHint()"
-    [delay]="300"
-  />
-  <report-stat-card
-    class="min-w-0"
-    label="Yape"
-    explanation="Cobrado por Yape: ventas de la tienda y habitaciones"
-    size="md"
-    [value]="payments().yape"
-    [hint]="yapeHint()"
-    [delay]="360"
-  />
+  <report-payment-split class="col-span-2 min-w-0" [payments]="payments()" [delay]="300" />
   <!-- Subir los gastos es malo: la variación se pinta al revés. -->
   <report-stat-card
     class="min-w-0"

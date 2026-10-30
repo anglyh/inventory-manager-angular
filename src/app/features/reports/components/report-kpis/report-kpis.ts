@@ -15,6 +15,7 @@ import type {
 } from '../../interfaces/report.interface';
 import { change, percent, plural } from '../../utils/report-math';
 import { ReportStatCard } from '../report-stat-card/report-stat-card';
+import { ReportPaymentSplit } from '../report-payment-split/report-payment-split';
 import { ReportBusinessSplit } from '../report-business-split/report-business-split';
 import { ReportAttention, attentionItems } from '../report-attention/report-attention';
 
@@ -24,7 +25,7 @@ import { ReportAttention, attentionItems } from '../report-attention/report-atte
  */
 @Component({
   selector: 'report-kpis',
-  imports: [ReportStatCard, ReportBusinessSplit, ReportAttention, NgIcon],
+  imports: [ReportStatCard, ReportPaymentSplit, ReportBusinessSplit, ReportAttention, NgIcon],
   viewProviders: [provideIcons({ tablerChevronDown })],
   templateUrl: './report-kpis.html',
 })
@@ -74,10 +75,6 @@ export class ReportKpis {
 
   readonly occupancyHint = computed(() => plural(this.rooms().stays, 'estadía', 'estadías'));
 
-  /** Parte de lo cobrado (tienda + habitaciones) que entró por cada método. */
-  readonly cashHint = computed(() => shareHint(this.payments().cash, this.payments().yape));
-  readonly yapeHint = computed(() => shareHint(this.payments().yape, this.payments().cash));
-
   /** Gastos registrados: los del hospedaje más los generales. */
   readonly expenses = computed(() => Number(this.lodging().costs) + Number(this.total().generalExpenses));
 
@@ -101,9 +98,4 @@ export class ReportKpis {
 function marginHint(profit: string, revenue: string, fallback: string): string {
   const base = Number(revenue);
   return base ? `Margen ${percent((Number(profit) / base) * 100)}` : fallback;
-}
-
-function shareHint(part: string, other: string): string {
-  const total = Number(part) + Number(other);
-  return total ? `${percent((Number(part) / total) * 100)} de lo cobrado` : 'Sin cobros';
 }
