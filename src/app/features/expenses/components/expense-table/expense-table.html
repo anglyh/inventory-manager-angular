@@ -1,0 +1,57 @@
+<!-- Sin overflow: recortaría el menú de acciones. En el celular se ocultan columnas en su lugar. -->
+<div>
+  <table class="table w-full tabular-nums">
+    <thead>
+      <tr class="border-base-200 text-neutral">
+        <th class="hidden pl-0 font-medium sm:table-cell">Fecha</th>
+        <th class="pl-0 font-medium sm:pl-4">Gasto</th>
+        <th class="hidden font-medium md:table-cell">Origen</th>
+        <th class="text-end font-medium">Monto</th>
+        <th class="w-0 pr-0"><span class="sr-only">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (expense of expenses(); track expense.id) {
+        <tr class="border-base-200">
+          <td class="hidden whitespace-nowrap pl-0 text-neutral sm:table-cell">{{ formatDate(expense.spentOn) }}</td>
+          <td class="pl-0 sm:pl-4">
+            <span class="flex min-w-0 flex-col">
+              <span class="flex flex-wrap items-center gap-2">
+                <span class="font-medium">{{ expense.categoryName }}</span>
+                <span class="badge badge-sm whitespace-nowrap border-0 bg-base-200 text-neutral">{{ groupLabel[expense.group] }}</span>
+              </span>
+              @if (expense.description) {
+                <small class="line-clamp-2 max-w-xs text-neutral">{{ expense.description }}</small>
+              }
+              <small class="text-neutral sm:hidden">{{ formatDate(expense.spentOn) }} · {{ sourceLabel[expense.source] }}</small>
+              <small class="hidden text-neutral sm:inline md:hidden">{{ sourceLabel[expense.source] }}</small>
+            </span>
+          </td>
+          <td class="hidden whitespace-nowrap text-neutral md:table-cell">{{ sourceLabel[expense.source] }}</td>
+          <td class="whitespace-nowrap text-end">S/ {{ expense.amount | number: '1.2-2' }}</td>
+          <td class="pr-0">
+            @if (expense.canDelete) {
+              <!-- Las últimas filas abren el menú hacia arriba para que no quede escondido. -->
+              <div class="dropdown dropdown-end" [class.dropdown-top]="$index >= 2 && $index >= $count - 2">
+                <app-button
+                  variant="ghost"
+                  customClass="btn-circle"
+                  [ariaLabel]="'Acciones del gasto ' + expense.categoryName"
+                  [loading]="busyId() === expense.id"
+                >
+                  <ng-icon name="tablerDots" size="18" aria-hidden="true" />
+                </app-button>
+                <ul tabindex="-1" class="dropdown-content menu z-10 w-44 rounded-box bg-base-100 p-1 shadow-lg">
+                  <li><button type="button" class="text-error" (click)="remove.emit(expense); blurActive()">Eliminar</button></li>
+                </ul>
+              </div>
+            } @else {
+              <!-- Mantiene el ancho de la columna; salió de una caja ya cerrada. -->
+              <span class="block size-10" title="Salió de una caja ya cerrada: no se puede eliminar"></span>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

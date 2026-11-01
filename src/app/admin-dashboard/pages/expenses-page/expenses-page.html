@@ -1,0 +1,106 @@
+<app-module-tabs class="mb-4" label="Secciones de gastos" [tabs]="moduleTabs" />
+
+<div class="flex w-full flex-col gap-4">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap gap-2" role="tablist" aria-label="Grupo de gastos">
+      @for (filter of groupFilters; track filter.label) {
+        <button
+          type="button"
+          role="tab"
+          class="btn shrink-0 rounded-full border-0 px-5"
+          [class]="filter.value === filters().group ? 'btn-primary' : '[--btn-color:var(--color-base-100)]'"
+          [attr.aria-selected]="filter.value === filters().group"
+          (click)="selectGroup(filter.value)"
+        >
+          {{ filter.label }}
+        </button>
+      }
+    </div>
+    <app-button customClass="w-full sm:w-auto" (click)="openForm()">
+      <ng-icon name="tablerPlus" size="16" aria-hidden="true" />
+      Registrar gasto
+    </app-button>
+  </div>
+
+  <section class="flex min-w-0 flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5" aria-label="Gastos">
+    <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <div class="flex min-w-0 flex-col">
+        <small class="text-neutral">Total del período</small>
+        <span class="text-title font-semibold tabular-nums">
+          @if (totalAmount() !== null) {
+            S/ {{ totalAmount() | number: '1.2-2' }}
+          } @else {
+            —
+          }
+        </span>
+        @if (meta(); as m) {
+          <small class="text-neutral tabular-nums">{{ m.total }} {{ m.total === 1 ? 'gasto' : 'gastos' }}</small>
+        }
+      </div>
+
+      <app-date-range-filter
+        class="w-full md:w-auto"
+        align="end"
+        ariaLabel="Período de gastos"
+        [from]="filters().from"
+        [to]="filters().to"
+        [max]="today"
+        (rangeChange)="applyRange($event)"
+      />
+    </div>
+
+    @if (expensesResource.error()) {
+      <div role="alert" class="flex flex-col items-center gap-3 py-12 text-center">
+        <ng-icon name="tablerAlertCircle" size="28" class="text-neutral" aria-hidden="true" />
+        <p class="text-neutral">No se pudieron cargar los gastos.</p>
+        <app-button (click)="expensesResource.reload()">Reintentar</app-button>
+      </div>
+    } @else if (expensesResource.hasValue()) {
+      @if (expenses().length === 0) {
+        <div class="flex flex-col items-center gap-3 py-12 text-center">
+          <span class="grid size-14 place-items-center rounded-box bg-base-200 text-neutral" aria-hidden="true">
+            <ng-icon name="tablerReceipt" size="28" />
+          </span>
+          <p class="text-neutral">No hay gastos en este período.</p>
+        </div>
+      } @else {
+        <expense-table
+          class="transition-opacity"
+          [class.opacity-60]="expensesResource.isLoading()"
+          [expenses]="expenses()"
+          [busyId]="deleting() ? (deleteTarget()?.id ?? null) : null"
+          (remove)="askDelete($event)"
+        />
+      }
+    } @else {
+      <div class="grid place-items-center py-20" role="status" aria-label="Cargando gastos">
+        <span class="loading loading-spinner loading-md text-primary"></span>
+      </div>
+    }
+  </section>
+
+  <footer class="flex justify-end">
+    <app-pagination [pages]="meta()?.totalPages ?? 0" [currentPage]="paginationService.currentPage()" />
+  </footer>
+</div>
+
+<expense-form
+  [open]="formOpen()"
+  [saving]="saving()"
+  [error]="formError()"
+  [categories]="categories()"
+  (submitted)="save($event)"
+  (cancelled)="formOpen.set(false)"
+  (closed)="formOpen.set(false)"
+/>
+
+<delete-confirm-dialog
+  [open]="deleteOpen()"
+  [title]="'¿Eliminar el gasto de ' + (deleteTarget()?.categoryName ?? '') + '?'"
+  [hint]="deleteHint(deleteTarget())"
+  [busy]="deleting()"
+  [error]="deleteError()"
+  (confirmed)="confirmDelete()"
+  (cancelled)="deleteOpen.set(false)"
+  (closed)="deleteOpen.set(false)"
+/>

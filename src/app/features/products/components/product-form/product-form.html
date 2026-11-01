@@ -1,0 +1,135 @@
+<h3 class="font-medium text-subtitle mb-4 text-base-content">
+  {{ productInitialData()?.id ? 'Editar producto' : 'Nuevo producto' }}
+</h3>
+
+<form
+  class="flex flex-col gap-3" 
+  (ngSubmit)="onSubmit()"
+  [formGroup]="productForm"
+>
+  <!-- Datos sugeridos por el código de barras: la persona confirma antes de guardar. -->
+  @if (suggestion(); as suggestion) {
+    <div class="flex items-center gap-3 rounded-field bg-base-200/60 p-3">
+      @if (suggestion.imageUrl) {
+        <img
+          [src]="suggestion.imageUrl"
+          alt=""
+          class="size-14 shrink-0 rounded-field bg-base-100 object-contain"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+        />
+      }
+      <div class="flex min-w-0 flex-col">
+        <span class="truncate font-medium text-base-content">{{ suggestion.name }}</span>
+        <small class="text-neutral">Datos sugeridos de {{ sourceLabel() }}. Revisa antes de guardar.</small>
+      </div>
+    </div>
+  }
+
+  <!-- Nombre -->
+  <label class="form-control w-full">
+    <div class="label">
+      <span class="label-text font-medium text-base-content mb-1">Nombre del producto</span>
+    </div>
+    <input type="text" placeholder="Ej. Agua mineral 500ml" class="input input-bordered w-full" formControlName="name" />
+  </label>
+
+  <!-- Precio y Stock Mínimo -->
+  <div class="grid grid-cols-2 gap-4">
+    <label class="form-control w-full">
+      <div class="label">
+        <span class="label-text font-medium text-base-content mb-1">Precio de venta</span>
+      </div>
+      <label class="input input-bordered flex items-center gap-2">
+        <span class="text-base-content/60">S/</span>
+        <input type="number" step="0.10" placeholder="2.50" class="grow" formControlName="salePrice" min="0.00"/>
+      </label>
+    </label>
+
+    <label class="form-control w-full">
+      <div class="label">
+        <span class="label-text font-medium text-base-content mb-1">Stock mínimo</span>
+      </div>
+      <label class="input input-bordered flex items-center gap-2">
+        <input type="number" placeholder="Ej. 10" class="grow" formControlName="minStock" min="0" />
+      </label>
+    </label>
+  </div>
+
+  <!-- Código de barras: un <div> y no un <label>, porque contiene botones. -->
+  <div class="form-control w-full">
+    <label class="label" for="product-barcode">
+      <span class="label-text font-medium text-base-content mb-1">Código de barras</span>
+    </label>
+    <div class="flex items-center gap-2">
+      <label class="input input-bordered flex w-full items-center gap-2">
+        <input
+          #barcodeInput
+          id="product-barcode"
+          type="text"
+          placeholder="Ej. 7501030300050"
+          class="grow"
+          formControlName="barcode"
+          inputmode="numeric"
+          autocomplete="off"
+          (keydown.enter)="onBarcodeEnter($event)"
+        />
+        @if (lookingUp()) {
+          <span class="loading loading-spinner text-neutral" aria-label="Buscando el código"></span>
+        }
+      </label>
+      <app-button variant="outline" customClass="btn-circle" ariaLabel="Escanear código" (click)="scannerOpen.set(true)">
+        <ng-icon name="tablerScan" size="18" aria-hidden="true" />
+      </app-button>
+    </div>
+    @if (barcodeError()) {
+      <small role="alert" class="mt-1 block text-error">{{ barcodeError() }}</small>
+    } @else if (existingProduct(); as existing) {
+      <small class="mt-1 block text-neutral">
+        Ya tienes «{{ existing.name }}» con este código.
+        <button type="button" class="text-base-content underline underline-offset-2" (click)="editExisting.emit(existing.id)">
+          Editarlo
+        </button>
+      </small>
+    } @else if (notFound()) {
+      <small class="mt-1 block text-neutral">No encontramos datos para este código; complétalo a mano.</small>
+    } @else {
+      <small class="mt-1 block text-neutral">Escanéalo o escríbelo y presiona Enter.</small>
+    }
+  </div>
+
+  <div class="form-control w-full">
+    <label class="label" for="product-category">
+      <span class="label-text font-medium text-base-content mb-1">Categoría</span>
+    </label>
+    <category-selector
+      controlId="product-category"
+      [categories]="categories()"
+      [selectedId]="categoryId()"
+      [creating]="creatingCategory()"
+      (categoryChange)="setCategory($event)"
+      (createRequested)="createCategory($event)"
+    />
+    @if (categoryError()) {
+      <small role="alert" class="mt-1 text-error">{{ categoryError() }}</small>
+    }
+  </div>
+
+  <!-- Botones de Acción -->
+  <div class="flex justify-end gap-3 mt-4">
+    <app-button type="button" variant="ghost" [disabled]="isSubmitting()" (click)="onCancel.emit()">
+      Cancelar
+    </app-button>
+    <app-button type="submit" [loading]="isSubmitting()" [disabled]="productForm.invalid || isSubmitting()">
+      Guardar
+    </app-button>
+  </div>
+</form>
+
+<!-- Fuera del <form>: el diálogo del escáner trae su propio <form method="dialog">. -->
+<barcode-scanner
+  [open]="scannerOpen()"
+  (closed)="scannerOpen.set(false)"
+  (scanned)="onScanned($event)"
+  (manualRequested)="focusBarcode()"
+/>

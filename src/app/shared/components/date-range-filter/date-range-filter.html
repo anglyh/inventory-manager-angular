@@ -1,0 +1,81 @@
+@if (compact()) {
+  <app-button
+    [variant]="active() || open() ? 'primary' : 'ghost'"
+    [customClass]="triggerClass()"
+    [ariaLabel]="ariaLabel()"
+    (click)="toggle()"
+  >
+    <ng-icon name="tablerCalendar" size="20" aria-hidden="true" />
+  </app-button>
+} @else {
+  <app-button variant="ghost" [customClass]="triggerClass()" [ariaLabel]="ariaLabel() + ': ' + label()" (click)="toggle()">
+    <ng-icon name="tablerCalendar" size="18" class="shrink-0 text-neutral" aria-hidden="true" />
+    <span class="min-w-0 truncate tabular-nums" [class.text-neutral]="!hasRange()">{{ label() }}</span>
+    <ng-icon name="tablerChevronDown" size="16" class="ml-auto shrink-0 text-neutral" aria-hidden="true" />
+  </app-button>
+}
+
+@if (open()) {
+  <!-- On a phone the panel is a bottom sheet over a dimmed page; tapping the dimmed area closes it. -->
+  <div class="fixed inset-0 z-40 bg-base-content/20 md:hidden" aria-hidden="true" (click)="close()"></div>
+
+  <div
+    role="dialog"
+    [attr.aria-label]="ariaLabel()"
+    class="fixed inset-x-4 bottom-4 z-50 flex max-h-[calc(100dvh-2rem)] flex-col gap-2 overflow-y-auto rounded-box bg-base-100 p-2 shadow-lg md:absolute md:inset-x-auto md:top-full md:bottom-auto md:mt-2 md:max-h-none md:w-max md:flex-row md:overflow-visible"
+    [class]="panelAlignClass()"
+  >
+    @if (presets() || showClear()) {
+      <div class="flex flex-wrap gap-1 md:w-36 md:flex-col md:flex-nowrap">
+        @if (presets()) {
+          @for (preset of presetOptions; track preset.id) {
+            <button
+              type="button"
+              class="min-h-10 cursor-pointer rounded-field px-3 text-left transition-colors md:w-full"
+              [class]="presetClass(preset.id)"
+              [attr.aria-pressed]="activePreset() === preset.id"
+              (click)="selectPreset(preset.id)"
+            >
+              {{ preset.label }}
+            </button>
+          }
+        }
+        @if (showClear()) {
+          <app-button variant="ghost" customClass="justify-start font-normal text-neutral md:mt-auto" (click)="clear()">
+            Limpiar
+          </app-button>
+        }
+      </div>
+    }
+
+    <div class="flex min-w-0 justify-center">
+      <calendar-range
+        class="cally date-range-calendar"
+        locale="es-PE"
+        first-day-of-week="1"
+        [attr.data-months]="months()"
+        [months]="months()"
+        [value]="callyValue()"
+        [max]="max() ?? ''"
+        [today]="today()"
+        [focusedDate]="focusedDate()"
+        (change)="onCalendarChange($event)"
+      >
+        <span slot="previous" class="flex">
+          <ng-icon name="tablerChevronLeft" size="18" aria-hidden="true" />
+          <span class="sr-only">Mes anterior</span>
+        </span>
+        <span slot="next" class="flex">
+          <ng-icon name="tablerChevronRight" size="18" aria-hidden="true" />
+          <span class="sr-only">Mes siguiente</span>
+        </span>
+        <div class="flex gap-4">
+          <calendar-month></calendar-month>
+          @if (months() === 2) {
+            <calendar-month offset="1"></calendar-month>
+          }
+        </div>
+      </calendar-range>
+    </div>
+  </div>
+}

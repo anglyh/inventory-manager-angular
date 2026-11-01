@@ -1,20 +1,43 @@
-<div class="join">
-  @for (item of getPagesList(); track $index) {
-
-  @if (item === '...') {
-    <app-button [disabled]="true" customClass="join-item btn-square">...</app-button>
-  }
-  <!--  -->
-  @else {
-    <input
-      class="join-item btn btn-square"
-      type="radio"
+@let total = pages();
+@if (total > 1) {
+  <nav class="flex items-center gap-1" aria-label="Paginación">
+    <a
+      class="btn btn-circle btn-ghost"
+      aria-label="Página anterior"
+      [class.btn-disabled]="activePage() <= 1"
       [routerLink]="[]"
-      [queryParams]="{ page: item }"
+      [queryParams]="{ page: activePage() - 1 }"
       queryParamsHandling="merge"
-      name="options"
-      [aria-label]="item"
-      [checked]="item === activePage()" />
+    >
+      <ng-icon name="tablerChevronLeft" size="18" aria-hidden="true" />
+    </a>
+
+    @for (item of getPagesList(); track $index) {
+      @if (item === '...') {
+        <span class="grid size-10 place-items-center text-neutral" aria-hidden="true">…</span>
+      } @else {
+        <a
+          class="btn min-w-10 rounded-field border-0 px-2 tabular-nums shadow-none"
+          [class]="item === activePage() ? 'btn-primary' : 'font-normal [--btn-color:var(--color-base-100)]'"
+          [attr.aria-current]="item === activePage() ? 'page' : null"
+          [routerLink]="[]"
+          [queryParams]="{ page: item }"
+          queryParamsHandling="merge"
+        >
+          {{ item }}
+        </a>
+      }
     }
-  }
-</div>
+
+    <a
+      class="btn btn-circle btn-ghost"
+      aria-label="Página siguiente"
+      [class.btn-disabled]="activePage() >= total"
+      [routerLink]="[]"
+      [queryParams]="{ page: activePage() + 1 }"
+      queryParamsHandling="merge"
+    >
+      <ng-icon name="tablerChevronRight" size="18" aria-hidden="true" />
+    </a>
+  </nav>
+}

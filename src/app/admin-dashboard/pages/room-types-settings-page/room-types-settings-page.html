@@ -1,0 +1,79 @@
+<app-module-tabs class="mb-4" label="Secciones de habitaciones" [tabs]="moduleTabs" />
+
+@if (loadError()) {
+  <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-12 text-center">
+    <ng-icon name="tablerAlertCircle" size="28" class="text-neutral" aria-hidden="true" />
+    <p class="text-neutral">No se pudieron cargar los tipos y precios.</p>
+    <app-button (click)="retry()">Reintentar</app-button>
+  </div>
+} @else if (typesResource.hasValue() && settingsResource.hasValue()) {
+  <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+    <section class="flex min-w-0 flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5 lg:col-span-2">
+      <header class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-baseline gap-2">
+          <h2 class="text-subtitle font-medium">Tipos y precios</h2>
+          <span class="text-neutral tabular-nums">{{ roomTypes().length }}</span>
+        </div>
+        @if (roomTypes().length > 0) {
+          <app-button (click)="openForm(null)">
+            <ng-icon name="tablerPlus" size="16" aria-hidden="true" />
+            Nuevo tipo
+          </app-button>
+        }
+      </header>
+
+      @if (roomTypes().length === 0) {
+        <div class="flex flex-col items-center gap-3 py-12 text-center">
+          <span class="grid size-14 place-items-center rounded-box bg-base-200 text-neutral" aria-hidden="true">
+            <ng-icon name="tablerTag" size="28" />
+          </span>
+          <p class="text-neutral">Aún no hay tipos. Crea uno con sus precios para poder agregar habitaciones.</p>
+          <app-button (click)="openForm(null)">
+            <ng-icon name="tablerPlus" size="16" aria-hidden="true" />
+            Nuevo tipo
+          </app-button>
+        </div>
+      } @else {
+        <room-type-table
+          [roomTypes]="roomTypes()"
+          [busyId]="busyId()"
+          (edit)="openForm($event)"
+          (toggleActive)="toggleActive($event)"
+          (remove)="askDelete($event)"
+        />
+      }
+    </section>
+
+    <store-settings-form
+      class="min-w-0"
+      [settings]="settingsResource.value()!"
+      [saving]="settingsSaving()"
+      (submitted)="saveSettings($event)"
+    />
+  </div>
+} @else {
+  <div class="grid place-items-center py-20" role="status" aria-label="Cargando tipos y precios">
+    <span class="loading loading-spinner loading-md text-primary"></span>
+  </div>
+}
+
+<room-type-form
+  [open]="formOpen()"
+  [saving]="saving()"
+  [error]="formError()"
+  [roomType]="editing()"
+  (submitted)="save($event)"
+  (cancelled)="formOpen.set(false)"
+  (closed)="formOpen.set(false)"
+/>
+
+<delete-confirm-dialog
+  [open]="deleteOpen()"
+  [title]="'¿Eliminar el tipo ' + (deleteTarget()?.name ?? '') + '?'"
+  hint="Solo se eliminan tipos sin habitaciones asignadas."
+  [busy]="deleting()"
+  [error]="deleteError()"
+  (confirmed)="confirmDelete()"
+  (cancelled)="deleteOpen.set(false)"
+  (closed)="deleteOpen.set(false)"
+/>

@@ -1,0 +1,54 @@
+<app-modal [isOpen]="open()" (closed)="closed.emit()">
+  @if (movement(); as movement) {
+    <form class="flex flex-col gap-4" [formGroup]="voidForm" (ngSubmit)="onSubmit()">
+      <div class="flex flex-col gap-1">
+        <h3 class="text-subtitle font-medium">Anular movimiento</h3>
+        <small class="text-neutral tabular-nums">
+          {{ reasonLabels[movement.reason] }} · {{ movement.createdAt | date: 'medium' }} · S/ {{ movement.totalAmount | number: '1.2-2' }}
+        </small>
+      </div>
+
+      <ul class="flex flex-col gap-1 rounded-field bg-base-200/60 p-3">
+        @for (item of movement.items; track item.productId) {
+          <li class="flex justify-between gap-3">
+            <span class="truncate">{{ item.productName }}</span>
+            <span class="shrink-0 text-neutral tabular-nums">× {{ item.quantity }}</span>
+          </li>
+        }
+      </ul>
+
+      <p class="text-neutral">{{ consequence() }}</p>
+
+      <label class="flex flex-col gap-1">
+        <span class="flex justify-between text-caption text-neutral">
+          Motivo
+          <span class="tabular-nums">{{ voidForm.controls.reason.value.length }}/{{ reasonMaxLength }}</span>
+        </span>
+        <textarea
+          class="textarea w-full resize-none"
+          rows="3"
+          placeholder="Ej.: se registró la cantidad equivocada"
+          formControlName="reason"
+          [attr.maxlength]="reasonMaxLength"
+          [class.textarea-error]="reasonInvalid"
+          [attr.aria-invalid]="reasonInvalid"
+        ></textarea>
+        @if (reasonInvalid) {
+          <small class="text-error">Indica por qué se anula el movimiento.</small>
+        }
+      </label>
+
+      @if (error()) {
+        <div role="alert" class="flex items-start gap-2 rounded-field bg-error-soft px-3 py-2 text-error">
+          <ng-icon class="mt-0.5 shrink-0" name="tablerAlertCircle" size="18" aria-hidden="true" />
+          <small>{{ error() }}</small>
+        </div>
+      }
+
+      <div class="flex justify-end gap-2">
+        <app-button type="button" variant="ghost" [disabled]="saving()" (click)="cancelled.emit()">Cancelar</app-button>
+        <app-button type="submit" variant="error" [loading]="saving()" [disabled]="saving()">Anular movimiento</app-button>
+      </div>
+    </form>
+  }
+</app-modal>

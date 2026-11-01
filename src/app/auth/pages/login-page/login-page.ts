@@ -55,7 +55,7 @@ export class LoginPage {
         } else {
           this.isLoading.set(false);
           this.hasError.set(true);
-          this.errorMessage.set('Credenciales inválidas');
+          this.errorMessage.set('Correo o contraseña incorrectos');
         }
       },
       error: (err) => {

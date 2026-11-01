@@ -1,4 +1,7 @@
 import { AbstractControl, FormArray, FormGroup, ValidationErrors } from '@angular/forms';
+import { mapApiError } from 'src/app/api/error-mapper';
+import { extractApiError } from 'src/app/api/extract-api-error';
+import { ApiErrorResponse } from 'src/app/api/interfaces/api.interface';
 
 export class FormUtils {
   static namePattern = '([a-zA-Z]+) ([a-zA-Z]+)';
@@ -13,29 +16,29 @@ export class FormUtils {
           return String(errors['server']);
 
         case 'required':
-          return 'Este campo es requerido';
+          return 'Completa este campo';
 
         case 'minlength':
-          return `Mínimo de ${errors['minlength'].requiredLength} caracteres.`;
+          return `Debe tener al menos ${errors['minlength'].requiredLength} caracteres.`;
 
         case 'min':
-          return `Valor mínimo de ${errors['min'].min}`;
+          return `Debe ser ${errors['min'].min} o más`;
 
         case 'email':
-          return `El valor ingresado no es un correo electrónico`;
+          return `Escribe un correo válido`;
 
         case 'emailTaken':
-          return `El correo electrónico ya está siendo usado por otro usuario`;
+          return `Ese correo ya lo usa otra cuenta`;
 
         case 'pattern':
-          return `El formato ingresado no es válido`;
+          return `Revisa el formato`;
 
         case 'notEqual':
           return `Las contraseñas no coinciden`;
 
         default:
           console.log(`Error de validacion no controlado ${key}`)
-          return `Error de validación no controlado`
+          return `Revisa este campo`
       }
     }
 
@@ -77,6 +80,32 @@ export class FormUtils {
       const field2Value = control.get(field2)?.value;
 
       return field1Value === field2Value ? null : { notEqual: true };
+    }
+  }
+
+  static handleFormError(
+    err: unknown,
+    form: FormGroup,
+    options: {
+      onToast?: (message: string) => void;
+      onRedirect?: (url: string) => void;
+    }
+  ) {
+    const apiError = extractApiError(err);
+    const mapped = mapApiError(apiError);
+    
+    if (mapped.redirect) {
+      options.onRedirect?.(mapped.redirect);
+      return;
+    }
+    if (mapped.fields) {
+      for (const [field, message] of Object.entries(mapped.fields)) {
+        form.get(field)?.setErrors({ server: message });
+        form.get(field)?.markAsTouched();
+      }
+    }
+    if (mapped.toast) {
+      options.onToast?.(mapped.toast);
     }
   }
 

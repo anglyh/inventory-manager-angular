@@ -1,0 +1,44 @@
+<section class="flex flex-col gap-2 rounded-box bg-base-100 p-4 sm:p-6" aria-labelledby="users-title">
+  <h2 id="users-title" class="text-subtitle font-medium">Usuarios</h2>
+
+  @if (error()) {
+    <p class="py-6 text-center text-error" role="alert">{{ error() }}</p>
+  } @else if (loading() && !users().length) {
+    <div class="flex justify-center py-6" role="status">
+      <span class="loading loading-spinner loading-md"></span>
+    </div>
+  } @else {
+    <ul class="flex flex-col">
+      @for (user of users(); track user.id) {
+        <li class="flex items-center justify-between gap-3 py-2">
+          <div class="min-w-0" [class.opacity-50]="!user.active">
+            <p class="truncate font-medium">{{ user.name }}</p>
+            <p class="truncate text-caption text-neutral">{{ user.email }}</p>
+          </div>
+
+          @if (user.role === 'ADMIN') {
+            <span class="badge badge-sm badge-primary shrink-0 border-0">Administrador</span>
+          } @else {
+            <label class="flex shrink-0 items-center gap-2">
+              <span [class.text-neutral]="!user.active">{{ user.active ? 'Activo' : 'Inactivo' }}</span>
+              @if (pendingId() === user.id) {
+                <span class="loading loading-spinner loading-xs"></span>
+              } @else {
+                <input
+                  type="checkbox"
+                  class="toggle toggle-success"
+                  [checked]="user.active"
+                  [disabled]="pendingId() !== null"
+                  [attr.aria-label]="(user.active ? 'Desactivar a ' : 'Activar a ') + user.name"
+                  (change)="activeChange.emit({ user, active: !user.active })"
+                />
+              }
+            </label>
+          }
+        </li>
+      } @empty {
+        <li class="py-6 text-center text-neutral">Sin usuarios</li>
+      }
+    </ul>
+  }
+</section>

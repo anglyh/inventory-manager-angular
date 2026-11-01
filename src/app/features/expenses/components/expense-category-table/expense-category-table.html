@@ -1,0 +1,58 @@
+<!-- Sin overflow: recortaría el menú de acciones. En el celular se ocultan columnas en su lugar. -->
+<div>
+  <table class="table w-full tabular-nums">
+    <thead>
+      <tr class="border-base-200 text-neutral">
+        <th class="pl-0 font-medium">Categoría</th>
+        <th class="hidden font-medium sm:table-cell">Grupo</th>
+        <th class="hidden text-end font-medium sm:table-cell">Gastos</th>
+        <th class="w-0 pr-0"><span class="sr-only">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (category of categories(); track category.id) {
+        <tr class="border-base-200">
+          <td class="pl-0">
+            <span class="flex min-w-0 flex-col">
+              <span class="flex items-center gap-2">
+                <span class="font-medium" [class.text-neutral]="!category.isActive">{{ category.name }}</span>
+                @if (!category.isActive) {
+                  <span class="badge badge-sm whitespace-nowrap border-0 bg-warning-soft text-warning">Inactiva</span>
+                }
+              </span>
+              <small class="text-neutral sm:hidden">
+                {{ groupLabel[category.group] }} · {{ category.expenseCount }} {{ category.expenseCount === 1 ? 'gasto' : 'gastos' }}
+              </small>
+            </span>
+          </td>
+          <td class="hidden sm:table-cell">
+            <span class="badge badge-sm whitespace-nowrap border-0 bg-base-200 text-neutral">{{ groupLabel[category.group] }}</span>
+          </td>
+          <td class="hidden text-end sm:table-cell" [class.text-neutral]="category.expenseCount === 0">{{ category.expenseCount }}</td>
+          <td class="pr-0">
+            <!-- Las últimas filas abren el menú hacia arriba para que no quede escondido. -->
+            <div class="dropdown dropdown-end" [class.dropdown-top]="$index >= 2 && $index >= $count - 2">
+              <app-button
+                variant="ghost"
+                customClass="btn-circle"
+                [ariaLabel]="'Acciones de ' + category.name"
+                [loading]="busyId() === category.id"
+              >
+                <ng-icon name="tablerDots" size="18" aria-hidden="true" />
+              </app-button>
+              <ul tabindex="-1" class="dropdown-content menu z-10 w-44 rounded-box bg-base-100 p-1 shadow-lg">
+                <li><button type="button" (click)="edit.emit(category); blurActive()">Editar</button></li>
+                <li>
+                  <button type="button" (click)="toggleActive.emit(category); blurActive()">
+                    {{ category.isActive ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </li>
+                <li><button type="button" class="text-error" (click)="remove.emit(category); blurActive()">Eliminar</button></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

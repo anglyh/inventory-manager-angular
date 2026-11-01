@@ -1,0 +1,85 @@
+@if (loading()) {
+  <div class="flex flex-col gap-4 py-2" aria-busy="true" aria-label="Cargando productos">
+    @for (row of skeletonRows; track row) {
+      <div class="flex min-w-0 items-center gap-3">
+        <div class="skeleton size-9 shrink-0 rounded-field"></div>
+        <div class="skeleton h-4 w-40"></div>
+        <div class="skeleton ml-auto h-4 w-20"></div>
+        <div class="skeleton h-4 w-16"></div>
+        <div class="skeleton h-5 w-20 rounded-full"></div>
+      </div>
+    }
+  </div>
+} @else if (products().length === 0) {
+  <p class="py-16 text-center text-neutral">No se encontraron productos</p>
+} @else {
+  <!-- Sin overflow: recortaría el menú de acciones. En el celular se ocultan columnas en su lugar. -->
+<div>
+    <table class="table w-full tabular-nums">
+      <thead>
+        <tr class="border-base-200 text-neutral">
+          <th class="w-full pl-0 font-medium">Producto</th>
+          <th class="hidden font-medium md:table-cell">Categoría</th>
+          <th class="hidden text-end font-medium sm:table-cell">Precio</th>
+          <th class="hidden text-end font-medium sm:table-cell">Costo</th>
+          <th class="hidden text-end font-medium sm:table-cell">Stock</th>
+          <th class="hidden font-medium sm:table-cell">Estado</th>
+          @if (editable()) {
+            <th class="w-0 pr-0"><span class="sr-only">Acciones</span></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (product of products(); track product.id) {
+          @let status = statusOf(product);
+          <tr class="border-base-200">
+            <td class="max-w-0 pl-0">
+              <div class="flex min-w-0 items-center gap-3">
+                <span class="hidden size-9 shrink-0 place-items-center rounded-field bg-base-200 font-medium text-neutral sm:grid" aria-hidden="true">
+                  {{ product.name.charAt(0).toUpperCase() }}
+                </span>
+                <span class="flex min-w-0 flex-col">
+                  <!-- En el celular el nombre usa hasta dos líneas; desde sm, una con "…". -->
+                  <span class="line-clamp-2 font-medium sm:line-clamp-none sm:truncate">{{ product.name }}</span>
+                  @if (product.barcode) {
+                    <small class="hidden truncate text-neutral sm:block">{{ product.barcode }}</small>
+                  }
+                  <!-- Celular: precio y stock bajo el nombre, en lugar de sus columnas. -->
+                  <small class="flex flex-wrap gap-x-2 text-neutral sm:hidden">
+                    <span class="font-medium text-base-content">S/ {{ product.salePrice | number: '1.2-2' }}</span>
+                    <span>· Stock {{ product.stock }} / {{ product.minStock }}</span>
+                    @if (status.label !== 'En stock') {
+                      <span class="badge badge-sm whitespace-nowrap border-0" [class]="status.class">{{ status.label }}</span>
+                    }
+                  </small>
+                </span>
+              </div>
+            </td>
+            <td class="hidden text-neutral md:table-cell">{{ product.categoryName ?? 'Sin categoría' }}</td>
+            <td class="hidden whitespace-nowrap text-end sm:table-cell">S/ {{ product.salePrice | number: '1.2-2' }}</td>
+            <td class="hidden whitespace-nowrap text-end text-neutral sm:table-cell">S/ {{ product.unitCostAvg | number: '1.2-2' }}</td>
+            <td class="hidden whitespace-nowrap text-end sm:table-cell">
+              {{ product.stock }}
+              <small class="text-neutral">/ {{ product.minStock }}</small>
+            </td>
+            <td class="hidden sm:table-cell">
+              <span class="badge badge-sm whitespace-nowrap border-0" [class]="status.class">{{ status.label }}</span>
+            </td>
+            @if (editable()) {
+              <td class="pr-0">
+                <div class="dropdown dropdown-end">
+                  <app-button variant="ghost" customClass="btn-circle" [ariaLabel]="'Acciones de ' + product.name">
+                    <ng-icon name="tablerDots" size="18" aria-hidden="true" />
+                  </app-button>
+                  <ul tabindex="-1" class="dropdown-content menu z-10 w-36 rounded-box bg-base-100 p-1 shadow-lg">
+                    <li><button type="button" (click)="edit.emit(product); blurActive()">Editar</button></li>
+                  </ul>
+                </div>
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

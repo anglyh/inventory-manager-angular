@@ -1,0 +1,68 @@
+<main class="flex w-full flex-col gap-4">
+  @let currentRegister = register();
+
+  <!-- `undefined`: todavía no hay nada que mostrar. Con datos previos, un error no reemplaza la pantalla. -->
+  @if (currentRegister === undefined) {
+    @if (current.error()) {
+      <div class="flex w-full flex-col items-center justify-center gap-3 rounded-box bg-base-100 px-4 py-16 text-center" role="alert">
+        <ng-icon name="tablerAlertCircle" size="32" class="text-neutral" aria-hidden="true" />
+        <h2 class="text-subtitle font-semibold">No se pudo cargar la caja</h2>
+        <small class="text-neutral">Revisa tu conexión e inténtalo de nuevo.</small>
+        <app-button variant="outline" [loading]="current.isLoading()" (click)="current.reload()">Reintentar</app-button>
+      </div>
+    } @else {
+      <div class="flex w-full flex-col items-center justify-center gap-3 py-16 text-neutral" role="status">
+        <span class="loading loading-spinner loading-md"></span>
+        <small>Cargando la caja…</small>
+      </div>
+    }
+  } @else {
+    @if (current.error()) {
+      <div class="flex items-center justify-between gap-3 rounded-box bg-warning-soft px-4 py-2 text-warning" role="alert">
+        <small>No se pudo actualizar la caja.</small>
+        <app-button variant="ghost" [loading]="current.isLoading()" (click)="current.reload()">Reintentar</app-button>
+      </div>
+    }
+
+    @if (currentRegister) {
+      <cash-register-session
+        class="block w-full"
+        [register]="currentRegister"
+        [busy]="busy()"
+        [admin]="isAdmin()"
+        [movementsCount]="movementsCount()"
+        (movementRequested)="openMovement()"
+        (closeRequested)="openClose()"
+      />
+      <cash-register-movement-table
+        class="block w-full"
+        [registerId]="currentRegister.id"
+        [current]="true"
+        [refreshKey]="movementsRefresh()"
+        (totalChange)="movementsCount.set($event)"
+      />
+    } @else {
+      <cash-register-opening class="block w-full py-2 sm:py-6" [busy]="openingBusy()" [showHistory]="isAdmin()" (submitted)="openRegister($event)" />
+    }
+  }
+</main>
+
+<cash-movement-dialog
+  [open]="movementOpen()"
+  [saving]="movementSaving()"
+  [error]="movementError()"
+  [availableCash]="expectedCash()"
+  (confirmed)="addMovement($event)"
+  (cancelled)="movementOpen.set(false)"
+  (closed)="onMovementClosed()"
+/>
+
+<close-register-dialog
+  [open]="closeOpen()"
+  [saving]="closeSaving()"
+  [error]="closeError()"
+  [expectedCash]="expectedCash()"
+  (confirmed)="closeRegister($event)"
+  (cancelled)="closeOpen.set(false)"
+  (closed)="onCloseClosed()"
+/>

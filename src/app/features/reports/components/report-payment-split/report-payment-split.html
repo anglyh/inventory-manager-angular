@@ -1,0 +1,40 @@
+<div
+  class="stats h-full w-full overflow-hidden bg-base-100"
+  [style.animation-delay.ms]="delay()"
+  title="Cobrado en cada método: ventas de la tienda y habitaciones"
+>
+  <div class="stat gap-y-2 px-4 py-3 sm:px-5 sm:py-4">
+    <div class="stat-title truncate">Efectivo vs Yape</div>
+
+    @if (total()) {
+      <div class="flex h-3 gap-0.5" role="img" [attr.aria-label]="summary()">
+        @if (cash()) {
+          <div class="min-w-1 rounded-sm bg-success" [style.flex-grow]="cash()" [attr.title]="'Efectivo: ' + cashLabel()"></div>
+        }
+        @if (yape()) {
+          <div class="min-w-1 rounded-sm bg-yape" [style.flex-grow]="yape()" [attr.title]="'Yape: ' + yapeLabel()"></div>
+        }
+      </div>
+
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 text-neutral">
+            <span class="size-2.5 shrink-0 rounded-sm bg-success" aria-hidden="true"></span>
+            <span>Efectivo · <span class="tabular-nums">{{ cashLabel() }}</span></span>
+          </div>
+          <div class="text-xl font-semibold tracking-tight tabular-nums 2xl:text-2xl">S/ {{ cash() | number: '1.2-2' }}</div>
+        </div>
+        <div class="min-w-0 text-right">
+          <div class="flex items-center justify-end gap-1.5 text-neutral">
+            <span class="size-2.5 shrink-0 rounded-sm bg-yape" aria-hidden="true"></span>
+            <span>Yape · <span class="tabular-nums">{{ yapeLabel() }}</span></span>
+          </div>
+          <div class="text-xl font-semibold tracking-tight tabular-nums 2xl:text-2xl">S/ {{ yape() | number: '1.2-2' }}</div>
+        </div>
+      </div>
+    } @else {
+      <div class="h-3 rounded-sm bg-base-200"></div>
+      <div class="text-neutral">Sin cobros</div>
+    }
+  </div>
+</div>

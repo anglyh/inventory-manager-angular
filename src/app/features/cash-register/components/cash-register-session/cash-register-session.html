@@ -1,0 +1,105 @@
+<section class="flex w-full flex-col gap-4" aria-labelledby="session-title">
+  <!-- Estado y acciones. En el celular el historial queda arriba a la derecha y las acciones debajo. -->
+  <header class="flex flex-wrap items-start gap-4 rounded-box bg-base-100 p-4 sm:p-5 lg:items-center">
+    <div class="order-1 flex min-w-0 flex-1 items-start gap-4">
+      <span class="hidden size-12 shrink-0 place-items-center rounded-field bg-success-soft text-success sm:grid" aria-hidden="true">
+        <ng-icon name="tablerCashRegister" size="24" />
+      </span>
+      <div class="flex min-w-0 flex-col gap-1">
+        <cash-status-pill [open]="true" label="Caja abierta" />
+        <h2 id="session-title" class="text-subtitle font-semibold">Turno en curso</h2>
+        <small class="text-neutral">
+          Abierta hace {{ elapsed() }} · desde {{ register().openedAt | date: openedFormat() }}
+          @if (register().openedByName) {
+            · {{ register().openedByName }}
+          }
+        </small>
+      </div>
+    </div>
+
+    <div class="order-3 grid w-full grid-cols-2 gap-2 lg:order-2 lg:flex lg:w-auto">
+      <app-button
+        variant="outline"
+        customClass="w-full lg:w-auto"
+        ariaLabel="Poner o sacar dinero"
+        [disabled]="busy()"
+        (click)="movementRequested.emit()"
+      >
+        <ng-icon name="tablerArrowsExchange" size="18" aria-hidden="true" />
+        <!-- En el celular no entra la frase completa junto a "Cerrar caja". -->
+        <span class="sm:hidden">Dinero</span>
+        <span class="hidden sm:inline">Poner o sacar dinero</span>
+      </app-button>
+      <app-button customClass="w-full lg:w-auto" [disabled]="busy()" (click)="closeRequested.emit()">
+        <ng-icon name="tablerLock" size="18" aria-hidden="true" />
+        Cerrar caja
+      </app-button>
+    </div>
+
+    @if (admin()) {
+      <app-button variant="ghost" customClass="btn-circle order-2 lg:order-3" ariaLabel="Historial de cajas" (click)="openHistory()">
+        <ng-icon name="tablerHistory" size="20" aria-hidden="true" />
+      </app-button>
+    }
+  </header>
+
+  @if (admin()) {
+    @let summary = register().summary;
+    <!-- En pantallas grandes: el esperado y las ventas a la izquierda, el detalle del efectivo a la derecha. -->
+    <div class="grid gap-4 lg:grid-cols-5 lg:items-start">
+      <div class="flex min-w-0 flex-col gap-4 lg:col-span-3">
+        @if (summary?.expectedCash; as expected) {
+          <section
+            class="flex min-w-0 flex-col gap-5 rounded-box bg-primary p-5 text-primary-content sm:p-6"
+            aria-labelledby="session-expected-title"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex min-w-0 flex-col gap-1">
+                <h3 id="session-expected-title" class="text-body font-medium text-base-300">Debería haber en caja</h3>
+                <p class="text-title font-semibold tracking-tight">
+                  <cash-amount [value]="expected" [inverse]="true" />
+                </p>
+              </div>
+              <span class="grid size-10 shrink-0 place-items-center rounded-field bg-primary-content text-primary" aria-hidden="true">
+                <ng-icon name="tablerCashBanknote" size="20" />
+              </span>
+            </div>
+            <!-- El desglose vive solo en "Detalle del efectivo": acá va únicamente el total. -->
+          </section>
+        }
+
+        @if (summary) {
+          <cash-sales-tiles class="sm:grid-cols-3" [summary]="summary" />
+        }
+      </div>
+
+      <!-- Una sola cuenta del efectivo: cada fila suma hasta el esperado. -->
+      <section class="flex min-w-0 flex-col gap-2 rounded-box bg-base-100 p-4 sm:p-5 lg:col-span-2" aria-labelledby="session-cash-title">
+        <div class="flex flex-col">
+          <h3 id="session-cash-title" class="text-subtitle font-semibold">Detalle del efectivo</h3>
+          <small class="text-neutral">Fondo + lo que entró − lo que salió</small>
+        </div>
+        <cash-breakdown-list [rows]="cashRows()" />
+      </section>
+    </div>
+  } @else {
+    <!-- Cierre ciego: el empleado ve cuánto se movió el turno, nunca montos de la caja. -->
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3" role="group" aria-label="Resumen del turno">
+      <cash-stat-tile label="Ventas registradas" icon="tablerReceipt" tone="primary" hint="En este turno">
+        {{ salesCount() ?? '—' }}
+      </cash-stat-tile>
+      <cash-stat-tile label="Entradas y salidas" icon="tablerArrowsExchange" tone="info" hint="Dinero puesto o sacado">
+        {{ movementsCount() ?? '—' }}
+      </cash-stat-tile>
+      <cash-stat-tile
+        class="col-span-2 sm:col-span-1"
+        label="Tiempo abierta"
+        icon="tablerClock"
+        tone="success"
+        [hint]="'Desde ' + (register().openedAt | date: openedFormat())"
+      >
+        {{ elapsed() }}
+      </cash-stat-tile>
+    </div>
+  }
+</section>

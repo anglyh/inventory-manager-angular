@@ -1,0 +1,83 @@
+<app-modal [isOpen]="open()" (closed)="closed.emit()" label="Escanear código de barras">
+  <div class="mb-3 flex items-center justify-between gap-2">
+    <h3 class="text-subtitle font-semibold text-base-content">Escanear código</h3>
+    <app-button variant="ghost" customClass="btn-circle" ariaLabel="Cerrar" (click)="close()">
+      <ng-icon name="tablerX" size="18" aria-hidden="true" />
+    </app-button>
+  </div>
+
+  @if (status() === 'error') {
+    <div class="flex flex-col items-center gap-3 rounded-field bg-base-200/60 p-5 text-center" role="alert">
+      <ng-icon name="tablerCameraOff" size="32" class="text-neutral" aria-hidden="true" />
+      <p class="text-base-content">{{ errorMessage() }}</p>
+      @if (canRetry()) {
+        <app-button variant="outline" (click)="start()">Reintentar</app-button>
+      }
+    </div>
+  }
+
+  <!-- El <video> siempre existe: la cámara se conecta a él al abrir el diálogo. -->
+  <div class="relative aspect-[4/3] overflow-hidden rounded-field bg-base-200" [class.hidden]="status() === 'error'">
+    <video #video class="h-full w-full object-cover" playsinline muted autoplay></video>
+
+    @if (status() === 'starting') {
+      <div class="absolute inset-0 flex items-center justify-center">
+        <span class="loading loading-spinner text-neutral" aria-label="Abriendo la cámara"></span>
+      </div>
+    }
+    @if (status() === 'scanning') {
+      <!-- Guía: una línea horizontal donde ubicar el código. -->
+      <div class="pointer-events-none absolute inset-x-6 top-1/2 h-0.5 -translate-y-1/2 bg-base-100/80" aria-hidden="true"></div>
+    }
+
+    @if (status() === 'scanning' && cameraCount() > 1) {
+      <div class="absolute bottom-2 left-2 flex items-center gap-2">
+        <app-button variant="ghost" customClass="btn-circle bg-base-100" ariaLabel="Cambiar cámara" (click)="switchCamera()">
+          <ng-icon name="tablerCameraRotate" size="18" aria-hidden="true" />
+        </app-button>
+        <small class="rounded-field bg-base-100 px-2 py-1 tabular-nums text-base-content">
+          Cámara {{ cameraIndex() + 1 }} de {{ cameraCount() }}
+        </small>
+      </div>
+    }
+
+    @if (torchAvailable()) {
+      <div class="absolute right-2 bottom-2">
+        <app-button
+          [variant]="torchOn() ? 'primary' : 'ghost'"
+          [customClass]="torchOn() ? 'btn-circle' : 'btn-circle bg-base-100'"
+          [ariaLabel]="torchOn() ? 'Apagar linterna' : 'Encender linterna'"
+          (click)="toggleTorch()"
+        >
+          <ng-icon [name]="torchOn() ? 'tablerBoltOff' : 'tablerBolt'" size="18" aria-hidden="true" />
+        </app-button>
+      </div>
+    }
+  </div>
+
+  @if (continuous()) {
+    <!-- Modo continuo: lo último que pasó y cuántos se sumaron, sin cerrar la cámara. -->
+    @let result = feedback();
+    <div class="mt-3 flex items-center justify-between gap-3 rounded-field bg-base-200/60 px-3 py-2" role="status" aria-live="polite">
+      <span class="min-w-0 truncate" [class.text-error]="result?.tone === 'error'" [class.text-neutral]="!result?.message">
+        {{ result?.message || 'Escanea un producto tras otro.' }}
+      </span>
+      <small class="shrink-0 tabular-nums text-neutral">
+        {{ result?.added ?? 0 }} {{ result?.added === 1 ? 'agregado' : 'agregados' }}
+      </small>
+    </div>
+  }
+
+  <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
+    @if (!continuous()) {
+      <small class="text-neutral">Apunta la cámara al código de barras.</small>
+    }
+    <button type="button" class="flex items-center gap-1 text-base-content underline underline-offset-2" (click)="requestManual()">
+      <ng-icon name="tablerKeyboard" size="16" aria-hidden="true" />
+      Escribir el código
+    </button>
+    @if (continuous()) {
+      <app-button (click)="close()">Listo</app-button>
+    }
+  </div>
+</app-modal>

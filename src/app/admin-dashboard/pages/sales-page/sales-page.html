@@ -1,23 +1,151 @@
-<div class="flex flex-col h-full w-full overflow-x-auto">
-  <inventory-movement-list [movements]="movements()" />
-
-  @if (hasNextPage()) {
-    <div appInfiniteScroll (scrolled)="loadMore()" class="loading-trigger">
-      @if (isLoading()) {
-        <div class="flex flex-col gap-4">
-          <div class="skeleton h-5 w-40 rounded-md"></div>
-
-          <div class="flex flex-col gap-3">
-            <div class="skeleton h-24 w-full rounded-2xl"></div>
-            <div class="skeleton h-24 w-full rounded-2xl"></div>
-            <div class="skeleton h-24 w-full rounded-2xl"></div>
-          </div>
-
-          <div class="flex justify-end">
-            <div class="skeleton h-10 w-24 rounded-xl"></div>
-          </div>
-        </div>
-      }
+<div class="flex gap-4 h-full">
+  <!-- Solo la primera carga muestra el spinner: tras una venta se recarga sin desmontar el punto de venta. -->
+  @if (cashRegisterService.currentCashRegisterResource.isLoading() && !cashRegisterService.currentCashRegisterResource.hasValue()) {
+    <div class="grid flex-1 place-items-center" role="status" aria-label="Revisando la caja">
+      <span class="loading loading-spinner loading-xl text-primary"></span>
     </div>
   }
+  @else if (cashRegisterService.currentCashRegisterResource.error()) {
+    <div class="grid flex-1 place-items-center px-4 py-8">
+      <section class="card w-full max-w-md overflow-hidden rounded-box bg-base-100" role="alert">
+        <div class="grid min-h-40 place-items-center bg-error-soft">
+          <div class="grid size-20 place-items-center rounded-full bg-base-100 text-error">
+            <ng-icon name="tablerAlertCircle" size="48" aria-hidden="true" />
+          </div>
+        </div>
+        <div class="card-body items-center gap-3 p-6 text-center sm:p-8">
+          <span class="badge badge-sm border-0 bg-error-soft text-error">Problema de conexión</span>
+          <h2 class="text-subtitle font-semibold">No pudimos consultar la caja</h2>
+          <p class="text-body text-neutral">
+            No se pudo verificar si hay una caja abierta. Revisa tu conexión e inténtalo de nuevo.
+          </p>
+          <app-button customClass="mt-2" (click)="cashRegisterService.currentCashRegisterResource.reload()">
+            <ng-icon name="tablerRefresh" size="20" aria-hidden="true" />
+            Reintentar
+          </app-button>
+        </div>
+      </section>
+    </div>
+  }
+  @else if (cashRegisterService.currentCashRegisterResource.value() === null){
+    <div class="grid flex-1 place-items-center px-4">
+      <section class="card w-full max-w-sm overflow-hidden rounded-box bg-base-100">
+        <div class="grid min-h-44 place-items-center bg-base-200">
+          <div class="grid size-24 place-items-center rounded-full bg-base-100 text-primary">
+            <ng-icon name="tablerCashRegister" size="56" aria-hidden="true" />
+          </div>
+        </div>
+        <div class="card-body items-center gap-3 p-6 text-center sm:p-8">
+          <span class="badge badge-sm border-0 bg-base-200 text-neutral">Caja cerrada</span>
+          <h2 class="text-subtitle font-semibold">Abre la caja para vender</h2>
+          <a class="btn btn-primary mt-1" routerLink="/cash-register">Ir a la caja</a>
+        </div>
+      </section>
+    </div>
+  } @else if (cashRegisterService.currentCashRegisterResource.hasValue()){
+      <div class="min-w-0 flex-3 rounded-box bg-base-100 p-4 sm:p-5 flex flex-col gap-4 w-full">
+        <div class="flex justify-between">
+          <h2 class="text-subtitle font-medium">Productos</h2>
+          <app-button customClass="lg:hidden" (click)="saleOpen.set(true)">
+            Ver venta
+          </app-button>
+        </div>
+    
+        <!-- Buscador y, debajo, los chips de categoría (un toque filtra; se combinan). -->
+        <div class="flex flex-col gap-3">
+        <div class="flex items-center gap-2">
+        <label class="input w-full min-w-0 flex-1">
+          <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </g>
+          </svg>
+          <input 
+            type="search" 
+            placeholder="Busca un producto"
+            type="text"
+            (input)="searchTerm.set(input.value)"
+            (keydown.enter)="addFirstMatch(input)"
+            #input
+            required
+          />
+        </label>
+        <app-button variant="outline" customClass="btn-circle" ariaLabel="Escanear código" (click)="openScanner()">
+          <ng-icon name="tablerScan" size="18" aria-hidden="true" />
+        </app-button>
+        </div>
+        <!-- Lectura continua: la cámara queda abierta y suma un producto por código.
+             "Escribir el código" vuelve al buscador: ahí Enter con un código agrega ese producto. -->
+        <barcode-scanner
+          [open]="scannerOpen()"
+          [continuous]="true"
+          [feedback]="cameraFeedback()"
+          (closed)="scannerOpen.set(false)"
+          (scanned)="addCameraScan($event)"
+          (manualRequested)="input.focus()"
+        />
+        @if (categoryChips().length) {
+          <!-- Celular y tablet: una fila que se desliza (no empuja los productos hacia abajo). Escritorio: bajan de línea. -->
+          <div class="flex gap-2 overflow-x-auto [scrollbar-width:none] lg:flex-wrap lg:overflow-visible" role="group" aria-label="Filtrar por categoría">
+            <button
+              type="button"
+              class="btn shrink-0 rounded-full border-0 px-4"
+              [class]="activeCategoryId() === null ? 'btn-primary' : '[--btn-color:var(--color-base-200)]'"
+              [attr.aria-pressed]="activeCategoryId() === null"
+              (click)="categoryId.set(null)"
+            >
+              Todas
+              <span class="font-normal tabular-nums" [class.text-neutral]="activeCategoryId() !== null">{{ totalProducts() }}</span>
+            </button>
+            @for (chip of categoryChips(); track chip.id) {
+              <button
+                type="button"
+                class="btn max-w-60 shrink-0 rounded-full border-0 px-4"
+                [class]="activeCategoryId() === chip.id ? 'btn-primary' : '[--btn-color:var(--color-base-200)]'"
+                [attr.aria-pressed]="activeCategoryId() === chip.id"
+                (click)="categoryId.set(activeCategoryId() === chip.id ? null : chip.id)"
+              >
+                <span class="truncate">{{ chip.name }}</span>
+                <span class="font-normal tabular-nums" [class.text-neutral]="activeCategoryId() !== chip.id">{{ chip.count }}</span>
+              </button>
+            }
+          </div>
+        }
+        </div>
+    
+        <!-- Ocupa el alto restante y scrollea adentro: el panel tiene altura fija (h-full). -->
+        <product-picker
+          class="-mx-1 block min-h-0 flex-1 overflow-y-auto px-1 pb-1"
+          [products]="filteredProducts()"
+          [selectedProducts]="selectedProducts() || []"
+          (productSelected)="addProduct($event)"
+        />
+      </div>
+  
+    <aside
+      class="max-h-[85dvh] flex-1 lg:min-w-92 shrink-0 rounded-box bg-base-100 shadow-lg lg:shadow-none lg:h-full lg:max-h-none flex min-h-0 flex-col fixed inset-x-0 bottom-0 z-50 lg:static lg:z-auto lg:translate-y-0 transition-transform duration-200"
+      [class.translate-y-full]="!saleOpen()"
+      [class.translate-y-0]="saleOpen()"
+    >
+      <h2 class="shrink-0 p-4 pb-3 text-subtitle font-medium sm:p-5 sm:pb-4">Venta actual</h2>
+    
+      <div class="divider my-0 px-5"></div>
+    
+      <sale-detail 
+        class="block min-h-0 flex-1"
+        [products]="selectedProducts()" 
+        (productDeleted)="removeProduct($event)"
+        (quantityChanged)="changeQuantity($event)" 
+        [canSubmit]="!savingSale()"
+        (saleRequested)="registerSale($event)"
+      />
+    </aside>
+  }
+
 </div>
+
+@if (saleOpen()) {
+  <div class="fixed inset-0 z-40 bg-base-content/40 lg:hidden" (click)="saleOpen.set(false)">
+  </div>
+}

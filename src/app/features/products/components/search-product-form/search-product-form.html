@@ -1,0 +1,22 @@
+<label class="input w-full border-0 bg-base-200 shadow-none focus-within:outline-primary/40">
+  <ng-icon name="tablerSearch" size="18" class="text-neutral" aria-hidden="true" />
+  <input
+    type="text"
+    id="productSearchInput"
+    placeholder="Buscar producto"
+    [value]="searchTerm()"
+    (input)="searchTerm.set(searchInputRef.value)"
+    (keydown.enter)="search(searchInputRef.value)"
+    #searchInputRef
+  />
+  @if (searchTerm()) {
+    <app-button
+      variant="ghost"
+      customClass="btn-circle"
+      ariaLabel="Limpiar búsqueda"
+      (click)="searchTerm.set(''); searchInputRef.value = ''; searchInputRef.focus(); search('')"
+    >
+      <ng-icon name="tablerX" size="16" aria-hidden="true" />
+    </app-button>
+  }
+</label>

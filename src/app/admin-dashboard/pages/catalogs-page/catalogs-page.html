@@ -1,0 +1,19 @@
+<div class="flex flex-col gap-4">
+  <app-module-tabs label="Secciones de productos" [tabs]="moduleTabs" />
+
+  <app-name-catalog
+    [items]="items()"
+    [labels]="config[tab()].labels"
+    [loading]="activeResource().isLoading()"
+    [loadError]="loadError()"
+    [creating]="creating()"
+    [createError]="createError()"
+    [saving]="saving()"
+    [saveError]="saveError()"
+    [deletingId]="deletingId()"
+    (create)="create($event)"
+    (update)="update($event)"
+    (remove)="remove($event)"
+    (retry)="activeResource().reload()"
+  />
+</div>

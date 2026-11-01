@@ -1,0 +1,184 @@
+<form class="flex flex-1 flex-col gap-4 lg:flex-row lg:items-start" [formGroup]="purchaseForm" (ngSubmit)="onSubmit()">
+  <div class="@container flex min-w-0 flex-1 flex-col gap-5 rounded-box bg-base-100 p-4 sm:p-6 lg:self-stretch">
+    <div class="flex items-center justify-between gap-2">
+      <h2 class="text-subtitle font-medium">Nueva compra</h2>
+      <a class="btn btn-ghost" routerLink="/movements" [queryParams]="{ group: 'purchase' }">
+        <ng-icon name="tablerHistory" size="20" aria-hidden="true" />
+        <span class="hidden sm:inline">Historial</span>
+      </a>
+    </div>
+
+    <div class="grid gap-3 @xl:grid-cols-[1fr_16rem]">
+      <div class="flex flex-col gap-1">
+        <label class="text-caption text-neutral" for="purchase-product">Agregar producto</label>
+        <!-- La pistola lectora tipea el código en el buscador y Enter lo agrega; el botón usa la cámara. -->
+        <div class="flex items-center gap-2">
+          <app-option-selector
+            class="min-w-0 flex-1"
+            controlId="purchase-product"
+            mode="add"
+            placeholder="Busca o escanea un producto"
+            emptyText="No hay productos con ese nombre o código"
+            [items]="products()"
+            (selectedOption)="addProduct($event)"
+          />
+          <app-button variant="outline" customClass="btn-circle" ariaLabel="Escanear código" (click)="scannerOpen.set(true)">
+            <ng-icon name="tablerScan" size="18" aria-hidden="true" />
+          </app-button>
+        </div>
+        <barcode-scanner
+          [open]="scannerOpen()"
+          (closed)="scannerOpen.set(false)"
+          (scanned)="addByBarcode($event)"
+          (manualRequested)="focusProductSearch()"
+        />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-caption text-neutral" for="purchase-supplier">Proveedor</label>
+        <supplier-selector
+          controlId="purchase-supplier"
+          [suppliers]="suppliers()"
+          [selectedId]="supplierId()"
+          [creating]="creatingSupplier()"
+          (supplierChange)="setSupplier($event)"
+          (createRequested)="supplierCreateRequested.emit($event)"
+        />
+        @if (supplierError()) {
+          <small role="alert" class="text-error">{{ supplierError() }}</small>
+        }
+      </div>
+    </div>
+
+    <!-- Productos -->
+    <div class="flex flex-1 flex-col gap-2" formArrayName="items">
+      @if (items.length) {
+        <div class="hidden gap-3 px-3 text-caption text-neutral @2xl:grid @2xl:grid-cols-[1fr_10rem_8rem_8rem_2.5rem]">
+          <span>Producto</span>
+          <span>Costo unit.</span>
+          <span>Cantidad</span>
+          <span class="text-right">Subtotal</span>
+        </div>
+      }
+
+      @for (item of items.controls; track item.controls.productId.value; let i = $index) {
+        <div
+          class="grid grid-cols-[1fr_1fr_auto] items-center gap-3 rounded-field bg-base-200 p-3 @2xl:grid-cols-[1fr_10rem_8rem_8rem_2.5rem]"
+          [formGroupName]="i"
+          [attr.data-row-key]="item.controls.productId.value"
+        >
+          <div class="col-span-2 flex min-w-0 flex-col @2xl:col-span-1">
+            <span class="truncate font-medium">{{ item.controls.name.value }}</span>
+            @if (salePrice(item.controls.productId.value); as price) {
+              <small
+                class="flex items-center gap-1 tabular-nums"
+                [class.text-neutral]="!isAboveSalePrice(i)"
+                [class.text-warning]="isAboveSalePrice(i)"
+                [title]="isAboveSalePrice(i) ? 'El costo supera el precio de venta' : 'Precio de venta actual'"
+              >
+                @if (isAboveSalePrice(i)) {
+                  <ng-icon name="tablerAlertCircle" size="14" aria-hidden="true" />
+                }
+                Venta S/ {{ price | number: '1.2-2' }}
+              </small>
+            }
+          </div>
+
+          <app-button
+            variant="ghost"
+            customClass="btn-circle justify-self-end text-neutral hover:bg-error-soft hover:text-error @2xl:order-last"
+            ariaLabel="Quitar producto"
+            (click)="removeItem(i)"
+          >
+            <ng-icon name="tablerTrash" size="18" aria-hidden="true" />
+          </app-button>
+
+          @let costError = controlError(item.controls.unitCost);
+          <div class="tooltip-error tooltip-bottom" [class.tooltip]="costError" [attr.data-tip]="costError">
+            <label class="input w-full" [class.input-error]="costError">
+              <span class="text-neutral">S/</span>
+              <input
+                class="tabular-nums"
+                type="number" min="0" step="0.01" placeholder="0.00"
+                aria-label="Costo unitario"
+                formControlName="unitCost"
+                [attr.aria-invalid]="!!costError"
+              />
+              @if (costError) {
+                <ng-icon class="text-error" name="tablerAlertCircle" size="18" aria-hidden="true" />
+              }
+            </label>
+          </div>
+
+          @let quantityError = controlError(item.controls.quantity);
+          <div class="tooltip-error tooltip-bottom" [class.tooltip]="quantityError" [attr.data-tip]="quantityError">
+            <label class="input w-full" [class.input-error]="quantityError">
+              <span class="text-neutral">×</span>
+              <input
+                class="tabular-nums"
+                type="number" min="1" step="1"
+                aria-label="Cantidad"
+                formControlName="quantity"
+                [attr.aria-invalid]="!!quantityError"
+              />
+              @if (quantityError) {
+                <ng-icon class="text-error" name="tablerAlertCircle" size="18" aria-hidden="true" />
+              }
+            </label>
+          </div>
+
+          <span class="text-right font-medium whitespace-nowrap tabular-nums">S/ {{ lineTotal(i) | number: '1.2-2' }}</span>
+        </div>
+      } @empty {
+        <div class="grid flex-1 place-items-center content-center gap-2 rounded-field bg-base-200 py-12 text-neutral">
+          <ng-icon name="tablerPackage" size="40" aria-hidden="true" />
+          <span class="text-center">Busca un producto para agregarlo a la compra</span>
+        </div>
+      }
+    </div>
+
+    <label class="flex flex-col gap-1">
+      <span class="flex justify-between text-caption text-neutral">
+        Notas (opcional)
+        <span class="tabular-nums">{{ notesLength() }}/500</span>
+      </span>
+      <textarea class="textarea w-full resize-none" rows="2" maxlength="500" formControlName="notes"></textarea>
+    </label>
+  </div>
+
+  <!-- Resumen -->
+  <aside class="flex shrink-0 flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-6 lg:sticky lg:top-0 lg:w-80">
+    <h2 class="text-subtitle font-medium">Resumen</h2>
+
+    <dl class="flex flex-col gap-2 text-neutral">
+      <div class="flex justify-between">
+        <dt>Productos</dt>
+        <dd class="tabular-nums">{{ items.length }}</dd>
+      </div>
+      <div class="flex justify-between">
+        <dt>Unidades</dt>
+        <dd class="tabular-nums">{{ totalUnits() }}</dd>
+      </div>
+    </dl>
+
+    <div class="flex items-baseline justify-between gap-2 rounded-field bg-base-200 px-3 py-2">
+      <span class="font-medium">Total</span>
+      <span class="text-title font-semibold tabular-nums">S/ {{ totalCents() / 100 | number: '1.2-2' }}</span>
+    </div>
+
+    @if (invalidItemsCount) {
+      <small role="alert" class="flex items-center gap-1 text-error">
+        <ng-icon name="tablerAlertCircle" size="16" aria-hidden="true" />
+        {{ invalidItemsCount }} {{ invalidItemsCount === 1 ? 'producto con errores' : 'productos con errores' }}
+      </small>
+    } @else if (items.touched && items.hasError('itemsRequired')) {
+      <small role="alert" class="flex items-center gap-1 text-error">
+        <ng-icon name="tablerAlertCircle" size="16" aria-hidden="true" />
+        Agrega al menos un producto
+      </small>
+    }
+
+    <app-button type="submit" customClass="w-full" [loading]="saving()" [disabled]="saving()">
+      Registrar compra
+    </app-button>
+  </aside>
+</form>

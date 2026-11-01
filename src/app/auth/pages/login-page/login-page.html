@@ -1,4 +1,4 @@
-<div class="min-h-screen flex bg-gray-50">
+<div class="min-h-screen flex bg-base-200">
   <!-- Left Column - Login Form -->
   <div class="w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-8 lg:px-12">
     <form 
@@ -8,18 +8,18 @@
     >
       <!-- Logo/Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Bienvenido</h1>
-        <p class="text-gray-600 mt-2">Inicia sesión en tu cuenta</p>
+        <h1 class="text-title font-semibold text-base-content">Bienvenido</h1>
+        <p class="text-neutral mt-2">Inicia sesión en tu cuenta</p>
       </div>
 
       <!-- Email Input -->
       <div class="mb-6">
-        <div class="flex items-center border border-gray-300 rounded-full px-4 py-3 bg-white">
-          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="input w-full">
+          <svg class="size-5 shrink-0 text-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
           </svg>
           <input 
-            class="flex-1 ml-3 outline-none text-gray-700 placeholder-gray-500" 
+            class="min-w-0 flex-1" 
             placeholder="Correo electrónico"
             type="email"
             formControlName="email"
@@ -32,19 +32,19 @@
 
       <!-- Password Input -->
       <div class="mb-8">
-        <div class="flex items-center border border-gray-300 rounded-full px-4 py-3 bg-white overflow-hidden">
-          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="input w-full">
+          <svg class="size-5 shrink-0 text-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
           <input 
             [type]="showPassword() ? 'text' : 'password'" 
             placeholder="Contraseña" 
-            class="flex-1 min-w-0 ml-3 outline-none text-gray-700 placeholder-gray-500" 
+            class="min-w-0 flex-1" 
             formControlName="password" 
           >
           <button
             type="button"
-            class="ml-2 shrink-0 flex cursor-pointer text-gray-400 hover:text-gray-600 active:text-gray-700 select-none p-1"
+            class="flex shrink-0 cursor-pointer select-none p-1 text-neutral hover:text-base-content"
             (click)="showPassword.set(!showPassword())"
             aria-label="Mostrar u ocultar contraseña"
           >
@@ -61,7 +61,7 @@
       </div>
 
       @if (hasError()) {
-        <div class="mb-4 bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-medium">
+        <div class="mb-4 rounded-field bg-error-soft px-4 py-3 text-caption font-medium text-error">
           {{ errorMessage() }}
         </div>
       }
@@ -69,7 +69,7 @@
       <!-- Sign Up Button -->
       <app-button 
         type="submit"
-        customClass="w-full font-semibold rounded-full transition 
+        customClass="w-full font-semibold transition 
                     disabled:cursor-not-allowed 
                     disabled:opacity-100 
                     disabled:brightness-90"
@@ -82,17 +82,17 @@
       </app-button>
 
       <!-- Login Link -->
-      <p class="text-center mt-6 text-gray-600 text-sm">
-        ¿No tienes una cuenta? <a routerLink="/auth/register" class="text-primary hover:text-sky-800 font-semibold">Regístrate</a>
+      <p class="text-center mt-6 text-neutral text-caption">
+        ¿No tienes una cuenta? <a routerLink="/auth/register" class="text-primary font-semibold underline-offset-2 hover:underline">Regístrate</a>
       </p>
     </form>
   </div>
 
   <!-- Right Column - Image/Content (Hidden on mobile) -->
   <div class="hidden lg:flex w-1/2 bg-primary items-center justify-center">
-    <div class="text-center text-white px-8">
-      <!-- <h2 class="text-4xl font-bold mb-4">IA revolucionando la forma en que creamos, renderizamos y experimentamos contenido.</h2>
-      <p class="text-lg opacity-90">Crea briefs de diseño con comandos de voz de la IA para generar experiencias increíbles que se ajusten a tus necesidades.</p> -->
+    <div class="text-center text-primary-content px-8">
+      <!-- <h2 class="text-title font-bold mb-4">IA revolucionando la forma en que creamos, renderizamos y experimentamos contenido.</h2>
+      <p class="text-subtitle opacity-90">Crea briefs de diseño con comandos de voz de la IA para generar experiencias increíbles que se ajusten a tus necesidades.</p> -->
     </div>
   </div>
 </div>

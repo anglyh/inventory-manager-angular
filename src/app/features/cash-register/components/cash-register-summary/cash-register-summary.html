@@ -1,0 +1,87 @@
+@let summary = register().summary;
+<!-- Izquierda: el efectivo (arqueo y desglose). Derecha: ventas y observaciones. -->
+<div class="grid gap-4 lg:grid-cols-5 lg:items-start">
+  <div class="flex min-w-0 flex-col gap-4" [class]="hasAside() ? 'lg:col-span-3' : 'lg:col-span-5'">
+    @if (closingAmount(); as counted) {
+      <section class="flex min-w-0 flex-col gap-5 rounded-box bg-primary p-5 text-primary-content sm:p-6" aria-labelledby="summary-count-title">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="summary-count-title" class="text-body font-medium text-base-300">Conteo al cerrar</h2>
+          @if (difference(); as difference) {
+            @let tone = differenceTone(difference);
+            @let view = differenceView[tone];
+            <span class="badge badge-sm gap-1 whitespace-nowrap border-0 font-medium tabular-nums" [class]="view.soft">
+              <ng-icon [name]="view.icon" size="14" aria-hidden="true" />
+              {{ view.label }}
+              @if (tone !== 'even') {
+                {{ differenceSign(difference) }}S/ {{ absoluteAmount(difference) | number: '1.2-2' }}
+              }
+            </span>
+          }
+        </div>
+
+        <dl class="grid grid-cols-2 gap-4">
+          <div class="flex min-w-0 flex-col gap-1">
+            <dt class="text-caption text-base-300">Dinero contado</dt>
+            <dd class="text-title font-semibold tracking-tight">
+              <cash-amount [value]="counted" [inverse]="true" />
+            </dd>
+          </div>
+          @if (expected(); as expected) {
+            <div class="flex min-w-0 flex-col gap-1">
+              <dt class="text-caption text-base-300">Debería haber</dt>
+              <dd class="text-title font-semibold tracking-tight">
+                <cash-amount [value]="expected" [inverse]="true" />
+              </dd>
+            </div>
+          }
+        </dl>
+      </section>
+    }
+
+    <!-- Una sola cuenta del efectivo: cada fila suma hasta el esperado. -->
+    <section class="flex min-w-0 flex-col gap-2 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="summary-cash-title">
+      <div class="flex flex-col">
+        <h2 id="summary-cash-title" class="text-subtitle font-semibold">Detalle del efectivo</h2>
+        <small class="text-neutral">
+          @if (register().status === 'OPEN') {
+            El total se calcula al cerrar la caja
+          } @else {
+            Fondo + lo que entró − lo que salió
+          }
+        </small>
+      </div>
+      <cash-breakdown-list [rows]="cashRows()" />
+    </section>
+  </div>
+
+  @if (hasAside()) {
+    <div class="flex min-w-0 flex-col gap-4 lg:col-span-2">
+      @if (summary) {
+        <cash-sales-tiles class="sm:grid-cols-3 lg:grid-cols-1" [summary]="summary" />
+      }
+
+      @if (register().notes || register().closingNotes) {
+        <section class="flex flex-col gap-3 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="summary-notes-title">
+          <div class="flex items-center gap-3">
+            <span class="grid size-9 shrink-0 place-items-center rounded-field bg-base-200 text-neutral" aria-hidden="true">
+              <ng-icon name="tablerNotes" size="18" />
+            </span>
+            <h2 id="summary-notes-title" class="text-subtitle font-semibold">Notas</h2>
+          </div>
+          @if (register().notes) {
+            <div class="flex flex-col gap-1 rounded-field bg-base-200/60 p-3">
+              <small class="text-neutral">Al abrir</small>
+              <p class="whitespace-pre-line wrap-break-word">{{ register().notes }}</p>
+            </div>
+          }
+          @if (register().closingNotes) {
+            <div class="flex flex-col gap-1 rounded-field bg-base-200/60 p-3">
+              <small class="text-neutral">Al cerrar</small>
+              <p class="whitespace-pre-line wrap-break-word">{{ register().closingNotes }}</p>
+            </div>
+          }
+        </section>
+      }
+    </div>
+  }
+</div>

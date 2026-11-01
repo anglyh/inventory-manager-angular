@@ -1,0 +1,100 @@
+<section class="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Resumen del período">
+  <div class="col-span-2 flex min-w-0 flex-col gap-1" [class]="heroClass()">
+    <report-stat-card
+      class="flex-1"
+      label="Ganancia neta"
+      size="hero"
+      tone="primary"
+      [value]="total().netProfit"
+      [delta]="netChange()"
+      [hint]="netHint()"
+    />
+    <button
+      type="button"
+      class="flex cursor-pointer items-center gap-1 self-start px-1 py-1 text-neutral hover:text-base-content"
+      aria-controls="report-breakdown"
+      [attr.aria-expanded]="breakdownOpen()"
+      (click)="toggleBreakdown()"
+    >
+      {{ breakdownOpen() ? 'Ocultar detalle' : 'Ver detalle' }}
+      <ng-icon name="tablerChevronDown" size="18" aria-hidden="true" class="transition-transform" [class.rotate-180]="breakdownOpen()" />
+    </button>
+  </div>
+
+  @if (attention().length) {
+    <!-- En el celular los avisos van después de las métricas; en pantallas grandes, al lado de la ganancia neta. -->
+    <report-attention class="order-last col-span-2 min-w-0 lg:order-none" [items]="attention()" />
+  }
+
+  @if (breakdownOpen()) {
+    <report-business-split
+      id="report-breakdown"
+      class="col-span-2 min-w-0 lg:col-span-4"
+      [store]="store()"
+      [lodging]="lodging()"
+      [total]="total()"
+      [previous]="previous()"
+    />
+  }
+
+  <report-stat-card
+    class="min-w-0"
+    label="Ingresos totales"
+    size="md"
+    [value]="revenue()"
+    [delta]="revenueChange()"
+    [hint]="revenueHint()"
+    [delay]="60"
+  />
+  <report-stat-card
+    class="min-w-0"
+    label="Ganancia bruta tienda"
+    explanation="Ventas de la tienda menos lo que te costó la mercadería vendida"
+    size="md"
+    [value]="store().grossProfit"
+    [delta]="storeGrossChange()"
+    [hint]="storeGrossHint()"
+    [delay]="120"
+  />
+  <report-stat-card
+    class="min-w-0"
+    label="Ganancia bruta hostal"
+    explanation="Cobros de habitaciones menos los gastos del hospedaje"
+    size="md"
+    [value]="lodging().result"
+    [delta]="lodgingGrossChange()"
+    [hint]="lodgingGrossHint()"
+    [delay]="180"
+  />
+  <report-stat-card
+    class="min-w-0"
+    label="Ocupación"
+    size="md"
+    format="percent"
+    [value]="rooms().occupancyPct"
+    [hint]="occupancyHint()"
+    [delay]="240"
+  />
+  <report-payment-split class="col-span-2 min-w-0" [payments]="payments()" [delay]="300" />
+  <!-- Subir los gastos es malo: la variación se pinta al revés. -->
+  <report-stat-card
+    class="min-w-0"
+    label="Gastos del período"
+    size="md"
+    hint="Hospedaje y generales"
+    [value]="expenses()"
+    [delta]="expensesChange()"
+    [invertDelta]="true"
+    [delay]="420"
+  />
+  <!-- Comprar mercadería no es gasto: el dinero pasa al stock. -->
+  <report-stat-card
+    class="min-w-0"
+    label="Compras del período"
+    explanation="Mercadería comprada en el período. No es gasto: pasa a tu stock."
+    size="md"
+    hint="Pasa a tu stock"
+    [value]="flows().purchases"
+    [delay]="480"
+  />
+</section>

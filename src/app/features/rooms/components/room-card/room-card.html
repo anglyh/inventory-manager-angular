@@ -1,0 +1,62 @@
+@let r = room();
+@let v = view();
+<button
+  type="button"
+  class="group relative flex h-full w-full cursor-pointer flex-col gap-3 overflow-hidden rounded-box bg-base-100 p-4 pl-5 text-left transition-colors hover:bg-base-200/50 focus-visible:outline-2 focus-visible:outline-primary"
+  [attr.aria-label]="'Habitación ' + r.number + ', ' + statusLabel() + '. ' + actionLabel()"
+  (click)="selected.emit(r)"
+>
+  <!-- Franja de estado: el tablero se lee por color de un vistazo. -->
+  <span class="absolute inset-y-0 left-0 w-1.5" [class]="v.accent" aria-hidden="true"></span>
+
+  <div class="flex items-start justify-between gap-2">
+    <div class="flex min-w-0 flex-col">
+      <span class="text-title font-semibold tabular-nums leading-tight">{{ r.number }}</span>
+      <small class="truncate text-neutral">{{ r.roomTypeName }}</small>
+    </div>
+    <span class="badge badge-sm shrink-0 gap-1.5 border-0 font-medium" [class]="v.badge">
+      <span class="size-1.5 rounded-full" [class]="v.dot" aria-hidden="true"></span>
+      {{ statusLabel() }}
+    </span>
+  </div>
+
+  @if (r.activeStay; as stay) {
+    <div class="flex flex-col gap-1">
+      <span class="flex min-w-0 items-center gap-1.5 font-medium">
+        <ng-icon name="tablerUser" size="16" class="shrink-0 text-neutral" aria-hidden="true" />
+        <span class="truncate">{{ stay.holderName ?? 'Sin nombre' }}</span>
+      </span>
+      @if (overdueMinutes() > 0) {
+        <small class="flex items-center gap-1.5 font-medium text-error tabular-nums">
+          <ng-icon name="tablerClock" size="14" class="shrink-0" aria-hidden="true" />
+          Debió salir hace {{ overdueLabel() }}
+        </small>
+      } @else {
+        <small class="flex items-center gap-1.5 text-neutral tabular-nums">
+          <ng-icon name="tablerClock" size="14" class="shrink-0" aria-hidden="true" />
+          Sale {{ checkOutDay() ?? (stay.expectedCheckOut | date: 'd MMM') }} {{ stay.expectedCheckOut | date: 'HH:mm' }}
+        </small>
+      }
+      <!-- Pagado es lo normal (se cobra al ingresar): solo se avisa si quedó algo pendiente, p. ej. horas extra. -->
+      @if (balance() > 0) {
+        <small class="font-medium tabular-nums text-warning">Debe S/ {{ balance() | number: '1.2-2' }}</small>
+      }
+    </div>
+  } @else if (r.status === 'CLEANING') {
+    <small class="flex items-center gap-1.5 text-warning">
+      <ng-icon name="tablerSparkles" size="14" aria-hidden="true" />
+      Falta limpiar
+    </small>
+  } @else {
+    <small class="flex items-center gap-1.5 text-neutral">
+      <ng-icon name="tablerUser" size="14" aria-hidden="true" />
+      Hasta {{ r.capacity }} {{ r.capacity === 1 ? 'adulto' : 'adultos' }}
+    </small>
+  }
+
+  <!-- La card entera es el botón: la acción va como texto, sin fondo que parezca deshabilitado. -->
+  <small class="mt-auto flex items-center gap-1 font-medium text-neutral transition-colors group-hover:text-base-content">
+    {{ actionLabel() }}
+    <ng-icon name="tablerArrowRight" size="14" class="shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+  </small>
+</button>

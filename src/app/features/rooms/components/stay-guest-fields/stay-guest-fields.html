@@ -1,0 +1,61 @@
+@let g = group();
+<div class="grid grid-cols-1 gap-3 sm:grid-cols-6" [formGroup]="g">
+  <label class="flex flex-col gap-1 sm:col-span-2">
+    <span class="text-caption text-neutral">Documento</span>
+    <select class="select w-full" formControlName="documentType" (change)="lookup.emit()">
+      @for (type of documentTypes; track type) {
+        <option [value]="type">{{ documentTypeLabel[type] }}</option>
+      }
+    </select>
+  </label>
+  <label class="flex flex-col gap-1 sm:col-span-4">
+    <span class="text-caption text-neutral">Número</span>
+    <span class="input w-full" [class.input-error]="invalid(g.controls.documentNumber)">
+      <input class="tabular-nums" type="text" autocomplete="off" formControlName="documentNumber" (blur)="lookup.emit()" />
+      @if (lookingUp()) {
+        <span class="loading loading-spinner loading-xs text-neutral" aria-label="Buscando"></span>
+      }
+    </span>
+    <small class="text-neutral">Si ya se hospedó antes, sus datos se completan solos.</small>
+  </label>
+
+  <label class="flex flex-col gap-1 sm:col-span-4">
+    <span class="text-caption text-neutral">Nombre completo</span>
+    <input class="input w-full" type="text" formControlName="fullName" [class.input-error]="invalid(g.controls.fullName)" />
+  </label>
+  <label class="flex flex-col gap-1 sm:col-span-2">
+    <span class="text-caption text-neutral">Nacimiento</span>
+    <input class="input w-full" type="date" formControlName="birthDate" [class.input-error]="invalid(g.controls.birthDate)" />
+    @if (submitAttempted() && g.controls.birthDate.hasError('minor')) {
+      <small class="text-error">Es menor de edad: agrégalo en Menores.</small>
+    } @else if (submitAttempted() && g.controls.birthDate.hasError('date')) {
+      <small class="text-error">Fecha no válida o futura.</small>
+    }
+  </label>
+  <label class="flex flex-col gap-1 sm:col-span-2">
+    <span class="text-caption text-neutral">Sexo</span>
+    <select class="select w-full" formControlName="sex" [class.select-error]="invalid(g.controls.sex)">
+      <option value="" disabled>Elegir</option>
+      <option value="M">Masculino</option>
+      <option value="F">Femenino</option>
+    </select>
+  </label>
+  <label class="flex flex-col gap-1 sm:col-span-2">
+    <span class="text-caption text-neutral">Nacionalidad</span>
+    <input class="input w-full" type="text" formControlName="nationality" [class.input-error]="invalid(g.controls.nationality)" />
+  </label>
+  <label class="flex flex-col gap-1 sm:col-span-2">
+    <span class="text-caption text-neutral">Teléfono <span class="opacity-60">(opcional)</span></span>
+    <input class="input w-full tabular-nums" type="tel" formControlName="phone" />
+  </label>
+  <label class="flex flex-col gap-1 sm:col-span-6">
+    <span class="text-caption text-neutral">Lugar de residencia</span>
+    <input
+      class="input w-full"
+      type="text"
+      placeholder="Ciudad, país"
+      formControlName="residence"
+      [class.input-error]="invalid(g.controls.residence)"
+    />
+  </label>
+</div>

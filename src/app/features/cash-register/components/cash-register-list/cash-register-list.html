@@ -1,0 +1,58 @@
+<!-- Cada fila es un enlace al detalle: se abre con clic o con el teclado. -->
+<ul class="flex flex-col divide-y divide-base-200 overflow-hidden rounded-box bg-base-100">
+  @for (register of registers(); track register.id) {
+    @let isOpen = register.status === 'OPEN';
+    @let sameDay = register.closedAt && (register.openedAt | date: 'yMd') === (register.closedAt | date: 'yMd');
+    @let difference = register.summary?.difference ?? null;
+    @let tone = difference !== null ? differenceTone(difference) : null;
+    @let view = tone ? differenceView[tone] : null;
+    <li>
+      <a
+        class="flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-base-200 focus-visible:-outline-offset-2 sm:px-5"
+        [routerLink]="['/cash-register', register.id]"
+      >
+        <!-- El ícono resume el cierre: abierta, cuadrada, faltante, sobrante o sin arqueo. -->
+        @if (isOpen) {
+          <span class="grid size-10 shrink-0 place-items-center rounded-field bg-success-soft text-success" aria-hidden="true">
+            <ng-icon name="tablerLockOpen" size="20" />
+          </span>
+        } @else if (view) {
+          <span class="grid size-10 shrink-0 place-items-center rounded-field" [class]="view.soft" aria-hidden="true">
+            <ng-icon [name]="view.icon" size="20" />
+          </span>
+        } @else {
+          <span class="grid size-10 shrink-0 place-items-center rounded-field bg-base-200 text-neutral" aria-hidden="true">
+            <ng-icon name="tablerLock" size="20" />
+          </span>
+        }
+
+        <span class="flex min-w-0 flex-1 flex-col">
+          <span class="truncate font-medium tabular-nums">
+            {{ register.openedAt | date: 'd MMM y · h:mm a' }}
+            @if (register.closedAt) {
+              <span class="text-neutral">→ {{ register.closedAt | date: sameDay ? 'h:mm a' : 'd MMM · h:mm a' }}</span>
+            }
+          </span>
+          <small class="truncate text-neutral">{{ register.openedByName || 'Sin responsable' }}</small>
+        </span>
+
+        <span class="flex shrink-0 flex-col items-end gap-1">
+          @if (isOpen) {
+            <cash-status-pill [open]="true" label="Abierta" />
+          } @else if (view && tone && difference !== null) {
+            @if (tone !== 'even') {
+              <span class="whitespace-nowrap font-semibold tabular-nums" [class]="view.text">
+                {{ differenceSign(difference) }} S/ {{ absoluteAmount(difference) | number: '1.2-2' }}
+              </span>
+            }
+            <span class="badge badge-sm whitespace-nowrap border-0 font-medium" [class]="view.soft">{{ view.label }}</span>
+          } @else {
+            <cash-status-pill label="Cerrada" />
+          }
+        </span>
+
+        <ng-icon name="tablerChevronRight" size="18" class="hidden shrink-0 text-neutral sm:block" aria-hidden="true" />
+      </a>
+    </li>
+  }
+</ul>

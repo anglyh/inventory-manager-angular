@@ -1,0 +1,85 @@
+<div class="flex w-full flex-col gap-4">
+  <app-button variant="ghost" customClass="self-start text-neutral" (click)="goTo('/cash-register/history')">
+    <ng-icon name="tablerArrowLeft" size="18" aria-hidden="true" />
+    Historial
+  </app-button>
+
+  @if (notFound()) {
+    <div class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-12 text-center">
+      <p class="font-medium">La caja no existe</p>
+      <small class="text-neutral">Puede que el enlace esté incompleto.</small>
+      <app-button (click)="goTo('/cash-register/history')">Ver historial</app-button>
+    </div>
+  } @else if (errorMessage(); as message) {
+    <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">
+      <p class="text-neutral">{{ message }}</p>
+      <app-button variant="outline" (click)="registerResource.reload()">Reintentar</app-button>
+    </div>
+  } @else if (registerResource.hasValue()) {
+    @let register = registerResource.value();
+    @let isOpen = register.status === 'OPEN';
+    <header class="flex flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex min-w-0 items-start gap-4">
+        <span
+          class="hidden size-12 shrink-0 place-items-center rounded-field sm:grid"
+          [class]="isOpen ? 'bg-success-soft text-success' : 'bg-base-200 text-neutral'"
+          aria-hidden="true"
+        >
+          <ng-icon [name]="isOpen ? 'tablerLockOpen' : 'tablerLock'" size="24" />
+        </span>
+        <div class="flex min-w-0 flex-col gap-3">
+          <div class="flex flex-col gap-1">
+            <cash-status-pill [open]="isOpen" [label]="isOpen ? 'Abierta' : 'Cerrada'" />
+            <h1 class="text-title font-semibold">Caja del {{ register.openedAt | date: 'd MMM y' }}</h1>
+          </div>
+
+          <dl class="flex flex-col gap-2 sm:flex-row sm:gap-8">
+            <div class="flex min-w-0 flex-col">
+              <dt class="text-caption text-neutral">Apertura</dt>
+              <dd class="tabular-nums">
+                {{ register.openedAt | date: 'd MMM · h:mm a' }}
+                @if (register.openedByName) {
+                  <span class="text-neutral">· {{ register.openedByName }}</span>
+                }
+              </dd>
+            </div>
+            <div class="flex min-w-0 flex-col">
+              <dt class="text-caption text-neutral">Cierre</dt>
+              <dd class="tabular-nums">
+                @if (register.closedAt) {
+                  {{ register.closedAt | date: 'd MMM · h:mm a' }}
+                  @if (register.closedByName) {
+                    <span class="text-neutral">· {{ register.closedByName }}</span>
+                  }
+                } @else {
+                  <span class="text-neutral">Sigue abierta</span>
+                }
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap lg:shrink-0">
+        <app-button variant="outline" customClass="w-full sm:w-auto" (click)="openSales(register.id)">
+          <ng-icon name="tablerReceipt" size="18" aria-hidden="true" />
+          Ver ventas
+        </app-button>
+        @if (isOpen) {
+          <app-button customClass="w-full sm:w-auto" (click)="goTo('/cash-register')">
+            <ng-icon name="tablerCashRegister" size="18" aria-hidden="true" />
+            Ir a la caja
+          </app-button>
+        }
+      </div>
+    </header>
+
+    <cash-register-summary [register]="register" />
+
+    <cash-register-movement-table class="block w-full" [registerId]="register.id" />
+  } @else {
+    <div class="grid place-items-center py-8" role="status" aria-label="Cargando caja">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+</div>

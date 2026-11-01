@@ -1,0 +1,153 @@
+<form class="flex flex-1 flex-col gap-4 lg:flex-row lg:items-start" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="@container flex min-w-0 flex-1 flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-6 lg:self-stretch">
+    <div class="flex items-center justify-between gap-2">
+      <h2 class="text-subtitle font-medium">Conteo físico</h2>
+      <a class="btn btn-ghost" routerLink="/movements">
+        <ng-icon name="tablerHistory" size="20" aria-hidden="true" />
+        <span class="hidden sm:inline">Historial</span>
+      </a>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <label class="input min-w-0 flex-1 basis-56">
+        <ng-icon class="text-neutral" name="tablerSearch" size="18" aria-hidden="true" />
+        <input
+          type="search"
+          placeholder="Buscar por nombre o código"
+          aria-label="Buscar producto"
+          #search
+          [value]="query()"
+          (input)="query.set(search.value)"
+        />
+      </label>
+      <label class="flex cursor-pointer items-center gap-2 text-neutral">
+        <input
+          type="checkbox"
+          class="toggle"
+          #onlyDifference
+          [checked]="onlyWithDifference()"
+          (change)="onlyWithDifference.set(onlyDifference.checked)"
+        />
+        Solo con diferencia
+      </label>
+    </div>
+
+    <!-- Productos -->
+    <div class="flex flex-1 flex-col gap-2" formGroupName="counts">
+      @if (products().length) {
+        <div class="grid grid-cols-[1fr_3rem_5rem_3rem] gap-3 px-3 text-caption text-neutral @2xl:grid-cols-[1fr_6rem_8rem_6rem]">
+          <span>Producto</span>
+          <span class="text-right">Sistema</span>
+          <span>Contado</span>
+          <span class="text-right">Dif.</span>
+        </div>
+      }
+
+      @for (product of visibleProducts(); track product.id) {
+        @let countControl = counts.controls[product.id];
+        @let diff = difference(product.id);
+        <div class="grid grid-cols-[1fr_3rem_5rem_3rem] items-center gap-3 rounded-field bg-base-200 px-3 py-2 @2xl:grid-cols-[1fr_6rem_8rem_6rem]">
+          <div class="flex min-w-0 flex-col">
+            <span class="truncate font-medium">{{ product.name }}</span>
+            @if (product.categoryName) {
+              <small class="truncate text-neutral">{{ product.categoryName }}</small>
+            }
+          </div>
+
+          <span class="text-right text-neutral tabular-nums">{{ product.stock }}</span>
+
+          @if (countControl) {
+            @let countError = controlError(countControl);
+            <div class="tooltip-error tooltip-bottom" [class.tooltip]="countError" [attr.data-tip]="countError">
+              <input
+                class="input w-full tabular-nums"
+                [class.input-error]="countError"
+                type="number" min="0" step="1"
+                [attr.aria-label]="'Cantidad contada de ' + product.name"
+                [formControlName]="product.id"
+                [attr.aria-invalid]="!!countError"
+              />
+            </div>
+          }
+
+          <span
+            class="text-right font-medium tabular-nums"
+            [class.text-success]="diff !== null && diff > 0"
+            [class.text-error]="diff !== null && diff < 0"
+            [class.text-neutral]="!diff"
+          >
+            @if (diff === null) {
+              —
+            } @else {
+              {{ diff > 0 ? '+' : '' }}{{ diff }}
+            }
+          </span>
+        </div>
+      } @empty {
+        <div class="grid flex-1 place-items-center content-center gap-2 rounded-field bg-base-200 py-12 text-neutral">
+          <ng-icon name="tablerPackage" size="40" aria-hidden="true" />
+          <span class="text-center">{{ products().length ? 'Sin coincidencias' : 'No hay productos activos' }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Resumen -->
+  <aside class="flex shrink-0 flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-6 lg:sticky lg:top-0 lg:w-80">
+    <h2 class="text-subtitle font-medium">Resumen</h2>
+
+    <dl class="flex flex-col gap-2 text-neutral">
+      <div class="flex justify-between">
+        <dt>Contados</dt>
+        <dd class="tabular-nums">{{ countedCount() }} / {{ products().length }}</dd>
+      </div>
+      <div class="flex justify-between">
+        <dt>Con diferencia</dt>
+        <dd class="tabular-nums">{{ summary().withDifference }}</dd>
+      </div>
+      <div class="flex justify-between">
+        <dt>Unidades sobrantes</dt>
+        <dd class="tabular-nums" [class.text-success]="summary().surplus">+{{ summary().surplus }}</dd>
+      </div>
+      <div class="flex justify-between">
+        <dt>Unidades faltantes</dt>
+        <dd class="tabular-nums" [class.text-error]="summary().shortage">−{{ summary().shortage }}</dd>
+      </div>
+    </dl>
+
+    @let notesError = controlError(form.controls.notes);
+    <label class="flex flex-col gap-1">
+      <span class="flex justify-between text-caption text-neutral">
+        Motivo del conteo
+        <span class="tabular-nums">{{ notesLength() }}/500</span>
+      </span>
+      <textarea
+        class="textarea w-full resize-none"
+        [class.textarea-error]="notesError"
+        rows="2" maxlength="500"
+        placeholder="Ej.: Conteo mensual"
+        formControlName="notes"
+        [attr.aria-invalid]="!!notesError"
+      ></textarea>
+      @if (notesError) {
+        <small role="alert" class="text-error">{{ notesError }}</small>
+      }
+    </label>
+
+    @if (counts.invalid) {
+      <small role="alert" class="flex items-center gap-1 text-error">
+        <ng-icon name="tablerAlertCircle" size="16" aria-hidden="true" />
+        Revisa las cantidades marcadas
+      </small>
+    }
+
+    <app-button
+      type="submit"
+      customClass="w-full"
+      [loading]="saving()"
+      [disabled]="saving() || !summary().withDifference || !notesValid() || counts.invalid"
+    >
+      Registrar conteo
+    </app-button>
+  </aside>
+</form>

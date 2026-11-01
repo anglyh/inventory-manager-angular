@@ -1,10 +1,12 @@
 import { Component, computed, input, linkedSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Button } from 'src/app/shared/components/button/button';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { tablerChevronLeft, tablerChevronRight } from '@ng-icons/tabler-icons';
 
 @Component({
   selector: 'app-pagination',
-  imports: [RouterLink, Button],
+  imports: [RouterLink, NgIcon],
+  viewProviders: [provideIcons({ tablerChevronLeft, tablerChevronRight })],
   templateUrl: './pagination.html',
 })
 export class Pagination {

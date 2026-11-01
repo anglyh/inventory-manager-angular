@@ -1,8 +1,12 @@
 import { AuthService } from '@/auth/services/auth.service';
-import { AfterViewInit, Component, DestroyRef, ElementRef, inject, viewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, DestroyRef, ElementRef, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { Router, RouterLink, RouterOutlet, RouterLinkActive, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { Router, RouterLink, RouterOutlet, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
+import { Sidebar } from "../../components/Sidebar/Sidebar";
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { tablerArrowLeft, tablerChevronDown, tablerLogout, tablerUsers } from '@ng-icons/tabler-icons';
+import { Button } from '@/shared/components/button/button';
 
 interface DashboardHeaderAction {
   label: string;
@@ -11,34 +15,34 @@ interface DashboardHeaderAction {
 
 @Component({
   selector: 'app-dashboard-layout',
-  imports: [RouterLink, RouterOutlet, RouterLinkActive],
+  imports: [RouterLink, RouterOutlet, Sidebar, NgIcon, Button],
+  viewProviders: [provideIcons({ tablerArrowLeft, tablerChevronDown, tablerLogout, tablerUsers })],
   templateUrl: './dashboard-layout.html',
 })
 export class DashboardLayout implements AfterViewInit {
   private drawerToggle = viewChild<ElementRef<HTMLInputElement>>('drawerToggle')
 
   private router = inject(Router)
-  private activatedRoute = inject(ActivatedRoute)
   private authService = inject(AuthService)
   private destroyRef = inject(DestroyRef)
 
-  currentRouteTitle = toSignal(
+  /** Título y, si la ruta declara `data: { back }`, a dónde lleva la flecha de volver. */
+  private currentPage = toSignal(
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd),
-      map(() => {
-        let currentRoute = this.activatedRoute.root
-
-        while (currentRoute.firstChild) {
-          currentRoute = currentRoute.firstChild
-        }
-
-        return (
-          currentRoute.snapshot.routeConfig?.title as string ?? 'Dashboard'
-        )
-      }),
-      startWith('Dashboard')
-    )
+      map(() => this.#pageFromRoute()),
+      startWith(this.#pageFromRoute()),
+    ),
+    { requireSync: true },
   )
+
+  currentRouteTitle = computed(() => this.currentPage().title)
+  backLink = computed(() => this.currentPage().back)
+
+  goBack() {
+    const back = this.backLink()
+    if (back) void this.router.navigateByUrl(back)
+  }
 
   /** Botón contextual en el header (p. ej. nueva venta / nueva compra en listados). */
   headerPrimaryAction = toSignal(
@@ -85,19 +89,35 @@ export class DashboardLayout implements AfterViewInit {
     if (input.type === 'checkbox') input.checked = false
   }
 
+  readonly isAdmin = this.authService.isAdmin
+  readonly userName = computed(() => this.authService.user()?.name?.trim() || 'Mi cuenta')
+  readonly userInitial = computed(() => this.userName().charAt(0).toUpperCase())
+  readonly roleLabel = computed(() => (this.isAdmin() ? 'Administrador' : 'Empleado'))
+
+  /** Los dropdown de daisyUI se cierran al perder el foco: tras elegir, se suelta. */
+  blurActive() {
+    (document.activeElement as HTMLElement | null)?.blur()
+  }
+
   logout() {
     this.authService.logout()
     this.router.navigateByUrl('/')
   }
 
+  #pageFromRoute(): { title: string; back: string | null } {
+    // El snapshot del router existe siempre; el de ActivatedRoute no antes de la primera navegación.
+    let route = this.router.routerState.snapshot.root
+    while (route.firstChild) {
+      route = route.firstChild
+    }
+    const { routeConfig, data } = route
+    return {
+      title: (routeConfig?.title as string) ?? 'Inicio',
+      back: typeof data['back'] === 'string' ? data['back'] : null,
+    }
+  }
+
   #headerActionFromUrl(): DashboardHeaderAction | null {
-    const path = this.router.url.split('?')[0].split('#')[0];
-    if (path === '/sales') {
-      return { label: 'Nueva venta', link: '/sales/new' };
-    }
-    if (path === '/purchases') {
-      return { label: 'Nueva compra', link: '/purchases/new' };
-    }
     return null;
   }
 }

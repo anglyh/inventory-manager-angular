@@ -1,0 +1,50 @@
+<div class="flex flex-col gap-3">
+  <!-- Tipo: mismo ícono y color que en la lista. Celular/tablet: una fila que se desliza; escritorio: bajan de línea. -->
+  <div class="flex gap-2 overflow-x-auto [scrollbar-width:none] lg:flex-wrap lg:overflow-visible" role="group" aria-label="Tipo de movimiento">
+    @for (chip of groupChips; track chip.label) {
+      @let selected = filters().group === chip.value;
+      <button
+        type="button"
+        class="btn shrink-0 rounded-full border-0 px-4"
+        [class]="selected ? 'btn-primary' : '[--btn-color:var(--color-base-100)] font-normal'"
+        [attr.aria-pressed]="selected"
+        (click)="update({ group: chip.value })"
+      >
+        @if (chip.icon) {
+          <ng-icon [name]="chip.icon" size="18" [class]="selected ? '' : chip.iconClass" aria-hidden="true" />
+        }
+        {{ chip.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Producto y fechas siempre a la vista: lo filtrado se lee en los propios controles. -->
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+    <app-option-selector
+      class="min-w-0 sm:max-w-80 sm:flex-1"
+      controlId="movement-product"
+      placeholder="Todos los productos"
+      emptyText="No hay productos con ese nombre"
+      [items]="products()"
+      [selectedName]="productName()"
+      (selectedOption)="selectProduct($event)"
+      (selectionCleared)="update({ productId: undefined })"
+    />
+    <app-date-range-filter
+      class="min-w-0"
+      surface="page"
+      placeholder="Todas las fechas"
+      ariaLabel="Fechas de los movimientos"
+      [clearable]="true"
+      [from]="filters().from ?? null"
+      [to]="filters().to ?? null"
+      (rangeChange)="update({ from: $event.from ?? undefined, to: $event.to ?? undefined })"
+    />
+    @if (activeCount()) {
+      <app-button variant="ghost" (click)="clear()">
+        <ng-icon name="tablerX" size="16" aria-hidden="true" />
+        Limpiar
+      </app-button>
+    }
+  </div>
+</div>

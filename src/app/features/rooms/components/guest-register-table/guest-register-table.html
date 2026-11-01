@@ -1,0 +1,119 @@
+@if (rows().length === 0) {
+  <p class="py-16 text-center text-neutral">Sin estadías en estas fechas</p>
+} @else {
+  <!-- Sin overflow: en el celular se ocultan columnas y las celdas hacen salto de línea. -->
+  <div>
+    <table class="table w-full">
+      <thead>
+        <tr class="border-base-200 text-neutral">
+          <th class="pl-0 font-medium">Estadía</th>
+          <th class="pr-0 font-medium sm:pr-4">Huésped</th>
+          <th class="hidden font-medium md:table-cell">Nacionalidad</th>
+          <th class="hidden font-medium lg:table-cell">Nacimiento</th>
+          <th class="hidden font-medium xl:table-cell">Motivo</th>
+          <th class="hidden text-end font-medium sm:table-cell">Tarifa</th>
+          <th class="hidden pr-0 font-medium sm:table-cell">Migraciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.key) {
+          @let stay = row.stay;
+          <!-- Las filas de una misma estadía se separan solo entre estadías, no entre sus huéspedes. -->
+          <tr
+            class="cursor-pointer transition-colors"
+            [class]="row.last ? 'border-base-200' : 'border-0'"
+            [class.bg-base-200]="hoveredStayId() === stay.id"
+            (mouseenter)="hoveredStayId.set(stay.id)"
+            (mouseleave)="hoveredStayId.set(null)"
+            (click)="staySelected.emit(stay.id)"
+          >
+            @if (row.first) {
+              <td class="pl-0 align-top" [attr.rowspan]="row.span">
+                <a
+                  class="flex items-start gap-3 focus-visible:outline-offset-4"
+                  [routerLink]="['/rooms/stay', stay.id]"
+                  (click)="$event.stopPropagation()"
+                >
+                  <span
+                    class="grid size-10 shrink-0 place-items-center rounded-field font-semibold tabular-nums transition-colors"
+                    [class]="hoveredStayId() === stay.id ? 'bg-primary text-primary-content' : 'bg-base-200'"
+                  >
+                    {{ stay.roomNumber }}
+                  </span>
+                  <span class="flex min-w-0 flex-col tabular-nums sm:whitespace-nowrap">
+                    <span>{{ stay.checkInAt | date: 'd MMM · HH:mm' }}</span>
+                    <small class="text-neutral">
+                      @if (stay.actualCheckOut) {
+                        Salió {{ stay.actualCheckOut | date: 'd MMM · HH:mm' }}
+                      } @else {
+                        <span class="text-primary">Hospedado</span> · sale {{ stay.expectedCheckOut | date: 'd MMM HH:mm' }}
+                      }
+                    </small>
+                    <!-- En el celular la columna Migraciones se oculta: el estado va bajo la fecha. -->
+                    @if (stay.hasForeignGuests) {
+                      <span
+                        class="badge badge-sm mt-1 self-start whitespace-nowrap border-0 sm:hidden"
+                        [class]="stay.migrationsReportedAt ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning'"
+                      >
+                        {{ stay.migrationsReportedAt ? 'Reportado' : 'Pendiente' }}
+                      </span>
+                    }
+                  </span>
+                </a>
+              </td>
+            }
+            <td class="pr-0 sm:pr-4">
+              <span class="flex flex-col">
+                <span class="flex flex-wrap items-center gap-2">
+                  <span class="font-medium wrap-break-word">{{ row.fullName }}</span>
+                  @if (row.isHolder && row.span > 1) {
+                    <span class="badge badge-sm border-0 bg-base-200 font-medium text-base-content">Principal</span>
+                  }
+                  @if (row.minorRelation) {
+                    <span class="badge badge-sm border-0 bg-base-200 text-neutral">Menor · {{ row.minorRelation }}</span>
+                  }
+                </span>
+                <small class="text-neutral tabular-nums">{{ row.document }}</small>
+              </span>
+            </td>
+            <td class="hidden md:table-cell">
+              <span class="flex flex-col">
+                <span>{{ row.nationality }}</span>
+                @if (row.residence) {
+                  <small class="text-neutral">{{ row.residence }}</small>
+                }
+              </span>
+            </td>
+            <td class="hidden lg:table-cell">
+              <span class="flex flex-col tabular-nums">
+                <span>{{ row.birthDate | date: 'dd/MM/yyyy' : 'UTC' }}</span>
+                @if (row.sex) {
+                  <small class="text-neutral">{{ row.sex }}</small>
+                }
+              </span>
+            </td>
+            @if (row.first) {
+              <td class="hidden align-top xl:table-cell" [attr.rowspan]="row.span">
+                <span [class.text-neutral]="!stay.travelReason">{{ stay.travelReason ?? '—' }}</span>
+              </td>
+              <td class="hidden whitespace-nowrap text-end align-top tabular-nums sm:table-cell" [attr.rowspan]="row.span">
+                S/ {{ stay.chargesTotal | number: '1.2-2' }}
+              </td>
+              <td class="hidden pr-0 align-top sm:table-cell" [attr.rowspan]="row.span">
+                @if (stay.hasForeignGuests) {
+                  @if (stay.migrationsReportedAt) {
+                    <span class="badge badge-sm whitespace-nowrap border-0 bg-success-soft text-success">Reportado</span>
+                  } @else {
+                    <span class="badge badge-sm whitespace-nowrap border-0 bg-warning-soft text-warning">Pendiente</span>
+                  }
+                } @else {
+                  <span class="text-neutral" title="Solo se reporta a extranjeros">No aplica</span>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

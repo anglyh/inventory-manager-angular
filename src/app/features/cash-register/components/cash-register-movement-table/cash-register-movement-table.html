@@ -1,0 +1,103 @@
+<section class="flex flex-col gap-2 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="cash-movements-title">
+  @let result = movements();
+
+  <header class="flex items-center gap-3">
+    <span class="grid size-10 shrink-0 place-items-center rounded-field bg-base-200 text-neutral" aria-hidden="true">
+      <ng-icon name="tablerArrowsExchange" size="20" />
+    </span>
+    <div class="flex min-w-0 flex-1 flex-col">
+      <h2 id="cash-movements-title" class="text-subtitle font-semibold">Entradas y salidas</h2>
+      <small class="text-neutral">Dinero que se puso o sacó de la caja</small>
+    </div>
+    @if (result) {
+      <span class="badge badge-sm shrink-0 border-0 bg-base-200 text-neutral tabular-nums" [title]="result.meta.total + ' en total'">
+        {{ result.meta.total }}
+      </span>
+    }
+  </header>
+
+  @if (movementsResource.error()) {
+    <div class="flex flex-col items-center gap-3 py-8 text-center" role="alert">
+      <p class="text-neutral">No se pudieron cargar las entradas y salidas.</p>
+      <app-button variant="outline" (click)="movementsResource.reload()">Reintentar</app-button>
+    </div>
+  } @else if (!result) {
+    <div class="flex flex-col gap-1 pt-2" aria-busy="true" aria-label="Cargando entradas y salidas">
+      @for (row of [0, 1, 2]; track row) {
+        <div class="flex items-center gap-3 py-2">
+          <div class="skeleton size-10 shrink-0 rounded-field"></div>
+          <div class="flex flex-1 flex-col gap-1.5">
+            <div class="skeleton h-4 w-2/3"></div>
+            <div class="skeleton h-3 w-1/3"></div>
+          </div>
+          <div class="skeleton h-4 w-20"></div>
+        </div>
+      }
+    </div>
+  } @else if (result.data.length === 0) {
+    <div class="flex flex-col items-center gap-1 py-8 text-center">
+      <p class="font-medium">Aún no hay entradas ni salidas</p>
+      <small class="text-neutral">Aquí verás el dinero que se ponga o se saque.</small>
+    </div>
+  } @else {
+    <!-- Una fila por movimiento: tipo en el ícono, motivo y hora al centro, monto con signo a la derecha. -->
+    <ul class="flex flex-col divide-y divide-base-200 transition-opacity" [class.opacity-60]="movementsResource.isLoading()">
+      @for (movement of result.data; track movement.id) {
+        @let isIn = movement.type === 'CASH_IN';
+        <li class="flex items-center gap-3 py-3">
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-field"
+            [class]="isIn ? 'bg-success-soft text-success' : 'bg-error-soft text-error'"
+            aria-hidden="true"
+          >
+            <ng-icon [name]="isIn ? 'tablerArrowUpRight' : 'tablerArrowDownLeft'" size="20" />
+          </span>
+
+          <div class="flex min-w-0 flex-1 flex-col">
+            <span class="wrap-break-word font-medium">{{ movement.reason }}</span>
+            <small class="text-neutral tabular-nums">
+              {{ movement.createdAt | date: 'd MMM · h:mm a' }}
+              @if (movement.createdByName) {
+                <span class="hidden md:inline">· {{ movement.createdByName }}</span>
+              }
+            </small>
+          </div>
+
+          <div class="flex shrink-0 flex-col items-end">
+            <span class="whitespace-nowrap font-semibold tabular-nums" [class]="isIn ? 'text-success' : 'text-error'">
+              {{ isIn ? '+' : '−' }} S/ {{ movement.amount | number: '1.2-2' }}
+            </span>
+            <small class="text-neutral">{{ isIn ? 'Se puso' : 'Se sacó' }}</small>
+          </div>
+        </li>
+      }
+    </ul>
+
+    @let meta = result.meta;
+    @if (meta.totalPages > 1) {
+      <nav class="flex items-center justify-between gap-3 border-t border-base-200 pt-3" aria-label="Páginas de entradas y salidas">
+        <small class="text-neutral tabular-nums">Página {{ meta.page }} de {{ meta.totalPages }}</small>
+        <div class="flex gap-1">
+          <app-button
+            variant="ghost"
+            customClass="btn-circle"
+            ariaLabel="Página anterior"
+            [disabled]="meta.page <= 1 || movementsResource.isLoading()"
+            (click)="page.set(meta.page - 1)"
+          >
+            <ng-icon name="tablerChevronLeft" size="18" aria-hidden="true" />
+          </app-button>
+          <app-button
+            variant="ghost"
+            customClass="btn-circle"
+            ariaLabel="Página siguiente"
+            [disabled]="meta.page >= meta.totalPages || movementsResource.isLoading()"
+            (click)="page.set(meta.page + 1)"
+          >
+            <ng-icon name="tablerChevronRight" size="18" aria-hidden="true" />
+          </app-button>
+        </div>
+      </nav>
+    }
+  }
+</section>

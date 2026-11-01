@@ -1,0 +1,55 @@
+<!-- Abierto mientras el foco está adentro: marcar casillas no lo cierra; Escape o un clic afuera sí. -->
+<div class="dropdown" (keydown.escape)="close()">
+  <app-button variant="ghost" customClass="bg-base-200 font-normal">
+    <ng-icon name="tablerFilter" size="18" aria-hidden="true" />
+    Categorías
+    <ng-icon name="tablerChevronDown" size="16" aria-hidden="true" />
+  </app-button>
+
+  <ul
+    tabindex="-1"
+    class="dropdown-content menu z-10 mt-2 max-h-72 w-64 flex-nowrap overflow-y-auto rounded-box bg-base-100 p-1 shadow-lg"
+    aria-label="Categorías"
+  >
+    @for (category of categories(); track category.id) {
+      <li>
+        <label class="cursor-pointer">
+          <input
+            type="checkbox"
+            class="checkbox"
+            [checked]="isSelected(category.id)"
+            (change)="toggle(category.id)"
+          />
+          <span class="truncate">{{ category.name }}</span>
+        </label>
+      </li>
+    }
+    <li>
+      <label class="cursor-pointer">
+        <input
+          type="checkbox"
+          class="checkbox"
+          [checked]="isSelected(noCategory)"
+          (change)="toggle(noCategory)"
+        />
+        <span class="text-neutral">Sin categoría</span>
+      </label>
+    </li>
+  </ul>
+</div>
+
+@for (chip of chips(); track chip.id) {
+  <button
+    type="button"
+    class="inline-flex min-h-10 max-w-full cursor-pointer items-center gap-1 rounded-field bg-base-200 px-3"
+    [attr.aria-label]="'Quitar filtro ' + chip.name"
+    (click)="toggle(chip.id)"
+  >
+    <span class="truncate">{{ chip.name }}</span>
+    <ng-icon name="tablerX" size="16" class="shrink-0 text-neutral" aria-hidden="true" />
+  </button>
+}
+
+@if (selected().length) {
+  <app-button variant="ghost" (click)="clear()">Limpiar</app-button>
+}

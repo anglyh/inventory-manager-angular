@@ -1,0 +1,71 @@
+<!-- `@container`: la columna "Ventas" depende del ancho de la card (al lado del gráfico queda angosta). -->
+<section class="@container flex h-full flex-col gap-3 rounded-box bg-base-100 p-4 sm:p-5" aria-labelledby="products-title">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 id="products-title" class="font-medium">Productos</h2>
+    <app-segmented-control
+      label="Ordenar productos"
+      surface="card"
+      [options]="sorts"
+      [value]="sort()"
+      (valueChange)="setSort($event)"
+    />
+  </div>
+
+  @if (products().length) {
+    <table class="table w-full tabular-nums">
+      <thead>
+        <tr class="text-neutral">
+          <th class="pl-0">Producto</th>
+          <th class="text-right" [class.text-base-content]="sort() === 'quantity'">Unid.</th>
+          <th class="hidden text-right @sm:table-cell">Ventas</th>
+          <th class="pr-0 text-right" [class.text-base-content]="sort() === 'profit'">Ganancia</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of visible(); track item.productId; let i = $index) {
+          <tr class="border-base-200">
+            <td class="max-w-0 truncate pl-0" [title]="item.productName">
+              <span class="mr-1 text-neutral">{{ start() + i + 1 }}.</span>{{ item.productName }}
+            </td>
+            <td class="text-right" [class.font-medium]="sort() === 'quantity'">{{ item.quantity }}</td>
+            <td class="hidden text-right @sm:table-cell">S/ {{ item.revenue | number: '1.2-2' }}</td>
+            <td class="whitespace-nowrap pr-0 text-right" [class.font-medium]="sort() === 'profit'" [class.text-error]="+item.profit < 0">
+              S/ {{ item.profit | number: '1.2-2' }}
+            </td>
+          </tr>
+        }
+        @for (filler of fillers(); track filler) {
+          <tr class="border-0" aria-hidden="true"><td class="pl-0" colspan="4">&nbsp;</td></tr>
+        }
+      </tbody>
+    </table>
+
+    @if (hasMore()) {
+      <div class="mt-auto flex flex-col items-center gap-2">
+        @if (pageCount() > 1) {
+          <nav class="flex flex-wrap justify-center gap-1" aria-label="Páginas de productos">
+            @for (button of pageButtons(); track $index) {
+              @if (button === null) {
+                <span class="grid min-w-6 place-items-center text-neutral" aria-hidden="true">…</span>
+              } @else {
+                <app-button
+                  [variant]="button === page() ? 'primary' : 'ghost'"
+                  [customClass]="button === page() ? 'min-w-10 px-2 tabular-nums' : 'min-w-10 px-2 font-normal tabular-nums'"
+                  [ariaLabel]="'Página ' + button + (button === page() ? ', actual' : '')"
+                  (click)="page.set(button)"
+                >
+                  {{ button }}
+                </app-button>
+              }
+            }
+          </nav>
+        }
+        <app-button variant="ghost" (click)="toggleExpanded()">
+          {{ expanded() ? 'Ver menos' : 'Ver más' }}
+        </app-button>
+      </div>
+    }
+  } @else {
+    <p class="py-8 text-center text-neutral">Sin ventas en el período</p>
+  }
+</section>

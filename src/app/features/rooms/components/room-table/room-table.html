@@ -1,0 +1,69 @@
+<!-- Sin overflow: recortaría el menú de acciones. En el celular se ocultan columnas en su lugar. -->
+<div>
+  <table class="table w-full tabular-nums">
+    <thead>
+      <tr class="border-base-200 text-neutral">
+        <th class="pl-0 font-medium">Habitación</th>
+        <th class="hidden font-medium sm:table-cell">Tipo</th>
+        <th class="font-medium">Estado</th>
+        <th class="w-0 pr-0"><span class="sr-only">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (room of rooms(); track room.id) {
+        @let badge = badgeOf(room);
+        @let occupied = room.status === 'OCCUPIED';
+        <tr class="border-base-200">
+          <td class="pl-0">
+            <div class="flex items-center gap-3">
+              <span
+                class="grid size-10 shrink-0 place-items-center rounded-field bg-base-200 font-semibold"
+                [class.text-neutral]="!room.isActive"
+                aria-hidden="true"
+              >
+                {{ room.number }}
+              </span>
+              <span class="flex min-w-0 flex-col">
+                <span class="font-medium">Habitación {{ room.number }}</span>
+                <small class="truncate text-neutral">
+                  {{ room.floor === null ?'Sin piso' : 'Piso ' + room.floor }}
+                  <span class="sm:hidden">· {{ room.roomTypeName }}</span>
+                </small>
+              </span>
+            </div>
+          </td>
+          <td class="hidden sm:table-cell">{{ room.roomTypeName }}</td>
+          <td>
+            <span class="badge badge-sm whitespace-nowrap border-0" [class]="badge.class">{{ badge.label }}</span>
+          </td>
+          <td class="pr-0">
+            <!-- Las últimas filas abren el menú hacia arriba: el contenedor con scroll lo recortaría. -->
+            <div class="dropdown dropdown-end" [class.dropdown-top]="$index >= 2 && $index >= $count - 2">
+              <app-button
+                variant="ghost"
+                customClass="btn-circle"
+                [ariaLabel]="'Acciones de la habitación ' + room.number"
+                [loading]="busyId() === room.id"
+              >
+                <ng-icon name="tablerDots" size="18" aria-hidden="true" />
+              </app-button>
+              <ul tabindex="-1" class="dropdown-content menu z-10 w-48 rounded-box bg-base-100 p-1 shadow-lg">
+                <li><button type="button" (click)="edit.emit(room); blurActive()">Editar</button></li>
+                <li [class.menu-disabled]="occupied" [attr.title]="occupied ? 'Ocupada: primero registra la salida' : null">
+                  <button type="button" [disabled]="occupied" (click)="toggleActive.emit(room); blurActive()">
+                    {{ room.isActive ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </li>
+                <li [class.menu-disabled]="occupied" [attr.title]="occupied ? 'Ocupada: primero registra la salida' : null">
+                  <button type="button" class="text-error" [disabled]="occupied" (click)="remove.emit(room); blurActive()">
+                    Eliminar
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

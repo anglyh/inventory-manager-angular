@@ -1,0 +1,48 @@
+<app-modal label="Categoría de gastos" boxClass="max-w-md" [isOpen]="open()" (closed)="closed.emit()">
+  <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <h3 class="text-subtitle font-medium">{{ category() ? 'Editar categoría' : 'Nueva categoría' }}</h3>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-caption text-neutral">Nombre</span>
+      <input
+        class="input w-full"
+        type="text"
+        placeholder="Ej.: Lavandería"
+        formControlName="name"
+        [attr.maxlength]="nameMaxLength"
+        [class.input-error]="nameInvalid"
+        [attr.aria-invalid]="nameInvalid"
+      />
+      @if (nameInvalid) {
+        <small class="text-error">Indica el nombre.</small>
+      }
+    </label>
+
+    <div class="flex flex-col gap-1">
+      <span class="text-caption text-neutral">Grupo</span>
+      <app-segmented-control
+        class="w-full"
+        label="Grupo"
+        [fill]="true"
+        [options]="groups"
+        [value]="group()"
+        (valueChange)="setGroup($event)"
+      />
+      <small class="text-neutral">
+        Hospedaje: gastos de las habitaciones (útiles de aseo, lavandería). General: gastos de todo el negocio (luz, sueldos).
+      </small>
+    </div>
+
+    @if (error()) {
+      <div role="alert" class="flex items-start gap-2 rounded-field bg-error-soft px-3 py-2 text-error">
+        <ng-icon class="mt-0.5 shrink-0" name="tablerAlertCircle" size="18" aria-hidden="true" />
+        <small>{{ error() }}</small>
+      </div>
+    }
+
+    <div class="flex justify-end gap-2">
+      <app-button type="button" variant="ghost" [disabled]="saving()" (click)="cancelled.emit()">Cancelar</app-button>
+      <app-button type="submit" variant="primary" [loading]="saving()" [disabled]="saving()">Guardar</app-button>
+    </div>
+  </form>
+</app-modal>

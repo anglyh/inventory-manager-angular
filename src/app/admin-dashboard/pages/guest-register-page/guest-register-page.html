@@ -1,0 +1,66 @@
+<div class="flex w-full flex-col gap-4">
+  <section class="flex min-w-0 flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5" aria-label="Registro de huéspedes">
+    <!-- El título ya lo muestra la cabecera del layout; aquí solo el resumen y los filtros. -->
+    <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <div class="flex min-w-0 flex-col">
+        @if (meta(); as m) {
+          <small class="text-neutral tabular-nums">
+            {{ m.total }} {{ m.total === 1 ? 'estadía' : 'estadías' }}
+            @if (pendingOnly()) {
+              por reportar a Migraciones, de cualquier fecha
+            } @else if (pendingMigrations()) {
+              · <span class="text-warning">{{ pendingMigrations() }} por reportar a Migraciones</span>
+            }
+          </small>
+        }
+      </div>
+
+      <!-- Pendientes de Migraciones es una foto de cualquier fecha: mientras está activo, el rango no aplica. -->
+      <div class="flex min-w-0 flex-wrap items-center gap-2 md:justify-end">
+        @if (pendingOnly()) {
+          <button
+            type="button"
+            class="inline-flex min-h-10 max-w-full cursor-pointer items-center gap-1 rounded-field bg-base-200 px-3"
+            aria-label="Quitar filtro Por reportar a Migraciones"
+            (click)="setPendingOnly(false)"
+          >
+            <span class="truncate">Por reportar a Migraciones</span>
+            <ng-icon name="tablerX" size="16" class="shrink-0 text-neutral" aria-hidden="true" />
+          </button>
+        } @else {
+          <app-button variant="ghost" customClass="bg-base-200 font-normal" (click)="setPendingOnly(true)">
+            <ng-icon name="tablerPlaneArrival" size="18" aria-hidden="true" />
+            Por reportar a Migraciones
+          </app-button>
+          <app-date-range-filter
+            class="w-full md:w-auto"
+            align="end"
+            ariaLabel="Período del registro"
+            [from]="range().from"
+            [to]="range().to"
+            [max]="today"
+            (rangeChange)="apply($event)"
+          />
+        }
+      </div>
+    </div>
+
+    @if (staysResource.error()) {
+      <div role="alert" class="flex flex-col items-center gap-3 py-12 text-center">
+        <ng-icon name="tablerAlertCircle" size="28" class="text-neutral" aria-hidden="true" />
+        <p class="text-neutral">No se pudo cargar el registro.</p>
+        <app-button (click)="staysResource.reload()">Reintentar</app-button>
+      </div>
+    } @else if (staysResource.hasValue()) {
+      <guest-register-table class="transition-opacity" [class.opacity-60]="staysResource.isLoading()" [stays]="stays()" (staySelected)="openStay($event)" />
+    } @else {
+      <div class="grid place-items-center py-20" role="status" aria-label="Cargando registro">
+        <span class="loading loading-spinner loading-md text-primary"></span>
+      </div>
+    }
+  </section>
+
+  <footer class="flex justify-end">
+    <app-pagination [pages]="meta()?.totalPages ?? 0" [currentPage]="paginationService.currentPage()" />
+  </footer>
+</div>

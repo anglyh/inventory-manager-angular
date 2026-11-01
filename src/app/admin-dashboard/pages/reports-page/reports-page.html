@@ -1,0 +1,84 @@
+<div class="flex w-full flex-col gap-4">
+  <header class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex min-w-0 items-center gap-1">
+      @if (mode() !== 'custom') {
+        <app-button variant="ghost" customClass="btn-circle" ariaLabel="Período anterior" (click)="step(-1)">
+          <ng-icon name="tablerChevronLeft" size="20" aria-hidden="true" />
+        </app-button>
+      }
+      <h1 class="truncate px-1 text-title font-semibold tabular-nums">{{ label() }}</h1>
+      @if (mode() !== 'custom') {
+        <app-button
+          variant="ghost"
+          customClass="btn-circle"
+          ariaLabel="Período siguiente"
+          [disabled]="isCurrent()"
+          (click)="step(1)"
+        >
+          <ng-icon name="tablerChevronRight" size="20" aria-hidden="true" />
+        </app-button>
+      }
+    </div>
+
+    <div class="flex w-full items-center gap-2 sm:w-auto">
+      <app-segmented-control
+        class="min-w-0 flex-1 sm:flex-none"
+        label="Escala"
+        surface="page"
+        [fill]="true"
+        [options]="scales"
+        [value]="scaleValue()"
+        (valueChange)="selectScale($event)"
+      />
+      <!-- Sin rangos rápidos: Día/Semana/Mes ya los ofrece la escala de al lado. -->
+      <app-date-range-filter
+        ariaLabel="Elegir rango de fechas"
+        surface="page"
+        align="end"
+        [compact]="true"
+        [presets]="false"
+        [active]="mode() === 'custom'"
+        [from]="range().from"
+        [to]="range().to"
+        [max]="today"
+        (rangeChange)="applyRange($event)"
+      />
+    </div>
+  </header>
+
+  @if (errorMessage(); as message) {
+    <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-8 text-center">
+      <p class="text-neutral">{{ message }}</p>
+      <app-button (click)="reportResource.reload()">Reintentar</app-button>
+    </div>
+  } @else if (report(); as report) {
+    <!-- Una sola pantalla: resumen arriba; en pantallas grandes, gráfico y productos lado a lado. -->
+    <div class="grid grid-cols-1 gap-4 transition-opacity xl:grid-cols-3" [class.opacity-60]="reportResource.isLoading()">
+      <report-kpis
+        class="min-w-0 xl:col-span-3"
+        [summary]="report.summary"
+        [previous]="report.previous"
+        [rooms]="report.rooms"
+        [store]="report.store"
+        [lodging]="report.lodging"
+        [total]="report.total"
+        [inventory]="report.inventory"
+        [migrations]="report.migrations"
+        [payments]="report.payments"
+        [flows]="report.flows"
+        [compareLabel]="compareLabel()"
+      />
+      <!-- Con un solo día (escala "Día") no hay tendencia que mostrar. -->
+      @if (report.daily.length > 1) {
+        <report-daily-chart class="min-w-0 xl:col-span-2" [daily]="report.daily" />
+        <report-products class="min-w-0" [products]="report.products" />
+      } @else {
+        <report-products class="min-w-0 xl:col-span-3" [products]="report.products" />
+      }
+    </div>
+  } @else {
+    <div class="grid place-items-center py-20" role="status" aria-label="Cargando reporte">
+      <span class="loading loading-spinner loading-md text-primary"></span>
+    </div>
+  }
+</div>

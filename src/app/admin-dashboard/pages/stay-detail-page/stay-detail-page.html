@@ -1,0 +1,199 @@
+<div class="mx-auto flex w-full max-w-4xl flex-col gap-4">
+  <header class="flex items-center gap-2">
+    <app-button variant="ghost" customClass="btn-circle" ariaLabel="Volver" (click)="goBack()">
+      <ng-icon name="tablerArrowLeft" size="20" aria-hidden="true" />
+    </app-button>
+    @if (stay(); as s) {
+      <div class="flex min-w-0 flex-1 flex-col">
+        <h1 class="flex items-center gap-2 text-title font-semibold tabular-nums">
+          Habitación {{ s.roomNumber }}
+          <span class="badge badge-sm border-0" [class]="s.status === 'ACTIVE' ? 'bg-primary text-primary-content' : 'bg-base-300 text-neutral'">
+            {{ s.status === 'ACTIVE' ? 'Ocupada' : 'Cerrada' }}
+          </span>
+        </h1>
+        <small class="truncate text-neutral">
+          {{ s.roomTypeName }} · {{ rateText(s.rateKind, s.hours) }}
+          @if (holderName(); as holder) {
+            · {{ holder }}
+          }
+        </small>
+      </div>
+    }
+  </header>
+
+  @if (stayResource.error()) {
+    <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-12 text-center">
+      <ng-icon name="tablerAlertCircle" size="28" class="text-neutral" aria-hidden="true" />
+      <p class="text-neutral">No se pudo cargar la estadía.</p>
+      <app-button (click)="stayResource.reload()">Reintentar</app-button>
+    </div>
+  } @else if (stay(); as s) {
+    <!-- Resumen: cuánto debe, hasta cuándo y qué hacer -->
+    <section class="flex flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5" aria-label="Resumen">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="flex flex-col">
+          @if (balance() > 0) {
+            <small class="text-neutral">Debe</small>
+            <span class="text-3xl font-semibold tabular-nums text-warning">S/ {{ balance() | number: '1.2-2' }}</span>
+          } @else {
+            <small class="text-neutral">Cuenta</small>
+            <span class="flex items-center gap-2 text-3xl font-semibold text-success">
+              <ng-icon name="tablerCircleCheck" size="28" aria-hidden="true" />
+              Pagado
+            </span>
+          }
+        </div>
+        <dl class="flex gap-6 tabular-nums">
+          <div class="flex flex-col">
+            <dt class="text-caption text-neutral">Entró</dt>
+            <dd>{{ s.checkInAt | date: 'd MMM · HH:mm' }}</dd>
+          </div>
+          @if (s.actualCheckOut) {
+            <div class="flex flex-col">
+              <dt class="text-caption text-neutral">Salió</dt>
+              <dd>{{ s.actualCheckOut | date: 'd MMM · HH:mm' }}</dd>
+            </div>
+          } @else {
+            <div class="flex flex-col">
+              <dt class="text-caption text-neutral">Sale</dt>
+              <dd [class.text-error]="overdue()" [class.font-medium]="overdue()">{{ s.expectedCheckOut | date: 'd MMM · HH:mm' }}</dd>
+            </div>
+          }
+        </dl>
+      </div>
+
+      @if (overdue()) {
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-field bg-error-soft px-3 py-2 text-error">
+          <div class="flex items-center gap-2">
+            <ng-icon name="tablerClockExclamation" size="20" class="shrink-0" aria-hidden="true" />
+            <div class="flex flex-col">
+              <span class="font-medium tabular-nums">Se pasó {{ overdueLabel() }} de la hora de salida</span>
+              @if (extraSuggested(); as extra) {
+                <small class="tabular-nums">Corresponde cobrar {{ extra.hours }} h extra · S/ {{ extra.amount | number: '1.2-2' }}</small>
+              }
+            </div>
+          </div>
+          @if (isActive() && extraSuggested()) {
+            <app-button variant="ghost" (click)="openDialog('charge')">Agregar horas extra</app-button>
+          }
+        </div>
+      }
+
+      @if (isActive()) {
+        <div class="flex flex-wrap gap-2">
+          @if (balance() > 0) {
+            <app-button (click)="openDialog('payment')">
+              <ng-icon name="tablerCash" size="16" aria-hidden="true" />
+              Cobrar
+            </app-button>
+          }
+          <app-button [variant]="balance() > 0 ? 'outline' : 'primary'" customClass="sm:ml-auto" (click)="openDialog('checkOut')">
+            <ng-icon name="tablerDoorExit" size="16" aria-hidden="true" />
+            Registrar salida
+          </app-button>
+        </div>
+      }
+    </section>
+
+    @if (s.hasForeignGuests) {
+      <div
+        class="flex flex-wrap items-center justify-between gap-3 rounded-box px-4 py-3"
+        [class]="s.migrationsReportedAt ? 'bg-base-100' : 'bg-warning-soft'"
+      >
+        <div class="flex items-center gap-3">
+          <ng-icon name="tablerWorld" size="20" [class]="s.migrationsReportedAt ? 'text-neutral' : 'text-warning'" aria-hidden="true" />
+          <div class="flex flex-col">
+            <span class="font-medium">Reportar a Migraciones</span>
+            <small class="text-neutral">
+              @if (s.migrationsReportedAt) {
+                Reportado el {{ s.migrationsReportedAt | date: 'd MMM · HH:mm' }}
+              } @else {
+                Hay huéspedes extranjeros: marca cuando lo reportes.
+              }
+            </small>
+          </div>
+        </div>
+        <label class="flex cursor-pointer items-center gap-2">
+          <input
+            type="checkbox"
+            class="toggle toggle-primary"
+            [checked]="!!s.migrationsReportedAt"
+            [disabled]="migrationsSaving()"
+            (change)="toggleMigrations($any($event.target).checked)"
+          />
+          Reportado
+        </label>
+      </div>
+    }
+
+    <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+      <stay-account [stay]="s" [canVoid]="canVoidPayments()" (voidRequested)="openVoidPayment($event)" />
+      <div class="flex flex-col gap-4">
+        <stay-guests [guests]="s.guests" [minors]="s.minors" />
+        @if (s.travelReason || s.notes || s.createdByName) {
+          <dl class="flex flex-col gap-3 rounded-box bg-base-100 p-4 sm:p-5">
+            @if (s.travelReason) {
+              <div class="flex flex-col">
+                <dt class="text-caption text-neutral">Motivo del viaje</dt>
+                <dd>{{ s.travelReason }}</dd>
+              </div>
+            }
+            @if (s.notes) {
+              <div class="flex flex-col">
+                <dt class="text-caption text-neutral">Notas</dt>
+                <dd>{{ s.notes }}</dd>
+              </div>
+            }
+            @if (s.createdByName) {
+              <div class="flex flex-col">
+                <dt class="text-caption text-neutral">Registró el ingreso</dt>
+                <dd class="truncate">{{ s.createdByName }}</dd>
+              </div>
+            }
+          </dl>
+        }
+      </div>
+    </div>
+
+    <stay-charge-dialog
+      [open]="dialog() === 'charge'"
+      [saving]="saving()"
+      [error]="dialog() === 'charge' ? dialogError() : null"
+      [suggestedExtra]="extraSuggested()"
+      (confirmed)="addCharge($event)"
+      (cancelled)="dialog.set(null)"
+      (closed)="onDialogClosed('charge')"
+    />
+    <stay-payment-dialog
+      [open]="dialog() === 'payment'"
+      [saving]="saving()"
+      [error]="dialog() === 'payment' ? dialogError() : null"
+      [balance]="balance()"
+      (confirmed)="addPayment($event)"
+      (cancelled)="dialog.set(null)"
+      (closed)="onDialogClosed('payment')"
+    />
+    <stay-check-out-dialog
+      [open]="dialog() === 'checkOut'"
+      [saving]="saving()"
+      [error]="dialog() === 'checkOut' ? dialogError() : null"
+      [stay]="s"
+      (confirmed)="checkOut($event)"
+      (cancelled)="dialog.set(null)"
+      (closed)="onDialogClosed('checkOut')"
+    />
+    <stay-void-payment-dialog
+      [open]="dialog() === 'voidPayment'"
+      [saving]="saving()"
+      [error]="dialog() === 'voidPayment' ? dialogError() : null"
+      [payment]="voidTarget()"
+      (confirmed)="voidPayment($event)"
+      (cancelled)="dialog.set(null)"
+      (closed)="onDialogClosed('voidPayment')"
+    />
+  } @else {
+    <div class="grid place-items-center py-20" role="status" aria-label="Cargando estadía">
+      <span class="loading loading-spinner loading-md text-primary"></span>
+    </div>
+  }
+</div>

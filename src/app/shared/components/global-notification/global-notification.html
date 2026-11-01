@@ -1,8 +1,20 @@
 @if (state().visible) {
-  <div 
-    class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-300 flex items-center justify-center z-50 p-4 rounded-xl text-white w-[calc(100vw-2rem)] sm:w-auto sm:max-w-md sm:bottom-10 sm:left-auto sm:translate-x-0 sm:right-10"
-    [class.bg-red-400]="state().type === 'error'"
+  <div
+    class="notification fixed inset-x-4 top-[max(1rem,env(safe-area-inset-top))] z-60 flex max-h-[calc(100dvh-2rem)] items-start gap-3 overflow-y-auto rounded-box p-4 text-notification-content shadow-notification sm:left-auto sm:right-6 sm:top-6 sm:w-96"
+    animate.enter="notification-enter"
+    animate.leave="notification-leave"
+    [class.bg-notification-success]="state().type === 'success'"
+    [class.bg-notification-error]="state().type === 'error'"
   >
-    <p class="font-medium text-base">{{ state().message }}</p>
+    <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-notification-content/15">
+      <ng-icon
+        [name]="state().type === 'error' ? 'tablerAlertCircle' : 'tablerCircleCheck'"
+        size="24"
+      />
+    </div>
+    <div class="min-w-0 flex-1 space-y-1 wrap-break-word">
+      <p class="text-body font-semibold">{{ state().type === 'error' ? 'Error' : 'Listo' }}</p>
+      <p class="whitespace-pre-line text-body text-notification-content/90">{{ state().message }}</p>
+    </div>
   </div>
 }

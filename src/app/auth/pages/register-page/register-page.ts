@@ -5,8 +5,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormUtils } from '@/utils/form-utils';
 import { FormErrorLabel } from "src/app/shared/components/form-error-label/form-error-label";
 import { Button } from 'src/app/shared/components/button/button';
-import { extractApiError } from 'src/app/api/extract-api-error';
-import { mapApiError } from 'src/app/api/error-mapper';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerEye, tablerEyeOff } from '@ng-icons/tabler-icons';
 
@@ -63,17 +61,14 @@ export class RegisterPage {
         this.errorMessage.set('No se pudo completar el registro');
       },
       error: (err) => {
-        const apiError = extractApiError(err);
-        const mapped = mapApiError(apiError);
-
-        if (mapped.redirect) {
-          this.router.navigateByUrl(mapped.redirect);
-          return;
-        }
-
+        this.formUtils.handleFormError(err, this.registerForm, {
+          onToast: (message) => {
+            this.hasError.set(true);
+            this.errorMessage.set(message);
+          },
+          onRedirect: (url) => this.router.navigateByUrl(url),
+        });
         this.isLoading.set(false);
-        this.hasError.set(true);
-        this.errorMessage.set(mapped.toast ?? 'No se pudo completar el registro');
       }
     });
   }

@@ -1,0 +1,79 @@
+<form
+  class="mx-auto flex w-full max-w-lg flex-col gap-6 rounded-box bg-base-100 p-5 sm:p-8"
+  [formGroup]="form"
+  (ngSubmit)="submit()"
+  aria-labelledby="opening-title"
+>
+  <div class="flex flex-col items-center gap-3 text-center">
+    <span class="grid size-16 place-items-center rounded-box bg-success-soft text-success" aria-hidden="true">
+      <ng-icon name="tablerCashRegister" size="32" />
+    </span>
+    <cash-status-pill label="Caja cerrada" />
+    <div class="flex flex-col gap-1">
+      <h2 id="opening-title" class="text-title font-semibold">Abrir caja</h2>
+      <small class="text-neutral">Cuenta el dinero con el que empiezas el turno.</small>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-3">
+    <label class="flex flex-col gap-1">
+      <span class="text-caption text-neutral">Fondo inicial</span>
+      <span class="input w-full" [class.input-error]="!!amountError">
+        <span class="text-neutral">S/</span>
+        <input
+          class="text-title font-semibold tabular-nums"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+          formControlName="openingAmount"
+          [attr.aria-invalid]="!!amountError"
+        />
+      </span>
+      @if (amountError) {
+        <small class="text-error" role="alert">{{ amountError }}</small>
+      }
+    </label>
+
+    <!-- Montos sugeridos como un selector: el elegido en primario, el resto en ghost sobre una pista suave. -->
+    <div class="grid grid-cols-3 gap-1 rounded-field bg-base-200/60 p-1" role="group" aria-label="Montos sugeridos">
+      @for (preset of presets; track preset) {
+        <app-button
+          [variant]="amount() === preset ? 'primary' : 'ghost'"
+          customClass="w-full tabular-nums"
+          (click)="setPreset(preset)"
+        >
+          S/ {{ preset }}
+        </app-button>
+      }
+    </div>
+  </div>
+
+  <label class="flex flex-col gap-1">
+    <span class="flex justify-between text-caption text-neutral">
+      Nota (opcional)
+      <span class="tabular-nums">{{ form.controls.notes.value.length }}/{{ notesMaxLength }}</span>
+    </span>
+    <textarea
+      class="textarea w-full resize-none"
+      rows="2"
+      placeholder="Ej.: el sencillo lo dejó el dueño"
+      formControlName="notes"
+      [attr.maxlength]="notesMaxLength"
+    ></textarea>
+  </label>
+
+  <div class="flex flex-col gap-2">
+    <app-button type="submit" customClass="w-full" [disabled]="busy()" [loading]="busy()">
+      <ng-icon name="tablerLockOpen" size="18" aria-hidden="true" />
+      Abrir caja
+    </app-button>
+    @if (showHistory()) {
+      <app-button variant="ghost" customClass="w-full text-neutral" (click)="openHistory()">
+        <ng-icon name="tablerHistory" size="18" aria-hidden="true" />
+        Ver historial de cajas
+      </app-button>
+    }
+  </div>
+</form>

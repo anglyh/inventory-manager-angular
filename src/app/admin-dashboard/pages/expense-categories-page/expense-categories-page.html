@@ -1,0 +1,66 @@
+<app-module-tabs class="mb-4" label="Secciones de gastos" [tabs]="moduleTabs" />
+
+@if (categoriesResource.error()) {
+  <div role="alert" class="flex flex-col items-center gap-3 rounded-box bg-base-100 px-4 py-12 text-center">
+    <ng-icon name="tablerAlertCircle" size="28" class="text-neutral" aria-hidden="true" />
+    <p class="text-neutral">No se pudieron cargar las categorías.</p>
+    <app-button (click)="categoriesResource.reload()">Reintentar</app-button>
+  </div>
+} @else if (categoriesResource.hasValue()) {
+  <section class="flex min-w-0 flex-col gap-4 rounded-box bg-base-100 p-4 sm:p-5">
+    <header class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-baseline gap-2">
+        <h2 class="text-subtitle font-medium">Categorías de gastos</h2>
+        <span class="text-neutral tabular-nums">{{ categories().length }}</span>
+      </div>
+      <app-button (click)="openForm(null)">
+        <ng-icon name="tablerPlus" size="16" aria-hidden="true" />
+        Nueva categoría
+      </app-button>
+    </header>
+
+    @if (categories().length === 0) {
+      <div class="flex flex-col items-center gap-3 py-12 text-center">
+        <span class="grid size-14 place-items-center rounded-box bg-base-200 text-neutral" aria-hidden="true">
+          <ng-icon name="tablerTag" size="28" />
+        </span>
+        <p class="text-neutral">Aún no hay categorías.</p>
+      </div>
+    } @else {
+      <expense-category-table
+        [categories]="categories()"
+        [busyId]="busyId()"
+        (edit)="openForm($event)"
+        (toggleActive)="toggleActive($event)"
+        (remove)="askDelete($event)"
+      />
+    }
+  </section>
+} @else {
+  <div class="grid place-items-center py-20" role="status" aria-label="Cargando categorías">
+    <span class="loading loading-spinner loading-md text-primary"></span>
+  </div>
+}
+
+<expense-category-form
+  [open]="formOpen()"
+  [saving]="saving()"
+  [error]="formError()"
+  [category]="editing()"
+  (submitted)="save($event)"
+  (cancelled)="formOpen.set(false)"
+  (closed)="formOpen.set(false)"
+/>
+
+<delete-confirm-dialog
+  [open]="deleteOpen()"
+  [title]="'¿Eliminar la categoría ' + (deleteTarget()?.name ?? '') + '?'"
+  hint="Solo se eliminan categorías sin gastos registrados."
+  [busy]="deleting()"
+  [error]="deleteError()"
+  [alternativeLabel]="deleteTarget()?.isActive ? 'Desactivar' : null"
+  (confirmed)="confirmDelete()"
+  (alternative)="deactivateInstead()"
+  (cancelled)="deleteOpen.set(false)"
+  (closed)="deleteOpen.set(false)"
+/>

@@ -1,0 +1,83 @@
+<app-modal label="Cerrar caja" boxClass="max-w-md" [isOpen]="open()" (closed)="closed.emit()">
+  <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="flex items-center gap-3">
+      <span class="grid size-12 shrink-0 place-items-center rounded-field bg-primary text-primary-content" aria-hidden="true">
+        <ng-icon name="tablerScale" size="24" />
+      </span>
+      <div class="flex min-w-0 flex-col">
+        <h3 class="text-subtitle font-semibold">Cerrar caja</h3>
+        <small class="text-neutral">Cuenta todo el efectivo de la caja y escribe el total.</small>
+      </div>
+    </div>
+
+    <label class="flex flex-col gap-1">
+      <span class="text-caption text-neutral">¿Cuánto contaste?</span>
+      <span class="input w-full" [class.input-error]="!!amountError">
+        <span class="text-neutral">S/</span>
+        <input
+          class="text-title font-semibold tabular-nums"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+          formControlName="closingAmount"
+          [attr.aria-invalid]="!!amountError"
+        />
+      </span>
+      @if (amountError) {
+        <small class="text-error">{{ amountError }}</small>
+      }
+    </label>
+
+    <!-- Solo ADMIN recibe el esperado: el empleado cuenta a ciegas y no ve esta comparación. -->
+    @let expected = expectedCash();
+    @if (expected !== null) {
+      <div class="flex items-center justify-between gap-3 rounded-field bg-base-200/60 px-3 py-2">
+        <div class="flex min-w-0 flex-col">
+          <small class="text-neutral">Debería haber</small>
+          <span class="font-medium tabular-nums">S/ {{ expected | number: '1.2-2' }}</span>
+        </div>
+        @if (preview(); as diff) {
+          @let view = differenceView[diff.tone];
+          <span class="badge badge-sm shrink-0 gap-1 whitespace-nowrap border-0 font-medium tabular-nums" [class]="view.soft" aria-live="polite">
+            <ng-icon [name]="view.icon" size="14" aria-hidden="true" />
+            {{ view.label }}
+            @if (diff.tone !== 'even') {
+              {{ diff.tone === 'shortage' ? '−' : '+' }}S/ {{ diff.amount | number: '1.2-2' }}
+            }
+          </span>
+        }
+      </div>
+    }
+
+    <label class="flex flex-col gap-1">
+      <span class="flex justify-between text-caption text-neutral">
+        Nota (opcional)
+        <span class="tabular-nums">{{ form.controls.notes.value.length }}/{{ notesMaxLength }}</span>
+      </span>
+      <textarea
+        class="textarea w-full resize-none"
+        rows="3"
+        placeholder="Si falta o sobra dinero, cuenta por qué"
+        formControlName="notes"
+        [attr.maxlength]="notesMaxLength"
+      ></textarea>
+    </label>
+
+    @if (localError() || error(); as message) {
+      <div role="alert" class="flex items-start gap-2 rounded-field bg-error-soft px-3 py-2 text-error">
+        <ng-icon class="mt-0.5 shrink-0" name="tablerAlertCircle" size="18" aria-hidden="true" />
+        <small class="whitespace-pre-line">{{ message }}</small>
+      </div>
+    }
+
+    <div class="flex justify-end gap-2">
+      <app-button type="button" variant="ghost" [disabled]="saving()" (click)="cancelled.emit()">Cancelar</app-button>
+      <app-button type="submit" variant="error" [loading]="saving()" [disabled]="saving()">
+        <ng-icon name="tablerLock" size="18" aria-hidden="true" />
+        Cerrar caja
+      </app-button>
+    </div>
+  </form>
+</app-modal>

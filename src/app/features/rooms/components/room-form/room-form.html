@@ -1,0 +1,90 @@
+<!-- overflow-visible!: la lista de tipos se despliega fuera de la caja en vez de quedar recortada. -->
+<app-modal label="Habitación" boxClass="max-w-md overflow-visible!" [isOpen]="open()" (closed)="closed.emit()">
+  <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <h3 class="text-subtitle font-medium">{{ room() ? 'Editar habitación ' + room()!.number : 'Nueva habitación' }}</h3>
+
+    <div class="grid grid-cols-2 gap-3">
+      <label class="flex min-w-0 flex-col gap-1">
+        <span class="text-caption text-neutral">Número</span>
+        <input
+          class="input w-full tabular-nums"
+          type="text"
+          placeholder="Ej.: 201"
+          formControlName="number"
+          [class.input-error]="invalid('number')"
+        />
+      </label>
+      <label class="flex min-w-0 flex-col gap-1">
+        <span class="text-caption text-neutral">Piso <span class="opacity-60">(opcional)</span></span>
+        <input
+          class="input w-full tabular-nums"
+          type="number"
+          min="0"
+          step="1"
+          formControlName="floor"
+          [class.input-error]="invalid('floor')"
+        />
+      </label>
+
+      <div class="col-span-2 flex flex-col gap-1">
+        <span class="text-caption text-neutral" id="room-type-label">Tipo</span>
+        <div class="dropdown w-full">
+          <button
+            type="button"
+            class="input w-full cursor-pointer justify-between text-left"
+            aria-labelledby="room-type-label"
+            aria-haspopup="listbox"
+            [class.input-error]="invalid('roomTypeId')"
+            [disabled]="typeLocked()"
+          >
+            @if (selected(); as type) {
+              <span class="truncate">{{ type.name }}</span>
+            } @else {
+              <span class="text-neutral">Elegir tipo</span>
+            }
+            <ng-icon class="shrink-0 text-neutral" name="tablerChevronDown" size="16" aria-hidden="true" />
+          </button>
+          <ul tabindex="-1" role="listbox" class="dropdown-content menu z-10 mt-1 w-full rounded-box bg-base-100 p-1 shadow-lg">
+            @for (type of options(); track type.id) {
+              <li role="option" [attr.aria-selected]="type.id === selected()?.id">
+                <button type="button" class="flex items-center justify-between gap-3" (click)="chooseType(type)">
+                  <span class="flex min-w-0 flex-col">
+                    <span class="truncate">{{ type.name }}</span>
+                    <small class="text-neutral tabular-nums">
+                      S/ {{ type.hourPrice | number: '1.2-2' }}/h · S/ {{ type.nightPrice | number: '1.2-2' }} noche
+                    </small>
+                  </span>
+                  @if (type.id === selected()?.id) {
+                    <ng-icon class="shrink-0" name="tablerCheck" size="16" aria-hidden="true" />
+                  }
+                </button>
+              </li>
+            } @empty {
+              <li class="menu-disabled"><span>No hay tipos activos</span></li>
+            }
+          </ul>
+        </div>
+        @if (typeLocked()) {
+          <small class="text-neutral">Ocupada: el tipo se puede cambiar cuando el huésped salga.</small>
+        } @else if (selected(); as type) {
+          <small class="text-neutral tabular-nums">
+            {{ type.capacity }} {{ type.capacity === 1 ? 'adulto' : 'adultos' }} · S/ {{ type.hourPrice | number: '1.2-2' }}/h · S/
+            {{ type.nightPrice | number: '1.2-2' }} noche
+          </small>
+        }
+      </div>
+    </div>
+
+    @if (error()) {
+      <div role="alert" class="flex items-start gap-2 rounded-field bg-error-soft px-3 py-2 text-error whitespace-pre-line">
+        <ng-icon class="mt-0.5 shrink-0" name="tablerAlertCircle" size="18" aria-hidden="true" />
+        <small>{{ error() }}</small>
+      </div>
+    }
+
+    <div class="flex justify-end gap-2">
+      <app-button variant="ghost" [disabled]="saving()" (click)="cancelled.emit()">Cancelar</app-button>
+      <app-button type="submit" variant="primary" [loading]="saving()" [disabled]="saving()">Guardar</app-button>
+    </div>
+  </form>
+</app-modal>

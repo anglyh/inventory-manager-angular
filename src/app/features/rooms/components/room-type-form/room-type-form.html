@@ -1,0 +1,56 @@
+<app-modal label="Tipo de habitación" boxClass="max-w-lg" [isOpen]="open()" (closed)="closed.emit()">
+  <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <h3 class="text-subtitle font-medium">{{ roomType() ? 'Editar tipo' : 'Nuevo tipo' }}</h3>
+
+    <div class="grid grid-cols-2 gap-3">
+      <label class="col-span-2 flex flex-col gap-1 sm:col-span-1">
+        <span class="text-caption text-neutral">Nombre</span>
+        <input class="input w-full" type="text" placeholder="Ej.: Matrimonial" formControlName="name" [class.input-error]="invalid('name')" />
+      </label>
+      <label class="col-span-2 flex flex-col gap-1 sm:col-span-1">
+        <span class="text-caption text-neutral">Capacidad (adultos)</span>
+        <input class="input w-full tabular-nums" type="number" min="1" step="1" formControlName="capacity" [class.input-error]="invalid('capacity')" />
+      </label>
+      <label class="col-span-2 flex flex-col gap-1">
+        <span class="text-caption text-neutral">Descripción <span class="opacity-60">(opcional)</span></span>
+        <input class="input w-full" type="text" formControlName="description" />
+      </label>
+      <div class="col-span-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <label class="flex min-w-0 flex-col gap-1">
+          <span class="text-caption text-neutral">Precio por hora</span>
+          <span class="input w-full" [class.input-error]="invalid('hourPrice')">
+            <span class="text-neutral">S/</span>
+            <input class="tabular-nums" type="number" min="0" step="0.01" formControlName="hourPrice" />
+          </span>
+        </label>
+        <label class="flex min-w-0 flex-col gap-1">
+          <span class="text-caption text-neutral">Precio por noche</span>
+          <span class="input w-full" [class.input-error]="invalid('nightPrice')">
+            <span class="text-neutral">S/</span>
+            <input class="tabular-nums" type="number" min="0" step="0.01" formControlName="nightPrice" />
+          </span>
+        </label>
+        <label class="flex min-w-0 flex-col gap-1">
+          <span class="text-caption text-neutral">Hora extra</span>
+          <span class="input w-full" [class.input-error]="invalid('extraHourPrice')">
+            <span class="text-neutral">S/</span>
+            <input class="tabular-nums" type="number" min="0" step="0.01" formControlName="extraHourPrice" />
+          </span>
+        </label>
+        <small class="text-neutral sm:col-span-3">Son precios de referencia: al registrar el ingreso se puede cobrar otro monto.</small>
+      </div>
+    </div>
+
+    @if (error()) {
+      <div role="alert" class="flex items-start gap-2 rounded-field bg-error-soft px-3 py-2 text-error whitespace-pre-line">
+        <ng-icon class="mt-0.5 shrink-0" name="tablerAlertCircle" size="18" aria-hidden="true" />
+        <small>{{ error() }}</small>
+      </div>
+    }
+
+    <div class="flex justify-end gap-2">
+      <app-button type="button" variant="ghost" [disabled]="saving()" (click)="cancelled.emit()">Cancelar</app-button>
+      <app-button type="submit" variant="primary" [loading]="saving()" [disabled]="saving()">Guardar</app-button>
+    </div>
+  </form>
+</app-modal>

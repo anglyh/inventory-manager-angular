@@ -1,0 +1,72 @@
+<label for="my-drawer-4" aria-label="Cerrar menú lateral" class="drawer-overlay"></label>
+<div class="flex min-h-full flex-col items-start overflow-hidden bg-base-100 is-drawer-close:w-14 is-drawer-open:w-64">
+  <div class="flex w-full items-center gap-3 border-b border-base-300 px-3 py-3">
+    <div class="grid size-9 shrink-0 place-content-center rounded-box bg-primary font-bold text-primary-content">H</div>
+    <div class="min-w-0 is-drawer-close:hidden">
+      <div class="truncate font-semibold leading-tight">Hostal</div>
+      <div class="truncate text-caption text-neutral">Panel de administración</div>
+    </div>
+  </div>
+
+  <ng-template #navLink let-item>
+    <a
+      [routerLink]="item.link"
+      (click)="itemSelected.emit()"
+      routerLinkActive="bg-primary text-primary-content"
+      ariaCurrentWhenActive="page"
+      [routerLinkActiveOptions]="{ paths: item.match ?? 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }"
+      [attr.aria-label]="item.label"
+      [attr.data-tip]="item.label"
+      class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+    >
+      <ng-icon [name]="item.icon" size="18" class="my-1 shrink-0" aria-hidden="true" />
+      <span class="is-drawer-close:hidden">{{ item.label }}</span>
+    </a>
+  </ng-template>
+
+  <nav aria-label="Navegación principal" class="w-full grow">
+    @for (section of sections(); track $index) {
+      <ul class="menu w-full gap-1" [attr.aria-label]="section.title ?? 'General'">
+        @if (section.title) {
+          <li class="menu-title mt-2 text-caption font-medium text-neutral is-drawer-close:hidden">{{ section.title }}</li>
+        }
+        @for (item of section.items; track item.link) {
+          <li><ng-container *ngTemplateOutlet="navLink; context: { $implicit: item }" /></li>
+        }
+
+        <!-- La tienda suma el inventario plegado al final de su sección. -->
+        @if (section.title === 'Tienda') {
+          <li>
+            <button
+              type="button"
+              class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+              [class.font-medium]="inventoryActive()"
+              [attr.aria-expanded]="inventoryOpen()"
+              aria-controls="nav-inventory"
+              aria-label="Inventario"
+              data-tip="Inventario"
+              (click)="inventoryOpen.set(!inventoryOpen())"
+            >
+              <ng-icon name="tablerBuildingWarehouse" size="18" class="my-1 shrink-0" aria-hidden="true" />
+              <span class="grow text-left is-drawer-close:hidden">Inventario</span>
+              <ng-icon
+                name="tablerChevronRight"
+                size="16"
+                class="shrink-0 text-neutral transition-transform is-drawer-close:hidden"
+                [class.rotate-90]="inventoryOpen()"
+                aria-hidden="true"
+              />
+            </button>
+            @if (inventoryOpen()) {
+              <ul id="nav-inventory" class="is-drawer-close:m-0 is-drawer-close:p-0 is-drawer-close:before:hidden">
+                @for (item of inventory(); track item.link) {
+                  <li><ng-container *ngTemplateOutlet="navLink; context: { $implicit: item }" /></li>
+                }
+              </ul>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </nav>
+</div>
