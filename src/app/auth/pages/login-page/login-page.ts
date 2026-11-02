@@ -6,7 +6,7 @@ import { FormUtils } from '@/utils/form-utils';
 import { FormErrorLabel } from 'src/app/shared/components/form-error-label/form-error-label';
 import { Button } from 'src/app/shared/components/button/button';
 import { extractApiError } from 'src/app/api/extract-api-error';
-import { mapApiError } from 'src/app/api/error-mapper';
+import { resolveApiError } from '@/shared/utils/api-error';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { tablerEye, tablerEyeOff } from '@ng-icons/tabler-icons';
 
@@ -48,27 +48,13 @@ export class LoginPage {
     this.errorMessage.set('')
 
     this.authService.login(email, password).subscribe({
-      next: (isAuthenticated) => {
-        if (isAuthenticated) {
-          this.router.navigateByUrl('/')
-          return;
-        } else {
-          this.isLoading.set(false);
-          this.hasError.set(true);
-          this.errorMessage.set('Correo o contraseña incorrectos');
-        }
-      },
+      next: () => this.router.navigateByUrl('/'),
       error: (err) => {
         const apiError = extractApiError(err)
-        const mapped = mapApiError(apiError)
-
-        if (mapped.redirect) {
-          this.router.navigateByUrl(mapped.redirect);
-          return;
-        }
-
-        if (mapped.toast) this.errorMessage.set(mapped.toast)
-        
+        // Here a 401 is the login's own answer (wrong password or deactivated user), not an expired session.
+        this.errorMessage.set(apiError.code === 'UNAUTHORIZED'
+          ? apiError.message
+          : resolveApiError(err, 'No se pudo iniciar sesión').message)
         this.isLoading.set(false);
         this.hasError.set(true);
       }

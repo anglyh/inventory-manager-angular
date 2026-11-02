@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { AuthResponse } from '../interfaces/auth-response.interface';
 import { User } from '../interfaces/user.interface';
-import { catchError, map, Observable, of } from 'rxjs';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { environment } from '@environments/environment';
@@ -39,13 +39,12 @@ export class AuthService {
     })
     .pipe(
       map(res => this.handleAuthSuccess(res)),
-      catchError((error: any) => this.handleWrongPassword(error))
+      // The page shows the reason: wrong password, deactivated user or too many attempts.
+      catchError((error: unknown) => {
+        this.logout();
+        return throwError(() => error);
+      })
     )
-  }
-
-  handleWrongPassword(error: any) {
-    this.handleAuthError(error);
-    return of(false)
   }
 
   register(name: string, email: string, password: string): Observable<boolean> {

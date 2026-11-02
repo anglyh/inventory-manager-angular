@@ -15,6 +15,7 @@ export function mapApiError(error: ApiError): MappedError {
     case 'NOT_FOUND':
       return { toast: 'No se encontró: puede que se haya eliminado.' };
     case 'CONFLICT':
+    case 'TOO_MANY_REQUESTS':
       return { toast: error.message };
     case 'INVALID_JSON':
     case 'BAD_REQUEST':

@@ -16,6 +16,7 @@ export type ErrorCode =
   | 'INTERNAL_ERROR'
   | 'INVALID_JSON'
   | 'DB_ERROR'
+  | 'TOO_MANY_REQUESTS'
   | 'VALIDATION_ERROR';
 
 export type ApiError =
