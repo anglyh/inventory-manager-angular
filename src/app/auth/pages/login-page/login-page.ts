@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from "@angular/router";
+import { Router } from "@angular/router";
 import { AuthService } from '../../services/auth.service';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormUtils } from '@/utils/form-utils';
@@ -12,7 +12,7 @@ import { tablerEye, tablerEyeOff } from '@ng-icons/tabler-icons';
 
 @Component({
   selector: 'app-login-page',
-  imports: [RouterLink, ReactiveFormsModule, FormErrorLabel, Button, NgIcon],
+  imports: [ReactiveFormsModule, FormErrorLabel, Button, NgIcon],
   viewProviders: [provideIcons({ tablerEye, tablerEyeOff })],
   templateUrl: './login-page.html',
 })
