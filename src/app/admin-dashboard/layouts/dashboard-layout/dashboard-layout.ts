@@ -100,8 +100,9 @@ export class DashboardLayout implements AfterViewInit {
   }
 
   logout() {
-    this.authService.logout()
-    this.router.navigateByUrl('/')
+    // Navigate only after the backend revoked the session; otherwise the guard
+    // could restore it with the still-valid refresh cookie.
+    this.authService.logout().subscribe(() => this.router.navigateByUrl('/'))
   }
 
   #pageFromRoute(): { title: string; back: string | null } {
