@@ -2930,7 +2930,8 @@ export interface components {
             };
         };
         AuthResponse: {
-            token: string;
+            /** @description JWT de acceso de corta duración (15 minutos). Enviar como `Authorization: Bearer`. */
+            accessToken: string;
             user: components["schemas"]["SessionUser"];
         };
         SessionUser: {
