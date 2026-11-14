@@ -27,9 +27,11 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Usuario creado; retorna token y usuario. */
+                /** @description Usuario creado; retorna access token y usuario, y abre la sesión con la cookie del refresh token. */
                 201: {
                     headers: {
+                        /** @description Cookie HttpOnly `refreshToken` con el refresh token nuevo (vence a los 7 días, nunca después del límite de 30 días de la sesión). */
+                        "Set-Cookie"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -37,6 +39,7 @@ export interface paths {
                     };
                 };
                 400: components["responses"]["BadRequest"];
+                403: components["responses"]["Forbidden"];
                 409: components["responses"]["Conflict"];
                 422: components["responses"]["ValidationError"];
                 500: components["responses"]["InternalError"];
@@ -58,7 +61,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Autenticar usuario y obtener token JWT */
+        /** Autenticar usuario y obtener access token JWT */
         post: {
             parameters: {
                 query?: never;
@@ -72,9 +75,11 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Autenticación exitosa; retorna token y usuario. */
+                /** @description Autenticación exitosa; retorna access token y usuario, y abre la sesión con la cookie del refresh token. */
                 200: {
                     headers: {
+                        /** @description Cookie HttpOnly `refreshToken` con el refresh token nuevo (vence a los 7 días, nunca después del límite de 30 días de la sesión). */
+                        "Set-Cookie"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -111,7 +116,7 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Sesión vigente; retorna token y usuario. */
+                /** @description Sesión vigente; retorna el access token enviado y el usuario. */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -128,6 +133,91 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Renovar el access token con la cookie del refresh token
+         * @description Rota el refresh token de la cookie: lo marca como usado, fija uno nuevo y devuelve un access token. Si la sesión no existe, venció, se cerró, el usuario está desactivado o se reutiliza un token ya rotado, responde 401 y borra la cookie; el reuso además cierra la sesión completa. Dos renovaciones simultáneas (varias pestañas) dentro de 10 segundos se aceptan.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sesión renovada; retorna un access token nuevo y el usuario. */
+                200: {
+                    headers: {
+                        /** @description Cookie HttpOnly `refreshToken` con el refresh token nuevo (vence a los 7 días, nunca después del límite de 30 días de la sesión). */
+                        "Set-Cookie"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuthResponse"];
+                    };
+                };
+                401: components["responses"]["Unauthorized"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cerrar la sesión actual
+         * @description Revoca la sesión de la cookie `refreshToken` (todos sus tokens rotados) y borra la cookie. Es idempotente: responde 204 aunque no haya cookie o la sesión ya no exista.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sesión cerrada, sin cuerpo. */
+                204: {
+                    headers: {
+                        /** @description Borra la cookie `refreshToken`. */
+                        "Set-Cookie"?: string;
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -305,6 +395,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 422: components["responses"]["CashRegisterQueryValidation"];
                 500: components["responses"]["InternalError"];
                 503: components["responses"]["DatabaseUnavailable"];
@@ -351,6 +442,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 404: components["responses"]["CashRegisterNotFound"];
                 422: components["responses"]["CashRegisterIdValidation"];
                 500: components["responses"]["InternalError"];
@@ -401,6 +493,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 404: components["responses"]["CashRegisterNotFound"];
                 422: components["responses"]["CashMovementQueryValidation"];
                 500: components["responses"]["InternalError"];
@@ -557,6 +650,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 409: components["responses"]["Conflict"];
                 422: components["responses"]["ValidationError"];
                 500: components["responses"]["InternalError"];
@@ -605,6 +699,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 404: components["responses"]["NotFound"];
                 409: components["responses"]["Conflict"];
                 422: components["responses"]["ValidationError"];
@@ -638,102 +733,13 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/expense": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Listar gastos
-         * @description Ordenados por día (más recientes primero). `from`/`to` se comparan con el día Lima del gasto, como la serie diaria del reporte.
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Inicio del rango (inclusive), ISO con zona horaria. Se compara con el día Lima del gasto. */
-                    from?: string | null;
-                    /** @description Fin del rango (exclusivo), ISO con zona horaria. */
-                    to?: string | null;
-                    categoryId?: string;
-                    /** @description LODGING: costo del hospedaje (resta del resultado del hospedaje). GENERAL: gasto compartido (resta de la ganancia neta). */
-                    group?: components["schemas"]["ExpenseGroup"];
-                    page?: number;
-                    limit?: number;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Página de gastos con el total del filtro. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ExpensePage"];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        put?: never;
-        /**
-         * Registrar gasto
-         * @description Con source = CASH_REGISTER registra además un retiro (CASH_OUT) en la caja abierta, en la misma transacción. Sin caja abierta, con efectivo insuficiente o con la categoría desactivada responde 409.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateExpense"];
-                };
-            };
-            responses: {
-                /** @description Gasto registrado. */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Expense"];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
                 403: components["responses"]["Forbidden"];
                 404: components["responses"]["NotFound"];
-                409: components["responses"]["OperationConflict"];
                 422: components["responses"]["ValidationError"];
                 500: components["responses"]["InternalError"];
                 503: components["responses"]["DatabaseUnavailable"];
             };
         };
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -903,6 +909,96 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/expense": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar gastos
+         * @description Ordenados por día (más recientes primero). `from`/`to` se comparan con el día Lima del gasto, como la serie diaria del reporte.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Inicio del rango (inclusive), ISO con zona horaria. Se compara con el día Lima del gasto. */
+                    from?: string | null;
+                    /** @description Fin del rango (exclusivo), ISO con zona horaria. */
+                    to?: string | null;
+                    categoryId?: string;
+                    /** @description LODGING: costo del hospedaje (resta del resultado del hospedaje). GENERAL: gasto compartido (resta de la ganancia neta). */
+                    group?: components["schemas"]["ExpenseGroup"];
+                    page?: number;
+                    limit?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Página de gastos con el total del filtro. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ExpensePage"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        put?: never;
+        /**
+         * Registrar gasto
+         * @description Con source = CASH_REGISTER registra además un retiro (CASH_OUT) en la caja abierta, en la misma transacción. Sin caja abierta, con efectivo insuficiente o con la categoría desactivada responde 409.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateExpense"];
+                };
+            };
+            responses: {
+                /** @description Gasto registrado. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Expense"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["OperationConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/expense/{id}": {
         parameters: {
             query?: never;
@@ -1033,6 +1129,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 404: components["responses"]["NotFound"];
                 409: components["responses"]["InventoryEntryConflict"];
                 422: components["responses"]["ValidationError"];
@@ -1055,7 +1152,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Registrar merma o pérdida (OUT) */
+        /**
+         * Registrar merma o pérdida (OUT)
+         * @description No enviar precio por item: el costo se toma del costo promedio vigente del producto.
+         */
         post: {
             parameters: {
                 query?: never;
@@ -1126,6 +1226,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 404: components["responses"]["NotFound"];
                 409: components["responses"]["InventoryEntryConflict"];
                 422: components["responses"]["ValidationError"];
@@ -1174,6 +1275,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 404: components["responses"]["NotFound"];
                 409: components["responses"]["OperationConflict"];
                 422: components["responses"]["ValidationError"];
@@ -1224,6 +1326,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 404: components["responses"]["NotFound"];
                 409: components["responses"]["OperationConflict"];
                 422: components["responses"]["ValidationError"];
@@ -1420,6 +1523,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 409: components["responses"]["Conflict"];
                 422: components["responses"]["ValidationError"];
                 500: components["responses"]["InternalError"];
@@ -1542,6 +1646,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 404: components["responses"]["NotFound"];
                 409: components["responses"]["Conflict"];
                 422: components["responses"]["ValidationError"];
@@ -1572,6 +1677,7 @@ export interface paths {
                 };
                 400: components["responses"]["BadRequest"];
                 401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
                 404: components["responses"]["NotFound"];
                 422: components["responses"]["ValidationError"];
                 500: components["responses"]["InternalError"];
@@ -1728,420 +1834,6 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/store-user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Listar usuarios de la tienda y resolver responsables */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Usuarios de esta tienda, sin contraseñas. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["StoreUser"][];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                409: components["responses"]["OperationConflict"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        put?: never;
-        /**
-         * Añadir trabajador a la tienda actual
-         * @description Solo ADMIN. Crea un usuario GUEST en la misma tienda; puede operar caja e inventario. No crea otra tienda ni inicia sesión automáticamente.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateStoreUser"];
-                };
-            };
-            responses: {
-                /** @description Trabajador creado. */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["StoreUser"];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                /** @description Solo administradores. */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiError"];
-                    };
-                };
-                404: components["responses"]["NotFound"];
-                409: components["responses"]["OperationConflict"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/store-user/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Activar o desactivar un empleado
-         * @description Solo ADMIN y solo usuarios GUEST de la misma tienda. Un empleado desactivado no puede iniciar sesión y su token deja de servir en la siguiente petición.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateStoreUser"];
-                };
-            };
-            responses: {
-                /** @description Empleado actualizado. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["StoreUser"];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                409: components["responses"]["OperationConflict"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        trace?: never;
-    };
-    "/api/supplier": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Listar proveedores de la tienda */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Proveedores disponibles para compras. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Supplier"][];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                409: components["responses"]["OperationConflict"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        put?: never;
-        /** Crear proveedor */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SupplierInput"];
-                };
-            };
-            responses: {
-                /** @description Proveedor creado. */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Supplier"];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                409: components["responses"]["OperationConflict"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/supplier/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Editar proveedor */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SupplierInput"];
-                };
-            };
-            responses: {
-                /** @description Proveedor actualizado. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Supplier"];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                409: components["responses"]["OperationConflict"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        post?: never;
-        /**
-         * Eliminar proveedor sin compras asociadas
-         * @description Si el proveedor tiene compras, responde 409 para conservar la relación histórica.
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Proveedor eliminado, sin cuerpo. */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                409: components["responses"]["OperationConflict"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/guest": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Buscar huésped por documento
-         * @description Para autocompletar el check-in de un huésped que ya vino. Devuelve null si no existe.
-         */
-        get: {
-            parameters: {
-                query: {
-                    documentType: components["schemas"]["DocumentType"];
-                    documentNumber: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Huésped o null. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["NullableGuest"];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/room": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Tablero de habitaciones
-         * @description Todas las habitaciones (también las desactivadas) ordenadas por piso y número, con su tipo, estado calculado y la estadía activa resumida.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Habitaciones con su estado. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Room"][];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        put?: never;
-        /** Crear habitación */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateRoom"];
-                };
-            };
-            responses: {
-                /** @description Habitación creada. */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["Room"];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                409: components["responses"]["OperationConflict"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2307,6 +1999,81 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/room": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tablero de habitaciones
+         * @description Todas las habitaciones (también las desactivadas) ordenadas por piso y número, con su tipo, estado calculado y la estadía activa resumida.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Habitaciones con su estado. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Room"][];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        put?: never;
+        /** Crear habitación */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateRoom"];
+                };
+            };
+            responses: {
+                /** @description Habitación creada. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Room"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["OperationConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/room/{id}": {
         parameters: {
             query?: never;
@@ -2432,6 +2199,53 @@ export interface paths {
                 503: components["responses"]["DatabaseUnavailable"];
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/guest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Buscar huésped por documento
+         * @description Para autocompletar el check-in de un huésped que ya vino. Devuelve null si no existe.
+         */
+        get: {
+            parameters: {
+                query: {
+                    documentType: components["schemas"]["DocumentType"];
+                    documentNumber: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Huésped o null. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NullableGuest"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2625,109 +2439,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/stay/{id}/check-out": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Check-out
-         * @description En una transacción: agrega el adicional por horas (sugerido por el servidor; extraAmount lo reemplaza y 0 lo condona), cobra el pago opcional y cierra solo si el saldo queda en 0. La habitación pasa a limpieza.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CheckOut"];
-                };
-            };
-            responses: {
-                /** @description Estadía cerrada. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["StayDetail"];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                409: components["responses"]["StayConflict"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/stay/{id}/migrations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Marcar reporte a Migraciones
-         * @description reported = true guarda la fecha del reporte (se conserva la primera); false la borra.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["StayMigrations"];
-                };
-            };
-            responses: {
-                /** @description Estadía actualizada. */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["StayDetail"];
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                422: components["responses"]["ValidationError"];
-                500: components["responses"]["InternalError"];
-                503: components["responses"]["DatabaseUnavailable"];
-            };
-        };
-        trace?: never;
-    };
     "/api/stay/{id}/payment": {
         parameters: {
             query?: never;
@@ -2834,6 +2545,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stay/{id}/check-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check-out
+         * @description En una transacción: agrega el adicional por horas (sugerido por el servidor; extraAmount lo reemplaza y 0 lo condona), cobra el pago opcional y cierra solo si el saldo queda en 0. La habitación pasa a limpieza.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CheckOut"];
+                };
+            };
+            responses: {
+                /** @description Estadía cerrada. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StayDetail"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["StayConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/stay/{id}/migrations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Marcar reporte a Migraciones
+         * @description reported = true guarda la fecha del reporte (se conserva la primera); false la borra.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["StayMigrations"];
+                };
+            };
+            responses: {
+                /** @description Estadía actualizada. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StayDetail"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                404: components["responses"]["NotFound"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        trace?: never;
+    };
     "/api/store/settings": {
         parameters: {
             query?: never;
@@ -2909,6 +2723,303 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/store-user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar usuarios de la tienda y resolver responsables */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Usuarios de esta tienda, sin contraseñas. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StoreUser"][];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["OperationConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        put?: never;
+        /**
+         * Añadir trabajador a la tienda actual
+         * @description Solo ADMIN. Crea un usuario GUEST en la misma tienda; puede operar caja e inventario. No crea otra tienda ni inicia sesión automáticamente.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateStoreUser"];
+                };
+            };
+            responses: {
+                /** @description Trabajador creado. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StoreUser"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                /** @description Solo administradores. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiError"];
+                    };
+                };
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["OperationConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/store-user/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Activar o desactivar un empleado
+         * @description Solo ADMIN y solo usuarios GUEST de la misma tienda. Un empleado desactivado no puede iniciar sesión y su token deja de servir en la siguiente petición.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateStoreUser"];
+                };
+            };
+            responses: {
+                /** @description Empleado actualizado. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StoreUser"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["OperationConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        trace?: never;
+    };
+    "/api/supplier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar proveedores de la tienda */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Proveedores disponibles para compras. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Supplier"][];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["OperationConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        put?: never;
+        /** Crear proveedor */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SupplierInput"];
+                };
+            };
+            responses: {
+                /** @description Proveedor creado. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Supplier"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["OperationConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supplier/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Editar proveedor */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SupplierInput"];
+                };
+            };
+            responses: {
+                /** @description Proveedor actualizado. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Supplier"];
+                    };
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["OperationConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        post?: never;
+        /**
+         * Eliminar proveedor sin compras asociadas
+         * @description Si el proveedor tiene compras, responde 409 para conservar la relación histórica.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Proveedor eliminado, sin cuerpo. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                400: components["responses"]["BadRequest"];
+                401: components["responses"]["Unauthorized"];
+                403: components["responses"]["Forbidden"];
+                404: components["responses"]["NotFound"];
+                409: components["responses"]["OperationConflict"];
+                422: components["responses"]["ValidationError"];
+                500: components["responses"]["InternalError"];
+                503: components["responses"]["DatabaseUnavailable"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2930,7 +3041,8 @@ export interface components {
             };
         };
         AuthResponse: {
-            token: string;
+            /** @description JWT de acceso de corta duración (15 minutos). Enviar como `Authorization: Bearer`. */
+            accessToken: string;
             user: components["schemas"]["SessionUser"];
         };
         SessionUser: {
@@ -2963,27 +3075,53 @@ export interface components {
             password: string;
         };
         NullableCashRegister: {
-            /** Format: date-time */
-            closedAt: string | null;
-            /** Format: uuid */
-            closedBy: string | null;
-            closedByName: string | null;
-            /** @example 20.00 */
-            closingAmount: string | null;
-            closingNotes: string | null;
             /** Format: uuid */
             id: string;
-            notes: string | null;
+            /** @enum {string} */
+            status: "OPEN" | "CLOSED";
             /** Format: date-time */
             openedAt: string;
+            /** @example 20.00 */
+            openingAmount: string;
             /** Format: uuid */
             openedBy: string | null;
             openedByName: string | null;
+            notes: string | null;
+            /** Format: date-time */
+            closedAt: string | null;
             /** @example 20.00 */
-            openingAmount: string;
-            /** @enum {string} */
-            status: "OPEN" | "CLOSED";
+            closingAmount: string | null;
+            /** Format: uuid */
+            closedBy: string | null;
+            closedByName: string | null;
+            closingNotes: string | null;
             summary: {
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                cashSales?: string;
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                yapeSales?: string;
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                totalSales?: string;
+                salesCount: number;
+                /**
+                 * @description Cobros de estadías en efectivo; forman parte del efectivo esperado. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                cashStays?: string;
+                /**
+                 * @description Cobros de estadías por Yape. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                yapeStays?: string;
                 /**
                  * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
@@ -2998,38 +3136,12 @@ export interface components {
                  * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
                  */
-                cashSales?: string;
-                /**
-                 * @description Cobros de estadías en efectivo; forman parte del efectivo esperado. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
-                 * @example 20.00
-                 */
-                cashStays?: string;
+                expectedCash?: string;
                 /**
                  * @description Null mientras la caja está abierta. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
                  */
                 difference?: string | null;
-                /**
-                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
-                 * @example 20.00
-                 */
-                expectedCash?: string;
-                salesCount: number;
-                /**
-                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
-                 * @example 20.00
-                 */
-                totalSales?: string;
-                /**
-                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
-                 * @example 20.00
-                 */
-                yapeSales?: string;
-                /**
-                 * @description Cobros de estadías por Yape. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
-                 * @example 20.00
-                 */
-                yapeStays?: string;
             } | null;
         } | null;
         CashMovementPage: {
@@ -3077,27 +3189,53 @@ export interface components {
             };
         };
         CashRegister: {
-            /** Format: date-time */
-            closedAt: string | null;
-            /** Format: uuid */
-            closedBy: string | null;
-            closedByName: string | null;
-            /** @example 20.00 */
-            closingAmount: string | null;
-            closingNotes: string | null;
             /** Format: uuid */
             id: string;
-            notes: string | null;
+            /** @enum {string} */
+            status: "OPEN" | "CLOSED";
             /** Format: date-time */
             openedAt: string;
+            /** @example 20.00 */
+            openingAmount: string;
             /** Format: uuid */
             openedBy: string | null;
             openedByName: string | null;
+            notes: string | null;
+            /** Format: date-time */
+            closedAt: string | null;
             /** @example 20.00 */
-            openingAmount: string;
-            /** @enum {string} */
-            status: "OPEN" | "CLOSED";
+            closingAmount: string | null;
+            /** Format: uuid */
+            closedBy: string | null;
+            closedByName: string | null;
+            closingNotes: string | null;
             summary: {
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                cashSales?: string;
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                yapeSales?: string;
+                /**
+                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                totalSales?: string;
+                salesCount: number;
+                /**
+                 * @description Cobros de estadías en efectivo; forman parte del efectivo esperado. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                cashStays?: string;
+                /**
+                 * @description Cobros de estadías por Yape. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
+                 * @example 20.00
+                 */
+                yapeStays?: string;
                 /**
                  * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
@@ -3112,38 +3250,12 @@ export interface components {
                  * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
                  */
-                cashSales?: string;
-                /**
-                 * @description Cobros de estadías en efectivo; forman parte del efectivo esperado. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
-                 * @example 20.00
-                 */
-                cashStays?: string;
+                expectedCash?: string;
                 /**
                  * @description Null mientras la caja está abierta. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
                  * @example 20.00
                  */
                 difference?: string | null;
-                /**
-                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
-                 * @example 20.00
-                 */
-                expectedCash?: string;
-                salesCount: number;
-                /**
-                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
-                 * @example 20.00
-                 */
-                totalSales?: string;
-                /**
-                 * @description Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
-                 * @example 20.00
-                 */
-                yapeSales?: string;
-                /**
-                 * @description Cobros de estadías por Yape. Solo se envía a ADMIN; se omite para GUEST (cierre ciego).
-                 * @example 20.00
-                 */
-                yapeStays?: string;
             } | null;
         };
         CreateCashMovement: {
@@ -3183,69 +3295,38 @@ export interface components {
             /** @example Snacks */
             name: string;
         };
-        CreateExpense: {
-            /** @example 35.5 */
-            amount: number;
-            /** Format: uuid */
-            categoryId: string;
-            /** @example Papel higiénico y jabón */
-            description?: string | null;
-            source: components["schemas"]["ExpenseSource"];
-            /**
-             * Format: date
-             * @description Día de Lima al que corresponde el gasto. Por defecto, hoy.
-             * @example 2026-10-20
-             */
-            spentOn?: string;
-        };
-        CreateExpenseCategory: {
-            group: components["schemas"]["ExpenseGroup"];
-            /** @example Útiles de aseo */
-            name: string;
-        };
-        Expense: {
-            /** @example 35.50 */
-            amount: string;
-            /** @description false si salió de una caja ya cerrada. */
-            canDelete: boolean;
-            /**
-             * Format: uuid
-             * @description Caja de la que salió el dinero (solo CASH_REGISTER).
-             */
-            cashRegisterId: string | null;
-            /** Format: uuid */
-            categoryId: string;
-            categoryName: string;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: uuid */
-            createdBy: string | null;
-            createdByName: string | null;
-            description: string | null;
-            group: components["schemas"]["ExpenseGroup"];
+        ExpenseCategory: {
             /** Format: uuid */
             id: string;
-            source: components["schemas"]["ExpenseSource"];
-            /** Format: date */
-            spentOn: string;
-        };
-        ExpenseCategory: {
-            /** Format: date-time */
-            createdAt: string;
+            name: string;
+            group: components["schemas"]["ExpenseGroup"];
+            isActive: boolean;
             /** @description Gastos registrados con esta categoría. */
             expenseCount: number;
-            group: components["schemas"]["ExpenseGroup"];
-            /** Format: uuid */
-            id: string;
-            isActive: boolean;
-            name: string;
+            /** Format: date-time */
+            createdAt: string;
         };
+        /**
+         * @description LODGING: costo del hospedaje (resta del resultado del hospedaje). GENERAL: gasto compartido (resta de la ganancia neta).
+         * @enum {string}
+         */
         ExpenseGroup: "LODGING" | "GENERAL";
+        CreateExpenseCategory: {
+            /** @example Útiles de aseo */
+            name: string;
+            group: components["schemas"]["ExpenseGroup"];
+        };
+        UpdateExpenseCategory: {
+            /** @example Útiles de aseo */
+            name?: string;
+            group?: components["schemas"]["ExpenseGroup"];
+            isActive?: boolean;
+        };
         ExpensePage: {
             data: components["schemas"]["Expense"][];
             meta: {
-                limit: number;
                 page: number;
+                limit: number;
                 total: number;
                 totalPages: number;
             };
@@ -3255,12 +3336,51 @@ export interface components {
              */
             totalAmount: string;
         };
+        Expense: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            categoryId: string;
+            categoryName: string;
+            group: components["schemas"]["ExpenseGroup"];
+            /** @example 35.50 */
+            amount: string;
+            /** Format: date */
+            spentOn: string;
+            description: string | null;
+            source: components["schemas"]["ExpenseSource"];
+            /**
+             * Format: uuid
+             * @description Caja de la que salió el dinero (solo CASH_REGISTER).
+             */
+            cashRegisterId: string | null;
+            /** @description false si salió de una caja ya cerrada. */
+            canDelete: boolean;
+            /** Format: uuid */
+            createdBy: string | null;
+            createdByName: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        /**
+         * @description CASH_REGISTER: sale de la caja abierta (crea un retiro). OUTSIDE: Yape, banco o bolsillo del dueño; no toca la caja.
+         * @enum {string}
+         */
         ExpenseSource: "CASH_REGISTER" | "OUTSIDE";
-        UpdateExpenseCategory: {
-            group?: components["schemas"]["ExpenseGroup"];
-            isActive?: boolean;
-            /** @example Útiles de aseo */
-            name?: string;
+        CreateExpense: {
+            /** Format: uuid */
+            categoryId: string;
+            /** @example 35.5 */
+            amount: number;
+            /**
+             * Format: date
+             * @description Día de Lima al que corresponde el gasto. Por defecto, hoy.
+             * @example 2026-10-20
+             */
+            spentOn?: string;
+            /** @example Papel higiénico y jabón */
+            description?: string | null;
+            source: components["schemas"]["ExpenseSource"];
         };
         CreateSale: {
             notes?: string;
@@ -3310,16 +3430,16 @@ export interface components {
             productId: string;
             quantity: number;
         }[];
+        CreateInitialLoad: {
+            notes?: string;
+            items: components["schemas"]["MovementItems"];
+        };
         MovementItems: {
             /** Format: uuid */
             productId: string;
             unitPrice: number;
             quantity: number;
         }[];
-        CreateInitialLoad: {
-            notes?: string;
-            items: components["schemas"]["MovementItems"];
-        };
         StockCount: {
             notes: string;
             items: {
@@ -3498,59 +3618,86 @@ export interface components {
             } | null;
         };
         ReportOverview: {
-            daily: {
-                /** Format: date */
-                date: string;
+            /** Format: date-time */
+            from: string;
+            /** Format: date-time */
+            to: string;
+            summary: {
                 /**
-                 * @description Cobros de habitaciones del día − gastos del hospedaje del día.
-                 * @example 20.00
-                 */
-                lodgingResult: string;
-                /**
-                 * @description Ganancia bruta de la tienda del día (ventas − costo).
-                 * @example 20.00
-                 */
-                profit: string;
-                /**
-                 * @description Ventas de la tienda del día.
+                 * @description Ventas de la tienda. No incluye habitaciones (ver rooms.revenue).
                  * @example 20.00
                  */
                 revenue: string;
+                /** @example 20.00 */
+                cogs: string;
+                /** @example 20.00 */
+                grossProfit: string;
                 /**
-                 * @description Cobros de habitaciones del día.
+                 * @description store.result + lodging.result − total.cashShortage + total.cashSurplus − total.generalExpenses.
                  * @example 20.00
                  */
-                rooms: string;
-            }[];
-            flows: {
+                netProfit: string;
                 /**
-                 * @description Mercadería comprada en el rango (a costo). No resta ganancia: pasa al stock.
+                 * @description netProfit / (revenue + rooms.revenue) × 100.
                  * @example 20.00
                  */
-                purchases: string;
+                marginPct: string;
+                salesCount: number;
+                /** @example 20.00 */
+                avgTicket: string;
             };
-            /** Format: date-time */
-            from: string;
-            /** @description Foto actual del inventario: no depende del rango. */
-            inventory: {
-                /** @description Productos activos con stock en o bajo el mínimo. */
-                lowStockCount: number;
-                /** @description Hasta 5 de esos productos, los más urgentes primero (menor stock − mínimo). */
-                lowStockProducts: {
-                    /** Format: uuid */
-                    productId: string;
-                    productName: string;
-                    stock: number;
-                    minStock: number;
-                }[];
+            /** @description Cobros por método: ventas de la tienda más habitaciones. */
+            payments: {
+                /** @example 20.00 */
+                cash: string;
+                /** @example 20.00 */
+                yape: string;
+            };
+            rooms: {
                 /**
-                 * @description Stock actual × costo promedio.
+                 * @description Cobros de estadías del período (por fecha de pago).
                  * @example 20.00
                  */
-                value: string;
+                revenue: string;
+                /** @description Estadías con ingreso en el período. */
+                stays: number;
+                /**
+                 * @description Horas ocupadas / (habitaciones activas × horas transcurridas del período) × 100, máximo 100.
+                 * @example 20.00
+                 */
+                occupancyPct: string;
+            };
+            /** @description Resultado de la tienda. */
+            store: {
+                /** @example 20.00 */
+                revenue: string;
+                /** @example 20.00 */
+                cogs: string;
+                /** @example 20.00 */
+                grossProfit: string;
+                /**
+                 * @description Vencidos, dañados y faltantes de conteo (a costo).
+                 * @example 20.00
+                 */
+                losses: string;
+                /**
+                 * @description Sobrantes de conteo (a costo). Suman al resultado.
+                 * @example 20.00
+                 */
+                countSurplus: string;
+                /**
+                 * @description grossProfit − losses + countSurplus.
+                 * @example 20.00
+                 */
+                result: string;
             };
             /** @description Resultado del hospedaje. */
             lodging: {
+                /**
+                 * @description Cobros de estadías del período (por fecha de pago).
+                 * @example 20.00
+                 */
+                revenue: string;
                 /**
                  * @description Gastos del grupo LODGING del período.
                  * @example 20.00
@@ -3561,122 +3708,12 @@ export interface components {
                  * @example 20.00
                  */
                 result: string;
-                /**
-                 * @description Cobros de estadías del período (por fecha de pago).
-                 * @example 20.00
-                 */
-                revenue: string;
             };
-            /** @description Foto actual de lo pendiente con Migraciones: no depende del rango. */
-            migrations: {
-                /** @description Estadías (abiertas o cerradas, de cualquier fecha) con al menos un huésped extranjero que aún no se reportaron a Migraciones. */
-                pendingCount: number;
-            };
-            /** @description Cobros por método: ventas de la tienda más habitaciones. */
-            payments: {
-                /** @example 20.00 */
-                cash: string;
-                /** @example 20.00 */
-                yape: string;
-            };
-            /** @description Período de comparación: compareFrom/compareTo o, si faltan, el mismo largo justo antes de `from`. */
-            previous: {
-                /** Format: date-time */
-                from: string;
-                /** @example 20.00 */
-                generalExpenses: string;
-                /** @example 20.00 */
-                grossProfit: string;
-                /** @example 20.00 */
-                lodgingResult: string;
-                /** @example 20.00 */
-                netProfit: string;
-                /** @example 20.00 */
-                revenue: string;
-                /** @example 20.00 */
-                roomsRevenue: string;
-                salesCount: number;
+            total: {
                 /** @example 20.00 */
                 storeResult: string;
-                /** Format: date-time */
-                to: string;
-            };
-            /** @description Productos vendidos en el rango, ordenados por ventas. El cliente decide cómo ordenarlos. */
-            products: {
-                /** Format: uuid */
-                productId: string;
-                productName: string;
                 /** @example 20.00 */
-                profit: string;
-                quantity: number;
-                /** @example 20.00 */
-                revenue: string;
-            }[];
-            rooms: {
-                /**
-                 * @description Horas ocupadas / (habitaciones activas × horas transcurridas del período) × 100, máximo 100.
-                 * @example 20.00
-                 */
-                occupancyPct: string;
-                /**
-                 * @description Cobros de estadías del período (por fecha de pago).
-                 * @example 20.00
-                 */
-                revenue: string;
-                /** @description Estadías con ingreso en el período. */
-                stays: number;
-            };
-            /** @description Resultado de la tienda. */
-            store: {
-                /** @example 20.00 */
-                cogs: string;
-                /**
-                 * @description Sobrantes de conteo (a costo). Suman al resultado.
-                 * @example 20.00
-                 */
-                countSurplus: string;
-                /** @example 20.00 */
-                grossProfit: string;
-                /**
-                 * @description Vencidos, dañados y faltantes de conteo (a costo).
-                 * @example 20.00
-                 */
-                losses: string;
-                /**
-                 * @description grossProfit − losses + countSurplus.
-                 * @example 20.00
-                 */
-                result: string;
-                /** @example 20.00 */
-                revenue: string;
-            };
-            summary: {
-                /** @example 20.00 */
-                avgTicket: string;
-                /** @example 20.00 */
-                cogs: string;
-                /** @example 20.00 */
-                grossProfit: string;
-                /**
-                 * @description netProfit / (revenue + rooms.revenue) × 100.
-                 * @example 20.00
-                 */
-                marginPct: string;
-                /**
-                 * @description store.result + lodging.result − total.cashShortage + total.cashSurplus − total.generalExpenses.
-                 * @example 20.00
-                 */
-                netProfit: string;
-                /**
-                 * @description Ventas de la tienda. No incluye habitaciones (ver rooms.revenue).
-                 * @example 20.00
-                 */
-                revenue: string;
-                salesCount: number;
-            };
-            /** Format: date-time */
-            to: string;
-            total: {
+                lodgingResult: string;
                 /**
                  * @description Faltantes de las cajas cerradas en el período.
                  * @example 20.00
@@ -3694,26 +3731,530 @@ export interface components {
                  * @example 20.00
                  */
                 generalExpenses: string;
-                /** @example 20.00 */
-                lodgingResult: string;
                 /**
                  * @description storeResult + lodgingResult − cashShortage + cashSurplus − generalExpenses (igual a summary.netProfit).
                  * @example 20.00
                  */
                 netProfit: string;
+            };
+            daily: {
+                /** Format: date */
+                date: string;
+                /**
+                 * @description Ventas de la tienda del día.
+                 * @example 20.00
+                 */
+                revenue: string;
+                /**
+                 * @description Ganancia bruta de la tienda del día (ventas − costo).
+                 * @example 20.00
+                 */
+                profit: string;
+                /**
+                 * @description Cobros de habitaciones del día.
+                 * @example 20.00
+                 */
+                rooms: string;
+                /**
+                 * @description Cobros de habitaciones del día − gastos del hospedaje del día.
+                 * @example 20.00
+                 */
+                lodgingResult: string;
+            }[];
+            /** @description Productos vendidos en el rango, ordenados por ventas. El cliente decide cómo ordenarlos. */
+            products: {
+                /** Format: uuid */
+                productId: string;
+                productName: string;
+                quantity: number;
+                /** @example 20.00 */
+                revenue: string;
+                /** @example 20.00 */
+                profit: string;
+            }[];
+            /** @description Período de comparación: compareFrom/compareTo o, si faltan, el mismo largo justo antes de `from`. */
+            previous: {
+                /** Format: date-time */
+                from: string;
+                /** Format: date-time */
+                to: string;
+                /** @example 20.00 */
+                revenue: string;
+                /** @example 20.00 */
+                grossProfit: string;
+                /** @example 20.00 */
+                netProfit: string;
+                salesCount: number;
+                /** @example 20.00 */
+                roomsRevenue: string;
                 /** @example 20.00 */
                 storeResult: string;
+                /** @example 20.00 */
+                lodgingResult: string;
+                /** @example 20.00 */
+                generalExpenses: string;
+            };
+            flows: {
+                /**
+                 * @description Mercadería comprada en el rango (a costo). No resta ganancia: pasa al stock.
+                 * @example 20.00
+                 */
+                purchases: string;
+            };
+            /** @description Foto actual del inventario: no depende del rango. */
+            inventory: {
+                /**
+                 * @description Stock actual × costo promedio.
+                 * @example 20.00
+                 */
+                value: string;
+                /** @description Productos activos con stock en o bajo el mínimo. */
+                lowStockCount: number;
+                /** @description Hasta 5 de esos productos, los más urgentes primero (menor stock − mínimo). */
+                lowStockProducts: {
+                    /** Format: uuid */
+                    productId: string;
+                    productName: string;
+                    stock: number;
+                    minStock: number;
+                }[];
+            };
+            /** @description Foto actual de lo pendiente con Migraciones: no depende del rango. */
+            migrations: {
+                /** @description Estadías (abiertas o cerradas, de cualquier fecha) con al menos un huésped extranjero que aún no se reportaron a Migraciones. */
+                pendingCount: number;
             };
         };
-        StoreUser: {
-            active: boolean;
-            /** Format: email */
-            email: string;
+        RoomType: {
             /** Format: uuid */
             id: string;
             name: string;
+            capacity: number;
+            description: string | null;
+            /** @example 30.00 */
+            hourPrice: string;
+            /** @example 30.00 */
+            nightPrice: string;
+            /** @example 30.00 */
+            extraHourPrice: string;
+            isActive: boolean;
+            /** @description Habitaciones asignadas a este tipo. */
+            roomCount: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        CreateRoomType: {
+            /** @example Estándar */
+            name: string;
+            /**
+             * @description Huéspedes adultos permitidos. Los menores no cuentan.
+             * @example 2
+             */
+            capacity: number;
+            /** @example Cama de 2 plazas, baño compartido */
+            description?: string | null;
+            /**
+             * @description Precio de referencia por hora: la tarifa por horas sugiere horas × este precio.
+             * @example 10
+             */
+            hourPrice: number;
+            /** @example 50 */
+            nightPrice: number;
+            /** @example 10 */
+            extraHourPrice: number;
+        };
+        UpdateRoomType: {
+            /** @example Estándar */
+            name?: string;
+            /**
+             * @description Huéspedes adultos permitidos. Los menores no cuentan.
+             * @example 2
+             */
+            capacity?: number;
+            /** @example Cama de 2 plazas, baño compartido */
+            description?: string | null;
+            /**
+             * @description Precio de referencia por hora: la tarifa por horas sugiere horas × este precio.
+             * @example 10
+             */
+            hourPrice?: number;
+            /** @example 50 */
+            nightPrice?: number;
+            /** @example 10 */
+            extraHourPrice?: number;
+            isActive?: boolean;
+        };
+        Room: {
+            /** Format: uuid */
+            id: string;
+            number: string;
+            floor: number | null;
+            /** Format: uuid */
+            roomTypeId: string;
+            roomTypeName: string;
+            capacity: number;
+            needsCleaning: boolean;
+            isActive: boolean;
+            /**
+             * @description Calculado: OCCUPIED si hay estadía activa; si no, CLEANING si falta limpiar; si no, FREE.
+             * @enum {string}
+             */
+            status: "FREE" | "OCCUPIED" | "CLEANING";
+            activeStay: {
+                /** Format: uuid */
+                stayId: string;
+                holderName: string | null;
+                /** @enum {string} */
+                rateKind: "HOURLY" | "NIGHT";
+                hours: number | null;
+                /** Format: date-time */
+                checkInAt: string;
+                /** Format: date-time */
+                expectedCheckOut: string;
+                /** @example 30.00 */
+                balance: string;
+            } | null;
+        };
+        CreateRoom: {
+            /** @example 201 */
+            number: string;
+            /** @example 2 */
+            floor?: number | null;
+            /** Format: uuid */
+            roomTypeId: string;
+        };
+        UpdateRoom: {
+            /** @example 201 */
+            number?: string;
+            /** @example 2 */
+            floor?: number | null;
+            /** Format: uuid */
+            roomTypeId?: string;
+            isActive?: boolean;
+            needsCleaning?: boolean;
+        };
+        NullableGuest: {
+            /** Format: uuid */
+            id: string;
+            documentType: components["schemas"]["DocumentType"];
+            documentNumber: string;
+            fullName: string;
+            /** Format: date */
+            birthDate: string;
+            /** @enum {string} */
+            sex: "M" | "F";
+            nationality: string;
+            residence: string;
+            phone: string | null;
+        } | null;
+        /** @enum {string} */
+        DocumentType: "DNI" | "CE" | "PASSPORT" | "PTP" | "OTHER";
+        StayDetail: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "CLOSED";
+            /** Format: uuid */
+            roomId: string;
+            roomNumber: string;
+            roomTypeName: string;
+            rateKind: components["schemas"]["RateKind"];
+            /** @description Horas contratadas en tarifa por horas; null en tarifa por noche. */
+            hours: number | null;
+            /** Format: date-time */
+            checkInAt: string;
+            /** Format: date-time */
+            expectedCheckOut: string;
+            /** Format: date-time */
+            actualCheckOut: string | null;
+            travelReason: string | null;
+            notes: string | null;
+            /** Format: date-time */
+            migrationsReportedAt: string | null;
+            /** @description Algún huésped con CE, pasaporte o PTP: debe reportarse a Migraciones. */
+            hasForeignGuests: boolean;
+            /** @example 50.00 */
+            chargesTotal: string;
+            /** @example 50.00 */
+            paymentsTotal: string;
+            /** @example 50.00 */
+            balance: string;
+            guests: {
+                /** Format: uuid */
+                id: string;
+                documentType: components["schemas"]["DocumentType"];
+                documentNumber: string;
+                fullName: string;
+                /** Format: date */
+                birthDate: string;
+                /** @enum {string} */
+                sex: "M" | "F";
+                nationality: string;
+                residence: string;
+                phone: string | null;
+                isHolder: boolean;
+            }[];
+            minors: {
+                /** Format: uuid */
+                id: string;
+                fullName: string;
+                documentType: components["schemas"]["DocumentType"] & unknown;
+                documentNumber: string | null;
+                /** Format: date */
+                birthDate: string;
+                guardianRelation: components["schemas"]["GuardianRelation"];
+                accreditation: string | null;
+            }[];
+            /** @example 50.00 */
+            extraHourPrice: string;
+            /** Format: uuid */
+            createdBy: string | null;
+            createdByName: string | null;
+            /** Format: uuid */
+            closedBy: string | null;
+            closedByName: string | null;
+            charges: {
+                /** Format: uuid */
+                id: string;
+                kind: components["schemas"]["StayChargeKind"];
+                description: string;
+                /** @example 50.00 */
+                suggestedAmount: string | null;
+                /** @example 50.00 */
+                amount: string;
+                /** Format: uuid */
+                createdBy: string | null;
+                createdByName: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            payments: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cashRegisterId: string;
+                /** @enum {string} */
+                paymentMethod: "CASH" | "YAPE";
+                /** @example 50.00 */
+                amount: string;
+                /** Format: uuid */
+                createdBy: string | null;
+                createdByName: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /**
+                 * @description VOIDED: anulado; no suma al saldo, a la caja ni a los reportes.
+                 * @enum {string}
+                 */
+                status: "COMPLETED" | "VOIDED";
+                /** Format: uuid */
+                voidedBy: string | null;
+                voidedByName: string | null;
+                /** Format: date-time */
+                voidedAt: string | null;
+                voidReason: string | null;
+            }[];
+            /** @description Adicional sugerido al momento de la consulta; null si la estadía está cerrada. */
+            suggestedExtra: {
+                overdueMinutes: number;
+                hours: number;
+                /** @example 50.00 */
+                amount: string;
+            } | null;
+        };
+        /** @enum {string} */
+        RateKind: "HOURLY" | "NIGHT";
+        /** @enum {string} */
+        GuardianRelation: "PARENT" | "TUTOR" | "RESPONSIBLE";
+        /** @enum {string} */
+        StayChargeKind: "RATE" | "EXTRA_HOURS" | "OTHER";
+        CheckIn: {
+            /** Format: uuid */
+            roomId: string;
+            rateKind: components["schemas"]["RateKind"];
+            /**
+             * @description Horas contratadas. Obligatorio en tarifa por horas; no se envía en tarifa por noche.
+             * @example 3
+             */
+            hours?: number;
+            /**
+             * @description Tarifa cobrada. La de referencia (horas × precio por hora, o precio por noche) se guarda aparte.
+             * @example 30
+             */
+            amount: number;
+            /**
+             * Format: date-time
+             * @description Salida prevista. Si se omite, se usa la sugerida (por horas: ingreso + horas; noche: día siguiente a la hora de salida).
+             */
+            expectedCheckOut?: string;
+            /** @example Turismo */
+            travelReason?: string;
+            notes?: string;
+            guests: {
+                documentType: components["schemas"]["DocumentType"];
+                /** @example 45781236 */
+                documentNumber: string;
+                /** @example Juan Pérez Rojas */
+                fullName: string;
+                /**
+                 * Format: date
+                 * @example 1990-05-14
+                 */
+                birthDate: string;
+                /** @enum {string} */
+                sex: "M" | "F";
+                /** @example Peruana */
+                nationality: string;
+                /** @example Arequipa */
+                residence: string;
+                phone?: string | null;
+                /** @description Exactamente un huésped es el titular de la estadía. */
+                isHolder: boolean;
+            }[];
+            minors?: {
+                fullName: string;
+                documentType?: components["schemas"]["DocumentType"] & unknown;
+                documentNumber?: string | null;
+                /** Format: date */
+                birthDate: string;
+                guardianRelation: components["schemas"]["GuardianRelation"];
+                /** @description Documento que acredita la relación (p. ej. partida de nacimiento o autorización notarial). */
+                accreditation?: string | null;
+            }[];
+            /**
+             * @description Medio de pago. La tarifa se cobra completa al ingresar; requiere una caja abierta.
+             * @enum {string}
+             */
+            paymentMethod: "CASH" | "YAPE";
+        };
+        StayPage: {
+            data: components["schemas"]["StayListItem"][];
+            meta: {
+                page: number;
+                limit: number;
+                total: number;
+                totalPages: number;
+            };
+        };
+        StayListItem: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            status: "ACTIVE" | "CLOSED";
+            /** Format: uuid */
+            roomId: string;
+            roomNumber: string;
+            roomTypeName: string;
+            rateKind: components["schemas"]["RateKind"];
+            /** @description Horas contratadas en tarifa por horas; null en tarifa por noche. */
+            hours: number | null;
+            /** Format: date-time */
+            checkInAt: string;
+            /** Format: date-time */
+            expectedCheckOut: string;
+            /** Format: date-time */
+            actualCheckOut: string | null;
+            travelReason: string | null;
+            notes: string | null;
+            /** Format: date-time */
+            migrationsReportedAt: string | null;
+            /** @description Algún huésped con CE, pasaporte o PTP: debe reportarse a Migraciones. */
+            hasForeignGuests: boolean;
+            /** @example 50.00 */
+            chargesTotal: string;
+            /** @example 50.00 */
+            paymentsTotal: string;
+            /** @example 50.00 */
+            balance: string;
+            guests: {
+                /** Format: uuid */
+                id: string;
+                documentType: components["schemas"]["DocumentType"];
+                documentNumber: string;
+                fullName: string;
+                /** Format: date */
+                birthDate: string;
+                /** @enum {string} */
+                sex: "M" | "F";
+                nationality: string;
+                residence: string;
+                phone: string | null;
+                isHolder: boolean;
+            }[];
+            minors: {
+                /** Format: uuid */
+                id: string;
+                fullName: string;
+                documentType: components["schemas"]["DocumentType"] & unknown;
+                documentNumber: string | null;
+                /** Format: date */
+                birthDate: string;
+                guardianRelation: components["schemas"]["GuardianRelation"];
+                accreditation: string | null;
+            }[];
+        };
+        CreateStayCharge: {
+            /** @enum {string} */
+            kind: "EXTRA_HOURS" | "OTHER";
+            /** @example Lavandería */
+            description: string;
+            suggestedAmount?: number | null;
+            /** @example 10 */
+            amount: number;
+        };
+        CreateStayPayment: {
+            /** @enum {string} */
+            paymentMethod: "CASH" | "YAPE";
+            /** @example 50 */
+            amount: number;
+        };
+        VoidStayPayment: {
+            /** @example Se digitó 500 en vez de 50 */
+            reason: string;
+        };
+        CheckOut: {
+            /**
+             * @description Adicional cobrado por salir tarde. Si se omite se usa el sugerido por el servidor; 0 lo condona. Se guarda junto al sugerido.
+             * @example 20
+             */
+            extraAmount?: number;
+            /** @description Cobro del saldo en el mismo paso; requiere una caja abierta. */
+            payment?: {
+                /** @enum {string} */
+                paymentMethod: "CASH" | "YAPE";
+                /** @example 50 */
+                amount: number;
+            };
+        };
+        StayMigrations: {
+            reported: boolean;
+        };
+        StoreSettings: {
+            /** @example 12:00 */
+            checkoutTime: string;
+            extraToleranceMinutes: number;
+        };
+        UpdateStoreSettings: {
+            /**
+             * @description Hora de salida de las estadías por noche (hora de Lima).
+             * @example 12:00
+             */
+            checkoutTime?: string;
+            /**
+             * @description Minutos de gracia antes de sugerir horas adicionales.
+             * @example 15
+             */
+            extraToleranceMinutes?: number;
+        };
+        StoreUser: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: email */
+            email: string;
             /** @enum {string} */
             role: "ADMIN" | "GUEST";
+            active: boolean;
         };
         CreateStoreUser: {
             /** @example Juan Pérez */
@@ -3740,427 +4281,6 @@ export interface components {
         };
         SupplierInput: {
             name: string;
-        };
-        CheckIn: {
-            /**
-             * @description Tarifa cobrada. La de referencia (horas × precio por hora, o precio por noche) se guarda aparte.
-             * @example 30
-             */
-            amount: number;
-            /**
-             * Format: date-time
-             * @description Salida prevista. Si se omite, se usa la sugerida (por horas: ingreso + horas; noche: día siguiente a la hora de salida).
-             */
-            expectedCheckOut?: string;
-            guests: {
-                /**
-                 * Format: date
-                 * @example 1990-05-14
-                 */
-                birthDate: string;
-                /** @example 45781236 */
-                documentNumber: string;
-                documentType: components["schemas"]["DocumentType"];
-                /** @example Juan Pérez Rojas */
-                fullName: string;
-                /** @description Exactamente un huésped es el titular de la estadía. */
-                isHolder: boolean;
-                /** @example Peruana */
-                nationality: string;
-                phone?: string | null;
-                /** @example Arequipa */
-                residence: string;
-                /** @enum {string} */
-                sex: "M" | "F";
-            }[];
-            /**
-             * @description Horas contratadas. Obligatorio en tarifa por horas; no se envía en tarifa por noche.
-             * @example 3
-             */
-            hours?: number;
-            minors?: {
-                /** @description Documento que acredita la relación (p. ej. partida de nacimiento o autorización notarial). */
-                accreditation?: string | null;
-                /** Format: date */
-                birthDate: string;
-                documentNumber?: string | null;
-                documentType?: components["schemas"]["DocumentType"] & unknown;
-                fullName: string;
-                guardianRelation: components["schemas"]["GuardianRelation"];
-            }[];
-            notes?: string;
-            /**
-             * @description Medio de pago. La tarifa se cobra completa al ingresar; requiere una caja abierta.
-             * @enum {string}
-             */
-            paymentMethod: "CASH" | "YAPE";
-            rateKind: components["schemas"]["RateKind"];
-            /** Format: uuid */
-            roomId: string;
-            /** @example Turismo */
-            travelReason?: string;
-        };
-        CheckOut: {
-            /**
-             * @description Adicional cobrado por salir tarde. Si se omite se usa el sugerido por el servidor; 0 lo condona. Se guarda junto al sugerido.
-             * @example 20
-             */
-            extraAmount?: number;
-            /** @description Cobro del saldo en el mismo paso; requiere una caja abierta. */
-            payment?: {
-                /** @example 50 */
-                amount: number;
-                /** @enum {string} */
-                paymentMethod: "CASH" | "YAPE";
-            };
-        };
-        CreateRoom: {
-            /** @example 2 */
-            floor?: number | null;
-            /** @example 201 */
-            number: string;
-            /** Format: uuid */
-            roomTypeId: string;
-        };
-        CreateRoomType: {
-            /**
-             * @description Huéspedes adultos permitidos. Los menores no cuentan.
-             * @example 2
-             */
-            capacity: number;
-            /** @example Cama de 2 plazas, baño compartido */
-            description?: string | null;
-            /** @example 10 */
-            extraHourPrice: number;
-            /**
-             * @description Precio de referencia por hora: la tarifa por horas sugiere horas × este precio.
-             * @example 10
-             */
-            hourPrice: number;
-            /** @example Estándar */
-            name: string;
-            /** @example 50 */
-            nightPrice: number;
-        };
-        CreateStayCharge: {
-            /** @example 10 */
-            amount: number;
-            /** @example Lavandería */
-            description: string;
-            /** @enum {string} */
-            kind: "EXTRA_HOURS" | "OTHER";
-            suggestedAmount?: number | null;
-        };
-        CreateStayPayment: {
-            /** @example 50 */
-            amount: number;
-            /** @enum {string} */
-            paymentMethod: "CASH" | "YAPE";
-        };
-        /** @enum {string} */
-        DocumentType: "DNI" | "CE" | "PASSPORT" | "PTP" | "OTHER";
-        /** @enum {string} */
-        GuardianRelation: "PARENT" | "TUTOR" | "RESPONSIBLE";
-        NullableGuest: {
-            /** Format: date */
-            birthDate: string;
-            documentNumber: string;
-            documentType: components["schemas"]["DocumentType"];
-            fullName: string;
-            /** Format: uuid */
-            id: string;
-            nationality: string;
-            phone: string | null;
-            residence: string;
-            /** @enum {string} */
-            sex: "M" | "F";
-        } | null;
-        /** @enum {string} */
-        RateKind: "HOURLY" | "NIGHT";
-        Room: {
-            activeStay: {
-                /** @example 30.00 */
-                balance: string;
-                /** Format: date-time */
-                checkInAt: string;
-                /** Format: date-time */
-                expectedCheckOut: string;
-                holderName: string | null;
-                hours: number | null;
-                /** @enum {string} */
-                rateKind: "HOURLY" | "NIGHT";
-                /** Format: uuid */
-                stayId: string;
-            } | null;
-            capacity: number;
-            floor: number | null;
-            /** Format: uuid */
-            id: string;
-            isActive: boolean;
-            needsCleaning: boolean;
-            number: string;
-            /** Format: uuid */
-            roomTypeId: string;
-            roomTypeName: string;
-            /**
-             * @description Calculado: OCCUPIED si hay estadía activa; si no, CLEANING si falta limpiar; si no, FREE.
-             * @enum {string}
-             */
-            status: "FREE" | "OCCUPIED" | "CLEANING";
-        };
-        RoomType: {
-            capacity: number;
-            /** Format: date-time */
-            createdAt: string;
-            description: string | null;
-            /** @example 30.00 */
-            extraHourPrice: string;
-            /** @example 30.00 */
-            hourPrice: string;
-            /** Format: uuid */
-            id: string;
-            isActive: boolean;
-            name: string;
-            /** @example 30.00 */
-            nightPrice: string;
-            /** @description Habitaciones asignadas a este tipo. */
-            roomCount: number;
-        };
-        /** @enum {string} */
-        StayChargeKind: "RATE" | "EXTRA_HOURS" | "OTHER";
-        StayDetail: {
-            /** Format: date-time */
-            actualCheckOut: string | null;
-            /** @example 50.00 */
-            balance: string;
-            charges: {
-                /** @example 50.00 */
-                amount: string;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: uuid */
-                createdBy: string | null;
-                createdByName: string | null;
-                description: string;
-                /** Format: uuid */
-                id: string;
-                kind: components["schemas"]["StayChargeKind"];
-                /** @example 50.00 */
-                suggestedAmount: string | null;
-            }[];
-            /** @example 50.00 */
-            chargesTotal: string;
-            /** Format: date-time */
-            checkInAt: string;
-            /** Format: uuid */
-            closedBy: string | null;
-            closedByName: string | null;
-            /** Format: uuid */
-            createdBy: string | null;
-            createdByName: string | null;
-            /** Format: date-time */
-            expectedCheckOut: string;
-            /** @example 50.00 */
-            extraHourPrice: string;
-            guests: {
-                /** Format: date */
-                birthDate: string;
-                documentNumber: string;
-                documentType: components["schemas"]["DocumentType"];
-                fullName: string;
-                /** Format: uuid */
-                id: string;
-                isHolder: boolean;
-                nationality: string;
-                phone: string | null;
-                residence: string;
-                /** @enum {string} */
-                sex: "M" | "F";
-            }[];
-            /** @description Algún huésped con CE, pasaporte o PTP: debe reportarse a Migraciones. */
-            hasForeignGuests: boolean;
-            /** @description Horas contratadas en tarifa por horas; null en tarifa por noche. */
-            hours: number | null;
-            /** Format: uuid */
-            id: string;
-            /** Format: date-time */
-            migrationsReportedAt: string | null;
-            minors: {
-                accreditation: string | null;
-                /** Format: date */
-                birthDate: string;
-                documentNumber: string | null;
-                documentType: components["schemas"]["DocumentType"] & unknown;
-                fullName: string;
-                guardianRelation: components["schemas"]["GuardianRelation"];
-                /** Format: uuid */
-                id: string;
-            }[];
-            notes: string | null;
-            payments: {
-                /** @example 50.00 */
-                amount: string;
-                /** Format: uuid */
-                cashRegisterId: string;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: uuid */
-                createdBy: string | null;
-                createdByName: string | null;
-                /** Format: uuid */
-                id: string;
-                /** @enum {string} */
-                paymentMethod: "CASH" | "YAPE";
-                /**
-                 * @description VOIDED: anulado; no suma al saldo, a la caja ni a los reportes.
-                 * @enum {string}
-                 */
-                status: "COMPLETED" | "VOIDED";
-                voidReason: string | null;
-                /** Format: date-time */
-                voidedAt: string | null;
-                /** Format: uuid */
-                voidedBy: string | null;
-                voidedByName: string | null;
-            }[];
-            /** @example 50.00 */
-            paymentsTotal: string;
-            rateKind: components["schemas"]["RateKind"];
-            /** Format: uuid */
-            roomId: string;
-            roomNumber: string;
-            roomTypeName: string;
-            /** @enum {string} */
-            status: "ACTIVE" | "CLOSED";
-            /** @description Adicional sugerido al momento de la consulta; null si la estadía está cerrada. */
-            suggestedExtra: {
-                /** @example 50.00 */
-                amount: string;
-                hours: number;
-                overdueMinutes: number;
-            } | null;
-            travelReason: string | null;
-        };
-        StayListItem: {
-            /** Format: date-time */
-            actualCheckOut: string | null;
-            /** @example 50.00 */
-            balance: string;
-            /** @example 50.00 */
-            chargesTotal: string;
-            /** Format: date-time */
-            checkInAt: string;
-            /** Format: date-time */
-            expectedCheckOut: string;
-            guests: {
-                /** Format: date */
-                birthDate: string;
-                documentNumber: string;
-                documentType: components["schemas"]["DocumentType"];
-                fullName: string;
-                /** Format: uuid */
-                id: string;
-                isHolder: boolean;
-                nationality: string;
-                phone: string | null;
-                residence: string;
-                /** @enum {string} */
-                sex: "M" | "F";
-            }[];
-            /** @description Algún huésped con CE, pasaporte o PTP: debe reportarse a Migraciones. */
-            hasForeignGuests: boolean;
-            /** @description Horas contratadas en tarifa por horas; null en tarifa por noche. */
-            hours: number | null;
-            /** Format: uuid */
-            id: string;
-            /** Format: date-time */
-            migrationsReportedAt: string | null;
-            minors: {
-                accreditation: string | null;
-                /** Format: date */
-                birthDate: string;
-                documentNumber: string | null;
-                documentType: components["schemas"]["DocumentType"] & unknown;
-                fullName: string;
-                guardianRelation: components["schemas"]["GuardianRelation"];
-                /** Format: uuid */
-                id: string;
-            }[];
-            notes: string | null;
-            /** @example 50.00 */
-            paymentsTotal: string;
-            rateKind: components["schemas"]["RateKind"];
-            /** Format: uuid */
-            roomId: string;
-            roomNumber: string;
-            roomTypeName: string;
-            /** @enum {string} */
-            status: "ACTIVE" | "CLOSED";
-            travelReason: string | null;
-        };
-        StayMigrations: {
-            reported: boolean;
-        };
-        StayPage: {
-            data: components["schemas"]["StayListItem"][];
-            meta: {
-                limit: number;
-                page: number;
-                total: number;
-                totalPages: number;
-            };
-        };
-        StoreSettings: {
-            /** @example 12:00 */
-            checkoutTime: string;
-            extraToleranceMinutes: number;
-        };
-        UpdateRoom: {
-            /** @example 2 */
-            floor?: number | null;
-            isActive?: boolean;
-            needsCleaning?: boolean;
-            /** @example 201 */
-            number?: string;
-            /** Format: uuid */
-            roomTypeId?: string;
-        };
-        UpdateRoomType: {
-            /**
-             * @description Huéspedes adultos permitidos. Los menores no cuentan.
-             * @example 2
-             */
-            capacity?: number;
-            /** @example Cama de 2 plazas, baño compartido */
-            description?: string | null;
-            /** @example 10 */
-            extraHourPrice?: number;
-            /**
-             * @description Precio de referencia por hora: la tarifa por horas sugiere horas × este precio.
-             * @example 10
-             */
-            hourPrice?: number;
-            isActive?: boolean;
-            /** @example Estándar */
-            name?: string;
-            /** @example 50 */
-            nightPrice?: number;
-        };
-        UpdateStoreSettings: {
-            /**
-             * @description Hora de salida de las estadías por noche (hora de Lima).
-             * @example 12:00
-             */
-            checkoutTime?: string;
-            /**
-             * @description Minutos de gracia antes de sugerir horas adicionales.
-             * @example 15
-             */
-            extraToleranceMinutes?: number;
-        };
-        VoidStayPayment: {
-            /** @example Se digitó 500 en vez de 50 */
-            reason: string;
         };
     };
     responses: {
@@ -4398,6 +4518,15 @@ export interface components {
                 "application/json": components["schemas"]["ApiError"];
             };
         };
+        /** @description Habitación no disponible, estadía cerrada, sin caja abierta para cobrar, pago mayor al saldo o check-out con saldo pendiente. */
+        StayConflict: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ApiError"];
+            };
+        };
         /** @description Producto desactivado o carga inicial sobre un producto que ya tiene movimientos. */
         InventoryEntryConflict: {
             headers: {
@@ -4464,6 +4593,24 @@ export interface components {
                  *       "error": {
                  *         "code": "UNAUTHORIZED",
                  *         "message": "No autorizado"
+                 *       }
+                 *     }
+                 */
+                "application/json": components["schemas"]["ApiError"];
+            };
+        };
+        /** @description El rol del usuario no tiene permiso para esta operación. */
+        Forbidden: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                /**
+                 * @example {
+                 *       "success": false,
+                 *       "error": {
+                 *         "code": "FORBIDDEN",
+                 *         "message": "Acceso denegado. Se requiere ser Administrador"
                  *       }
                  *     }
                  */
@@ -4543,33 +4690,6 @@ export interface components {
                  *         "code": "INTERNAL_ERROR",
                  *         "message": "Internal server error"
                  *       }
-                 *     }
-                 */
-                "application/json": components["schemas"]["ApiError"];
-            };
-        };
-        /** @description Habitación no disponible, estadía cerrada, sin caja abierta para cobrar, pago mayor al saldo o check-out con saldo pendiente. */
-        StayConflict: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ApiError"];
-            };
-        };
-        /** @description El rol del usuario no tiene permiso para esta operación. */
-        Forbidden: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                /**
-                 * @example {
-                 *       "error": {
-                 *         "code": "FORBIDDEN",
-                 *         "message": "Acceso denegado. Se requiere ser Administrador"
-                 *       },
-                 *       "success": false
                  *     }
                  */
                 "application/json": components["schemas"]["ApiError"];
